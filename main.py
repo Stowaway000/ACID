@@ -14,8 +14,8 @@ height = 720
 # Убираем настроки по-умолчанию
 def set_menu_style(menu, size=32):
     menu.font_item_selected['font_size'] = size
-    menu.font_item_selected['font_name'] = 'Verdana'
-    menu.font_item['font_name'] = 'Verdana'
+    menu.font_item_selected['font_name'] = 'Calibri'
+    menu.font_item['font_name'] = 'Calibri'
     menu.font_item_selected['color'] = (229, 43, 80, 240)
     menu.font_item['color'] = (192, 192, 192, 200)
 
@@ -61,7 +61,7 @@ def about_game():
 # Создание фона для главного меню
 def create_bg():
     bg = cocos.layer.Layer()
-    space = cocos.sprite.Sprite('space.jpg')
+    space = cocos.sprite.Sprite('res/img/space.jpg')
     space.do(Repeat(RotateBy(360, 300)))
 
     ground = cocos.layer.ColorLayer(255, 255, 255, 255, height=height//2)
