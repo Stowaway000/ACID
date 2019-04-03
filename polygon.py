@@ -24,7 +24,7 @@ vector = [0, 0]
 class Mover(cocos.actions.Move):
     def get_walls(self):
         last = self.target.rect()
-        radius = (last.width - last.height) // 2
+        radius = abs(last.width - last.height) // 3
 
         new = last.copy()
         new.y += radius
@@ -118,7 +118,6 @@ class Skin(cocos.sprite.Sprite):
 
     def switch_coll(self):
         self.rect_img, self.rect_img_a = self.rect_img_a, self.rect_img
-
         if self.collision == 'h':
             self.collision = 'v'
             if 'up' in self.walls:
