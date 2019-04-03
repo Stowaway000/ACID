@@ -63,7 +63,7 @@ class Skin(cocos.sprite.Sprite):
         super().__init__(anim)
 
         self.collide_map = collision_handler
-        self.position = 100, 100
+        self.position = 100, 80
         self.velocity = (0, 0)
         self.rect_img = cocos.sprite.Sprite('res/img/coll_b.png')
         self.rect_img_a = cocos.sprite.Sprite('res/img/coll.png')
@@ -144,16 +144,18 @@ class HeroLayer(cocos.layer.ScrollableLayer):
 class MapLayer(cocos.layer.ScrollableLayer):
     def __init__(self):
         super().__init__()
-        floor = cocos.tiles.load("maps/map_test/floor.tmx")
-        map = cocos.tiles.load("maps/map_test/objects.tmx")
+        level = cocos.tiles.load("maps/map_test/map.tmx")
+        #map = cocos.tiles.load("maps/map_test/objects.tmx")
 
-        self.layer_floor = floor["floor"]
+        self.layer_floor = level["floor"]
 
-        self.layer_room1 = map["mid"]
+        self.layer_room1 = level["wall"]
 
-        self.layer_room2 = map["objs"]
-
-        self.layer_obj = map["collision"]
+        self.layer_room2 = level["up"]
+        
+        self.layer_obj = level["obj"]
+        self.layer_coll = level["collision"]
+        self.layer_coll.objects += self.layer_obj.objects
 
 
 if __name__ == "__main__":
@@ -166,7 +168,7 @@ if __name__ == "__main__":
 
     mapcollider = mapcolliders.TmxObjectMapCollider()
     mapcollider.on_bump_handler = mapcollider.on_bump_bounce
-    collision_handler = mapcolliders.make_collision_handler(mapcollider, map_layer.layer_obj)
+    collision_handler = mapcolliders.make_collision_handler(mapcollider, map_layer.layer_coll)
 
     cur_i = pyglet.image.load("res/img/cursor.png")
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
@@ -178,7 +180,8 @@ if __name__ == "__main__":
     scroller.scale = 2
     scroller.add(map_layer.layer_floor, -1)
     scroller.add(map_layer.layer_room1, 1)
-    scroller.add(map_layer.layer_room2, 1)
+    scroller.add(map_layer.layer_room2, 2)
+    scroller.add(map_layer.layer_obj, 1)
     scroller.add(hero_layer)
 
     my_scene = cocos.scene.Scene()
