@@ -5,21 +5,16 @@ from pyglet.window import key, mouse
 from cocos import mapcolliders
 from cocos.actions import *
 from math import atan, degrees
-import os 
-
-
-working_dir = os.path.dirname(os.path.realpath(__file__))
-
+import os
 
 img1 = pyglet.image.load("res/img/hero.png")
 img = pyglet.image.load("res/img/walk.png")
 img_grid = pyglet.image.ImageGrid(img, 1, 9, item_width=29, item_height=14)
 anim = pyglet.image.Animation.from_image_sequence(img_grid[:], 0.05, loop=True)
+
 mouse_x = 10
 mouse_y = 10
-curt = 0
 vector = [0, 0]
-
 
 class Mover(cocos.actions.Move):
     def get_walls(self):
@@ -96,10 +91,9 @@ class Mover(cocos.actions.Move):
 
 
 class Skin(cocos.sprite.Sprite):
-    def __init__(self, collision_handler):
-        super().__init__(anim)
+    def __init__(self):
+        super().__init__(img1)
 
-        self.collide_map = collision_handler
         self.position = 100, 80
         self.velocity = (0, 0)
         self.rect_img = cocos.sprite.Sprite('res/img/coll_b.png')
@@ -139,10 +133,12 @@ class Skin(cocos.sprite.Sprite):
 class HeroLayer(cocos.layer.ScrollableLayer):
     is_event_handler = True
 
-    def __init__(self, collision_handler):
+    def __init__(self):
         super().__init__()
 
-        self.skin = Skin(collision_handler)
+        self.skin = Skin()
+
+        self.color = (0, 0, 0, 0)
 
         self.add(self.skin)
 
@@ -150,7 +146,7 @@ class HeroLayer(cocos.layer.ScrollableLayer):
         global mouse_x, mouse_y
         mouse_x = x
         mouse_y = y
-        #print(x, y)
+        
         mid_x, mid_y = scroller.world_to_screen(scroller.fx, scroller.fy)
 
         x -= mid_x
@@ -171,34 +167,59 @@ class HeroLayer(cocos.layer.ScrollableLayer):
 
         angle = -angle + 90
 
-        if self.skin.rotation != angle:
-            h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
-            vector[0] = int(mouse_x - h_x)
-            vector[1] = int(mouse_y - h_y)
-            if 70 < abs(angle) < 110 or 250 < angle or angle < -70:
-                if self.skin.collision == 'h':
+        if ('up' not in self.skin.walls or 'down' not in self.skin.walls) and\
+           ('left' not in self.skin.walls or 'right' not in self.skin.walls):
+            if self.skin.rotation != angle:
+                h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+                vector[0] = int(mouse_x - h_x)
+                vector[1] = int(mouse_y - h_y)
+                if 70 < abs(angle) < 110 or 250 < angle or angle < -70:
+                    if self.skin.collision == 'h':
+                        self.skin.switch_coll()
+                elif self.skin.collision == 'v':
                     self.skin.switch_coll()
-            elif self.skin.collision == 'v':
-                self.skin.switch_coll()
 
-        self.skin.rotation = angle
+            self.skin.rotation = angle
+
+    def set_collision(self, layer):
+        mapcollider = mapcolliders.TmxObjectMapCollider()
+        mapcollider.on_bump_handler = mapcollider.on_bump_bounce
+        collision_handler = mapcolliders.make_collision_handler(mapcollider, layer)
+
+        self.skin.collide_map = collision_handler
 
 
 class MapLayer(cocos.layer.ScrollableLayer):
-    def __init__(self):
+    def __init__(self, name):
         super().__init__()
-        level = cocos.tiles.load("maps/map_test/map.tmx")
-        #map = cocos.tiles.load("maps/map_test/objects.tmx")
+        level = cocos.tiles.load("maps/" + name + "/map.tmx")
 
         self.layer_floor = level["floor"]
 
-        self.layer_room1 = level["wall"]
+        self.layer_vertical = level["wall"]
 
-        self.layer_room2 = level["up"]
+        self.layer_above = level["up"]
         
-        self.layer_obj = level["obj"]
-        self.layer_coll = level["collision"]
-        self.layer_coll.objects += self.layer_obj.objects
+        self.layer_objects = level["obj"]
+        self.layer_collision = level["collision"]
+        self.layer_collision.objects += self.layer_objects.objects
+
+
+def load_map(name, hero):
+    map_layer = MapLayer(name)
+
+    hero.set_collision(map_layer.layer_collision)
+
+    scroller = cocos.layer.ScrollingManager()
+    scroller.scale = 2
+    
+    scroller.add(hero, 1)
+    scroller.add(map_layer.layer_floor, -1)
+    scroller.add(map_layer.layer_vertical, 1)
+    scroller.add(map_layer.layer_objects, 1)
+    scroller.add(map_layer.layer_above, 2)
+
+    return scroller
 
 
 if __name__ == "__main__":
@@ -207,27 +228,14 @@ if __name__ == "__main__":
 
     keyboard = key.KeyStateHandler()
     director.window.push_handlers(keyboard)
-    map_layer = MapLayer()
-
-    mapcollider = mapcolliders.TmxObjectMapCollider()
-    mapcollider.on_bump_handler = mapcollider.on_bump_bounce
-    collision_handler = mapcolliders.make_collision_handler(mapcollider, map_layer.layer_coll)
-
+    
     cur_i = pyglet.image.load("res/img/cursor.png")
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
     director.window.set_mouse_cursor(cursor)
 
-    hero_layer = HeroLayer(collision_handler)
+    hero_layer = HeroLayer()
 
-    scroller = cocos.layer.ScrollingManager()
-    scroller.scale = 2
-    scroller.add(map_layer.layer_floor, -1)
-    scroller.add(map_layer.layer_room1, 1)
-    scroller.add(map_layer.layer_room2, 2)
-    scroller.add(map_layer.layer_obj, 1)
-    scroller.add(hero_layer)
-
-    my_scene = cocos.scene.Scene()
-    my_scene.add(scroller)
-
-    director.run(my_scene)
+    scroller = load_map("map_test", hero_layer)
+    scene = cocos.scene.Scene(scroller)
+    
+    director.run(scene)
