@@ -53,6 +53,7 @@ class Mover(cocos.actions.Move):
             self.target.walls = self.target.walls.replace('left', '')
 
     def step(self, dt):
+        keyboard = self.target.keyboard
         vel_x = (keyboard[key.D] - keyboard[key.A]) * 75
         vel_y = (keyboard[key.W] - keyboard[key.S]) * 75
 
@@ -71,13 +72,13 @@ class Mover(cocos.actions.Move):
 
         self.target.velocity = self.target.collide_map(last, new, vel_x, vel_y)
         self.target.position = new.center
-        scroller.set_focus(*new.center)
+        self.target.scroller.set_focus(*new.center)
 
-        scroller.set_focus(self.target.x, self.target.y)
+        self.target.scroller.set_focus(self.target.x, self.target.y)
 
         global mouse_x, mouse_y
         if self.target.velocity[0] or self.target.velocity[1]:
-            mouse_x, mouse_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+            mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)
             mouse_x += vector[0]
             mouse_y += vector[1]
             director.window.set_mouse_position(mouse_x, mouse_y)
@@ -86,13 +87,16 @@ class Mover(cocos.actions.Move):
 
 
 class Skin(cocos.sprite.Sprite):
-    def __init__(self, static, walk):
+    def __init__(self, static, walk, kb):
         stat = pyglet.image.load("res/img/" + static + ".png")
         w_img = pyglet.image.load("res/img/" + walk + ".png")
         w_img_grid = pyglet.image.ImageGrid(w_img, 1, 9, item_width=29, item_height=14)
         anim = pyglet.image.Animation.from_image_sequence(w_img_grid[:], 0.05, loop=True)
         
         super().__init__(stat)
+
+        self.scroller = None
+        self.keyboard = kb
 
         self.static = stat
         self.walk = anim
@@ -136,10 +140,10 @@ class Skin(cocos.sprite.Sprite):
 class Hero(cocos.layer.ScrollableLayer):
     is_event_handler = True
 
-    def __init__(self):
+    def __init__(self, kb):
         super().__init__()
 
-        self.skin = Skin("hero", "walk")
+        self.skin = Skin("hero", "walk", kb)
 
         self.color = (0, 0, 0, 0)
 
@@ -150,7 +154,7 @@ class Hero(cocos.layer.ScrollableLayer):
         mouse_x = x
         mouse_y = y
         
-        mid_x, mid_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+        mid_x, mid_y = self.skin.scroller.world_to_screen(self.skin.scroller.fx, self.skin.scroller.fy)
 
         x -= mid_x
         y -= mid_y
@@ -173,7 +177,7 @@ class Hero(cocos.layer.ScrollableLayer):
         if ('up' not in self.skin.walls or 'down' not in self.skin.walls) and\
            ('left' not in self.skin.walls or 'right' not in self.skin.walls):
             if self.skin.rotation != angle:
-                h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+                h_x, h_y = self.skin.scroller.world_to_screen(self.skin.scroller.fx, self.skin.scroller.fy)
                 vector[0] = int(mouse_x - h_x)
                 vector[1] = int(mouse_y - h_y)
                 if 70 < abs(angle) < 110 or 250 < angle or angle < -70:
@@ -191,6 +195,9 @@ class Hero(cocos.layer.ScrollableLayer):
 
         self.skin.collide_map = collision_handler
 
+    def set_scroller(self, scr):
+        self.skin.scroller = scr
+
 
 class MapLayer(cocos.layer.ScrollableLayer):
     def __init__(self, name):
@@ -206,23 +213,6 @@ class MapLayer(cocos.layer.ScrollableLayer):
         self.layer_objects = level["obj"]
         self.layer_collision = level["collision"]
         self.layer_collision.objects += self.layer_objects.objects
-
-
-def load_map(name, hero):
-    map_layer = MapLayer(name)
-
-    hero.set_collision(map_layer.layer_collision)
-
-    scroller = cocos.layer.ScrollingManager()
-    scroller.scale = 2
-    
-    scroller.add(hero, 1)
-    scroller.add(map_layer.layer_floor, -1)
-    scroller.add(map_layer.layer_vertical, 1)
-    scroller.add(map_layer.layer_objects, 1)
-    scroller.add(map_layer.layer_above, 2)
-
-    return scroller
 
 
 if __name__ == "__main__":
