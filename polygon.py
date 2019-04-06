@@ -7,11 +7,6 @@ from cocos.actions import *
 from math import atan, degrees
 import os
 
-img1 = pyglet.image.load("res/img/hero.png")
-img = pyglet.image.load("res/img/walk.png")
-img_grid = pyglet.image.ImageGrid(img, 1, 9, item_width=29, item_height=14)
-anim = pyglet.image.Animation.from_image_sequence(img_grid[:], 0.05, loop=True)
-
 mouse_x = 10
 mouse_y = 10
 vector = [0, 0]
@@ -62,9 +57,9 @@ class Mover(cocos.actions.Move):
         vel_y = (keyboard[key.W] - keyboard[key.S]) * 75
 
         if (self.target.velocity[0] or self.target.velocity[1]) and not(type(self.target.image) is pyglet.image.Animation):
-            self.target.image = anim
+            self.target.image = self.target.walk
         elif not (self.target.velocity[0] or self.target.velocity[1]):
-            self.target.image = img1
+            self.target.image = self.target.static
 
         dx = vel_x * dt
         dy = vel_y * dt
@@ -91,9 +86,17 @@ class Mover(cocos.actions.Move):
 
 
 class Skin(cocos.sprite.Sprite):
-    def __init__(self):
-        super().__init__(img1)
+    def __init__(self, static, walk):
+        stat = pyglet.image.load("res/img/" + static + ".png")
+        w_img = pyglet.image.load("res/img/" + walk + ".png")
+        w_img_grid = pyglet.image.ImageGrid(w_img, 1, 9, item_width=29, item_height=14)
+        anim = pyglet.image.Animation.from_image_sequence(w_img_grid[:], 0.05, loop=True)
+        
+        super().__init__(stat)
 
+        self.static = stat
+        self.walk = anim
+        
         self.position = 100, 80
         self.velocity = (0, 0)
         self.rect_img = cocos.sprite.Sprite('res/img/coll_b.png')
@@ -130,13 +133,13 @@ class Skin(cocos.sprite.Sprite):
                 self.walls = self.walls.replace('right', '')
 
 
-class HeroLayer(cocos.layer.ScrollableLayer):
+class Hero(cocos.layer.ScrollableLayer):
     is_event_handler = True
 
     def __init__(self):
         super().__init__()
 
-        self.skin = Skin()
+        self.skin = Skin("hero", "walk")
 
         self.color = (0, 0, 0, 0)
 
@@ -233,7 +236,7 @@ if __name__ == "__main__":
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
     director.window.set_mouse_cursor(cursor)
 
-    hero_layer = HeroLayer()
+    hero_layer = Hero()
 
     scroller = load_map("map_test", hero_layer)
     scene = cocos.scene.Scene(scroller)
