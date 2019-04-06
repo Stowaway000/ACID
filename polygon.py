@@ -153,8 +153,10 @@ class Hero(cocos.layer.ScrollableLayer):
         global mouse_x, mouse_y
         mouse_x = x
         mouse_y = y
+
+        scroller = self.skin.scroller
         
-        mid_x, mid_y = self.skin.scroller.world_to_screen(self.skin.scroller.fx, self.skin.scroller.fy)
+        mid_x, mid_y = scroller.world_to_screen(scroller.fx, scroller.fy)
 
         x -= mid_x
         y -= mid_y
@@ -177,7 +179,7 @@ class Hero(cocos.layer.ScrollableLayer):
         if ('up' not in self.skin.walls or 'down' not in self.skin.walls) and\
            ('left' not in self.skin.walls or 'right' not in self.skin.walls):
             if self.skin.rotation != angle:
-                h_x, h_y = self.skin.scroller.world_to_screen(self.skin.scroller.fx, self.skin.scroller.fy)
+                h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
                 vector[0] = int(mouse_x - h_x)
                 vector[1] = int(mouse_y - h_y)
                 if 70 < abs(angle) < 110 or 250 < angle or angle < -70:
