@@ -175,8 +175,10 @@ class Hero(cocos.layer.ScrollableLayer):
 
         if x:
             angle = degrees(atan(y/x))
-        else:
+        elif y > 0:
             angle = 90
+        else:
+            angle = -90        
 
         if x < 0 and y < 0:
             angle -= 180
