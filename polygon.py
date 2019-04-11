@@ -133,25 +133,29 @@ class Skin(cocos.sprite.Sprite):
         return cocos.rect.Rect(x, y, self.rect_img_cur.width, self.rect_img_cur.height)
 
     def switch_coll(self, col):
-        self.collision = col
-        if col == 'v':
-            self.rect_img_cur = self.rect_img_v
+        if self.collision == 'h':
             if 'up' in self.walls:
                 self.do(MoveBy((0, -self.ud), 0))
                 self.walls = self.walls.replace('up', '')
             if 'down' in self.walls:
                 self.do(MoveBy((0, self.dd), 0))
                 self.walls = self.walls.replace('down', '')
-        elif col == 'h':
-            self.rect_img_cur = self.rect_img_h
+        elif self.collision == 'v':
             if 'left' in self.walls:
                 self.do(MoveBy((self.ld, 0), 0))
                 self.walls = self.walls.replace('left', '')
             if 'right' in self.walls:
                 self.do(MoveBy((-self.rd, 0), 0))
                 self.walls = self.walls.replace('right', '')
+
+        if col == 'v':
+            self.rect_img_cur = self.rect_img_v
+        elif col == 'h':
+            self.rect_img_cur = self.rect_img_h
         else:
             self.rect_img_cur = self.rect_img_d
+        
+        self.collision = col
 
 
 class Hero(cocos.layer.ScrollableLayer):
