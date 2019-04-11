@@ -14,7 +14,7 @@ vector = [0, 0]
 class Mover(cocos.actions.Move):
     def get_walls(self):
         last = self.target.rect()
-        rad = abs(last.width - last.height) // 2 + 2
+        rad = abs(last.width - last.height) // 2 + 3
         w = last.width//2
         h = last.height//2
         
