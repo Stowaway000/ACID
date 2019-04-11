@@ -14,49 +14,44 @@ vector = [0, 0]
 class Mover(cocos.actions.Move):
     def get_walls(self):
         last = self.target.rect()
-        #last.width = 29
-        #last.height = 29
-        rad = abs(last.width - last.height) // 2 + 1
-        #radius = 8
+        rad = abs(last.width - last.height) // 2 + 2
+        w = last.width//2
+        h = last.height//2
         
-        for radius in range(2, rad+1):
+        for radius in range(2, rad):
             new = last.copy()
-            new.y += radius
-            #new.x += radius
-            vel_x, vel_y = self.target.collide_map(last, new, 0, radius)
+            new.y += radius + h
+            vel_x, vel_y = self.target.collide_map(last, new, 0, radius + h)
             if vel_y < 0 and 'up' not in self.target.walls:
                 self.target.walls = self.target.walls + 'up'
-                self.target.ud = rad - radius + 2
+                self.target.ud = rad - radius
             elif vel_y > 0:
                 self.target.walls = self.target.walls.replace('up', '')
 
-            #new = last.copy()
-            new.x += radius
-            new.y -= radius
-            vel_x, vel_y = self.target.collide_map(last, new, radius, 0)
+            new.x += radius + w
+            new.y -= radius + h
+            vel_x, vel_y = self.target.collide_map(last, new, radius + w, 0)
             if vel_x < 0 and 'right' not in self.target.walls:
                 self.target.walls = self.target.walls + 'right'
-                self.target.rd = rad - radius + 2
+                self.target.rd = rad - radius
             elif vel_x > 0:
                 self.target.walls = self.target.walls.replace('right', '')
 
-            #new = last.copy()
             new.y -= radius
-            new.x -= radius
+            new.x -= radius + w
             vel_x, vel_y = self.target.collide_map(last, new, 0, -radius)
             if vel_y > 0 and 'down' not in self.target.walls:
                 self.target.walls = self.target.walls + 'down'
-                self.target.dd = rad - radius + 2
+                self.target.dd = rad - radius
             elif vel_y < 0:
                 self.target.walls = self.target.walls.replace('down', '')
 
-            #new = last.copy()
             new.x -= radius
             new.y += radius
             vel_x, vel_y = self.target.collide_map(last, new, -radius, 0)
             if vel_x > 0 and 'left' not in self.target.walls:
                 self.target.walls = self.target.walls + 'left'
-                self.target.ld = rad - radius + 2
+                self.target.ld = rad - radius
             elif vel_x < 0:
                 self.target.walls = self.target.walls.replace('left', '')
 
@@ -133,20 +128,24 @@ class Skin(cocos.sprite.Sprite):
         return cocos.rect.Rect(x, y, self.rect_img_cur.width, self.rect_img_cur.height)
 
     def switch_coll(self, col):
-        if self.collision == 'h':
+        if self.collision != 'v':
             if 'up' in self.walls:
                 self.do(MoveBy((0, -self.ud), 0))
                 self.walls = self.walls.replace('up', '')
+                self.ud = 0
             if 'down' in self.walls:
                 self.do(MoveBy((0, self.dd), 0))
                 self.walls = self.walls.replace('down', '')
-        elif self.collision == 'v':
+                self.dd = 0
+        elif self.collision != 'h':
             if 'left' in self.walls:
                 self.do(MoveBy((self.ld, 0), 0))
                 self.walls = self.walls.replace('left', '')
+                self.ld = 0
             if 'right' in self.walls:
                 self.do(MoveBy((-self.rd, 0), 0))
                 self.walls = self.walls.replace('right', '')
+                self.rd = 0
 
         if col == 'v':
             self.rect_img_cur = self.rect_img_v
