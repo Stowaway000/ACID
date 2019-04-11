@@ -16,10 +16,10 @@ class Mover(cocos.actions.Move):
         last = self.target.rect()
         #last.width = 29
         #last.height = 29
-        rad = abs(last.width - last.height) // 2 + 2
+        rad = abs(last.width - last.height) // 2 + 1
         #radius = 8
         
-        for radius in range(1, rad+1):
+        for radius in range(2, rad+1):
             new = last.copy()
             new.y += radius
             #new.x += radius
@@ -111,10 +111,13 @@ class Skin(cocos.sprite.Sprite):
         
         self.position = 100, 80
         self.velocity = (0, 0)
-        self.rect_img = cocos.sprite.Sprite('res/img/coll_b.png')
-        self.rect_img_a = cocos.sprite.Sprite('res/img/coll.png')
+        
+        self.rect_img_h = cocos.sprite.Sprite('res/img/coll_h.png')
+        self.rect_img_v = cocos.sprite.Sprite('res/img/coll_v.png')
         self.rect_img_d = cocos.sprite.Sprite('res/img/coll_d.png')
+        self.rect_img_cur = self.rect_img_h
         self.collision = 'h'
+        
         self.walls = ''
         self.ud = 0
         self.ld = 0
@@ -125,28 +128,30 @@ class Skin(cocos.sprite.Sprite):
 
     def rect(self):
         x, y = self.position
-        x -= self.rect_img.image_anchor_x
-        y -= self.rect_img.image_anchor_y
-        return cocos.rect.Rect(x, y, self.rect_img.width, self.rect_img.height)
+        x -= self.rect_img_cur.image_anchor_x
+        y -= self.rect_img_cur.image_anchor_y
+        return cocos.rect.Rect(x, y, self.rect_img_cur.width, self.rect_img_cur.height)
 
-    def switch_coll(self):
-        self.rect_img, self.rect_img_a = self.rect_img_a, self.rect_img
-        if self.collision == 'h':
-            self.collision = 'v'
+    def switch_coll(self, col):
+        self.collision = col
+        if col == 'v':
+            self.rect_img_cur = self.rect_img_v
             if 'up' in self.walls:
                 self.do(MoveBy((0, -self.ud), 0))
                 self.walls = self.walls.replace('up', '')
             if 'down' in self.walls:
                 self.do(MoveBy((0, self.dd), 0))
                 self.walls = self.walls.replace('down', '')
-        else:
-            self.collision = 'h'
+        elif col == 'h':
+            self.rect_img_cur = self.rect_img_h
             if 'left' in self.walls:
                 self.do(MoveBy((self.ld, 0), 0))
                 self.walls = self.walls.replace('left', '')
             if 'right' in self.walls:
                 self.do(MoveBy((-self.rd, 0), 0))
                 self.walls = self.walls.replace('right', '')
+        else:
+            self.rect_img_cur = self.rect_img_d
 
 
 class Hero(cocos.layer.ScrollableLayer):
@@ -196,11 +201,19 @@ class Hero(cocos.layer.ScrollableLayer):
                 h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
                 vector[0] = int(mouse_x - h_x)
                 vector[1] = int(mouse_y - h_y)
-                if 70 < abs(angle) < 110 or 250 < angle or angle < -70:
-                    if self.skin.collision == 'h':
-                        self.skin.switch_coll()
-                elif self.skin.collision == 'v':
-                    self.skin.switch_coll()
+
+                new_col = ''
+                if 70 < angle < 110 or 250 < angle or angle < -70:
+                    if self.skin.collision != 'v':
+                        new_col = 'v'
+                elif -20 < angle < 20 or 170 < angle or angle < 200:
+                    if self.skin.collision != 'h':
+                        new_col = 'h'
+                elif self.skin.collision != 'd':
+                    new_col = 'd'
+
+                if new_col:
+                    self.skin.switch_coll(new_col)
 
             self.skin.rotation = angle
 
