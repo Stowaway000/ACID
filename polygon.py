@@ -14,48 +14,56 @@ vector = [0, 0]
 class Mover(cocos.actions.Move):
     def get_walls(self):
         last = self.target.rect()
-        radius = abs(last.width - last.height) // 3
+        #last.width = 29
+        #last.height = 29
+        rad = abs(last.width - last.height) // 2 + 2
+        #radius = 8
+        
+        for radius in range(1, rad+1):
+            new = last.copy()
+            new.y += radius
+            #new.x += radius
+            vel_x, vel_y = self.target.collide_map(last, new, 0, radius)
+            if vel_y < 0 and 'up' not in self.target.walls:
+                self.target.walls = self.target.walls + 'up'
+                self.target.ud = rad - radius + 2
+            elif vel_y > 0:
+                self.target.walls = self.target.walls.replace('up', '')
 
-        new = last.copy()
-        new.y += radius
-        new.x += radius
-        vel_x, vel_y = self.target.collide_map(last, new, radius, radius)
-        if vel_y < 0 and 'up' not in self.target.walls:
-            self.target.walls = self.target.walls + 'up'
-        elif vel_y > 0:
-            self.target.walls = self.target.walls.replace('up', '')
+            #new = last.copy()
+            new.x += radius
+            new.y -= radius
+            vel_x, vel_y = self.target.collide_map(last, new, radius, 0)
+            if vel_x < 0 and 'right' not in self.target.walls:
+                self.target.walls = self.target.walls + 'right'
+                self.target.rd = rad - radius + 2
+            elif vel_x > 0:
+                self.target.walls = self.target.walls.replace('right', '')
 
-        new = last.copy()
-        new.x += radius
-        new.y += radius
-        vel_x, vel_y = self.target.collide_map(last, new, radius, radius)
-        if vel_x < 0 and 'right' not in self.target.walls:
-            self.target.walls = self.target.walls + 'right'
-        elif vel_x > 0:
-            self.target.walls = self.target.walls.replace('right', '')
+            #new = last.copy()
+            new.y -= radius
+            new.x -= radius
+            vel_x, vel_y = self.target.collide_map(last, new, 0, -radius)
+            if vel_y > 0 and 'down' not in self.target.walls:
+                self.target.walls = self.target.walls + 'down'
+                self.target.dd = rad - radius + 2
+            elif vel_y < 0:
+                self.target.walls = self.target.walls.replace('down', '')
 
-        new = last.copy()
-        new.y -= radius
-        new.x += radius
-        vel_x, vel_y = self.target.collide_map(last, new, radius, -radius)
-        if vel_y > 0 and 'down' not in self.target.walls:
-            self.target.walls = self.target.walls + 'down'
-        elif vel_y < 0:
-            self.target.walls = self.target.walls.replace('down', '')
-
-        new = last.copy()
-        new.x -= radius
-        new.y += radius
-        vel_x, vel_y = self.target.collide_map(last, new, -radius, radius)
-        if vel_x > 0 and 'left' not in self.target.walls:
-            self.target.walls = self.target.walls + 'left'
-        elif vel_x < 0:
-            self.target.walls = self.target.walls.replace('left', '')
+            #new = last.copy()
+            new.x -= radius
+            new.y += radius
+            vel_x, vel_y = self.target.collide_map(last, new, -radius, 0)
+            if vel_x > 0 and 'left' not in self.target.walls:
+                self.target.walls = self.target.walls + 'left'
+                self.target.ld = rad - radius + 2
+            elif vel_x < 0:
+                self.target.walls = self.target.walls.replace('left', '')
 
     def step(self, dt):
         keyboard = self.target.keyboard
-        vel_x = (keyboard[key.D] - keyboard[key.A]) * 75
-        vel_y = (keyboard[key.W] - keyboard[key.S]) * 75
+        vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
+        vel_y = (keyboard[key.W] - keyboard[key.S]) * 50
 
         if (self.target.velocity[0] or self.target.velocity[1]) and not(type(self.target.image) is pyglet.image.Animation):
             self.target.image = self.target.walk
@@ -108,6 +116,10 @@ class Skin(cocos.sprite.Sprite):
         self.rect_img_d = cocos.sprite.Sprite('res/img/coll_d.png')
         self.collision = 'h'
         self.walls = ''
+        self.ud = 0
+        self.ld = 0
+        self.rd = 0
+        self.dd = 0
 
         self.do(Mover())
 
@@ -122,18 +134,18 @@ class Skin(cocos.sprite.Sprite):
         if self.collision == 'h':
             self.collision = 'v'
             if 'up' in self.walls:
-                self.do(MoveBy((0, -8), 0))
+                self.do(MoveBy((0, -self.ud), 0))
                 self.walls = self.walls.replace('up', '')
             if 'down' in self.walls:
-                self.do(MoveBy((0, 8), 0))
+                self.do(MoveBy((0, self.dd), 0))
                 self.walls = self.walls.replace('down', '')
         else:
             self.collision = 'h'
             if 'left' in self.walls:
-                self.do(MoveBy((8, 0), 0))
+                self.do(MoveBy((self.ld, 0), 0))
                 self.walls = self.walls.replace('left', '')
             if 'right' in self.walls:
-                self.do(MoveBy((-8, 0), 0))
+                self.do(MoveBy((-self.rd, 0), 0))
                 self.walls = self.walls.replace('right', '')
 
 
@@ -176,8 +188,8 @@ class Hero(cocos.layer.ScrollableLayer):
 
         angle = -angle + 90
 
-        if ('up' not in self.skin.walls or 'down' not in self.skin.walls) and\
-           ('left' not in self.skin.walls or 'right' not in self.skin.walls):
+        if ('up' not in self.skin.walls or 'down' not in self.skin.walls or self.skin.collision != 'h') and\
+           ('left' not in self.skin.walls or 'right' not in self.skin.walls or self.skin.collision != 'v'):
             if self.skin.rotation != angle:
                 h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
                 vector[0] = int(mouse_x - h_x)
