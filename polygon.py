@@ -12,49 +12,6 @@ mouse_y = 10
 vector = [0, 0]
 
 class Mover(cocos.actions.Move):
-    def get_walls(self):
-        last = self.target.rect()
-        rad = abs(last.width - last.height) // 2 + 3
-        w = last.width//2
-        h = last.height//2
-        
-        for radius in range(2, rad):
-            new = last.copy()
-            new.y += radius + h
-            vel_x, vel_y = self.target.collide_map(last, new, 0, radius + h)
-            if vel_y < 0 and 'up' not in self.target.walls:
-                self.target.walls = self.target.walls + 'up'
-                self.target.ud = rad - radius
-            elif vel_y > 0:
-                self.target.walls = self.target.walls.replace('up', '')
-
-            new.x += radius + w
-            new.y -= radius + h
-            vel_x, vel_y = self.target.collide_map(last, new, radius + w, 0)
-            if vel_x < 0 and 'right' not in self.target.walls:
-                self.target.walls = self.target.walls + 'right'
-                self.target.rd = rad - radius
-            elif vel_x > 0:
-                self.target.walls = self.target.walls.replace('right', '')
-
-            new.y -= radius
-            new.x -= radius + w
-            vel_x, vel_y = self.target.collide_map(last, new, 0, -radius)
-            if vel_y > 0 and 'down' not in self.target.walls:
-                self.target.walls = self.target.walls + 'down'
-                self.target.dd = rad - radius
-            elif vel_y < 0:
-                self.target.walls = self.target.walls.replace('down', '')
-
-            new.x -= radius
-            new.y += radius
-            vel_x, vel_y = self.target.collide_map(last, new, -radius, 0)
-            if vel_x > 0 and 'left' not in self.target.walls:
-                self.target.walls = self.target.walls + 'left'
-                self.target.ld = rad - radius
-            elif vel_x < 0:
-                self.target.walls = self.target.walls.replace('left', '')
-
     def step(self, dt):
         keyboard = self.target.keyboard
         vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
@@ -86,8 +43,6 @@ class Mover(cocos.actions.Move):
             mouse_y += vector[1]
             director.window.set_mouse_position(mouse_x, mouse_y)
 
-            self.get_walls()
-
 
 class Skin(cocos.sprite.Sprite):
     def __init__(self, static, walk, kb):
@@ -107,17 +62,8 @@ class Skin(cocos.sprite.Sprite):
         self.position = 100, 80
         self.velocity = (0, 0)
         
-        self.rect_img_h = cocos.sprite.Sprite('res/img/coll_h.png')
-        self.rect_img_v = cocos.sprite.Sprite('res/img/coll_v.png')
-        self.rect_img_d = cocos.sprite.Sprite('res/img/coll_d.png')
-        self.rect_img_cur = self.rect_img_h
-        self.collision = 'h'
-        
-        self.walls = ''
-        self.ud = 0
-        self.ld = 0
-        self.rd = 0
-        self.dd = 0
+        self.rect_img = cocos.sprite.Sprite('res/img/coll_h.png')
+        self.rect_img_cur = self.rect_img
 
         self.do(Mover())
 
@@ -126,35 +72,6 @@ class Skin(cocos.sprite.Sprite):
         x -= self.rect_img_cur.image_anchor_x
         y -= self.rect_img_cur.image_anchor_y
         return cocos.rect.Rect(x, y, self.rect_img_cur.width, self.rect_img_cur.height)
-
-    def switch_coll(self, col):
-        if self.collision != 'v':
-            if 'up' in self.walls:
-                self.do(MoveBy((0, -self.ud), 0))
-                self.walls = self.walls.replace('up', '')
-                self.ud = 0
-            if 'down' in self.walls:
-                self.do(MoveBy((0, self.dd), 0))
-                self.walls = self.walls.replace('down', '')
-                self.dd = 0
-        elif self.collision != 'h':
-            if 'left' in self.walls:
-                self.do(MoveBy((self.ld, 0), 0))
-                self.walls = self.walls.replace('left', '')
-                self.ld = 0
-            if 'right' in self.walls:
-                self.do(MoveBy((-self.rd, 0), 0))
-                self.walls = self.walls.replace('right', '')
-                self.rd = 0
-
-        if col == 'v':
-            self.rect_img_cur = self.rect_img_v
-        elif col == 'h':
-            self.rect_img_cur = self.rect_img_h
-        else:
-            self.rect_img_cur = self.rect_img_d
-        
-        self.collision = col
 
 
 class Hero(cocos.layer.ScrollableLayer):
@@ -198,27 +115,7 @@ class Hero(cocos.layer.ScrollableLayer):
 
         angle = -angle + 90
 
-        if ('up' not in self.skin.walls or 'down' not in self.skin.walls or self.skin.collision != 'h') and\
-           ('left' not in self.skin.walls or 'right' not in self.skin.walls or self.skin.collision != 'v'):
-            if self.skin.rotation != angle:
-                h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
-                vector[0] = int(mouse_x - h_x)
-                vector[1] = int(mouse_y - h_y)
-
-                new_col = ''
-                if 70 < angle < 110 or 250 < angle or angle < -70:
-                    if self.skin.collision != 'v':
-                        new_col = 'v'
-                elif -20 < angle < 20 or 170 < angle or angle < 200:
-                    if self.skin.collision != 'h':
-                        new_col = 'h'
-                elif self.skin.collision != 'd':
-                    new_col = 'd'
-
-                if new_col:
-                    self.skin.switch_coll(new_col)
-
-            self.skin.rotation = angle
+        self.skin.rotation = angle
 
     def set_collision(self, layer):
         mapcollider = mapcolliders.TmxObjectMapCollider()
@@ -245,22 +142,3 @@ class MapLayer(cocos.layer.ScrollableLayer):
         self.layer_objects = level["obj"]
         self.layer_collision = level["collision"]
         self.layer_collision.objects += self.layer_objects.objects
-
-
-if __name__ == "__main__":
-    director.init(width=1280, height=720, caption="SuperGame")
-    director.window.pop_handlers()
-
-    keyboard = key.KeyStateHandler()
-    director.window.push_handlers(keyboard)
-    
-    cur_i = pyglet.image.load("res/img/cursor.png")
-    cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
-    director.window.set_mouse_cursor(cursor)
-
-    hero_layer = Hero()
-
-    scroller = load_map("map_test", hero_layer)
-    scene = cocos.scene.Scene(scroller)
-    
-    director.run(scene)
