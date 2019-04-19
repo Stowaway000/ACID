@@ -1,9 +1,18 @@
 import cocos
-import cocos.collision_model as cm
-import cocos.euclid as eu
-from cocos.actions import MoveTo, Repeat
+from cocos.director import director
+from cocos.sprite import Sprite
+import pyglet
+from pyglet.image import load, ImageGrid, Animation
+from pyglet.window import key, mouse
+
+class item():
+    def __init__(sprite_name, weight, cost):
+        self.sprite_name = sprite_name 
+        self.weight = weight
+        self.cost = cost
 
 class armor(item):
+    super.__init__()
     # 0 <= mac_ac <= 100
     # 0 <= def_cold <= 0.99
     # 0 <= def_firearm <= 0.99
