@@ -114,6 +114,14 @@ class Hero(cocos.layer.ScrollableLayer):
             angle = 180
 
         angle = -angle + 90
+	
+        if self.skin.rotation != angle:
+
+            h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+                
+            vector[0] = int(mouse_x - h_x)
+                
+            vector[1] = int(mouse_y - h_y)
 
         self.skin.rotation = angle
 
