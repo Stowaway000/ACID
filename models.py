@@ -6,7 +6,7 @@ from pyglet.image import load, ImageGrid, Animation
 from pyglet.window import key, mouse
 
 class item():
-    def __init__(sprite_name, weight, cost):
+    def __init__(self, sprite_name, weight, cost):
         self.sprite_name = sprite_name 
         self.weight = weight
         self.cost = cost
@@ -14,8 +14,8 @@ class item():
 class armor(item):
     # 0 <= mac_ac <= 100\
     # 0 <= def_firearm <= 0.99
-    def __init__(self, max_ac = 0, ac = 0, def_firearm = 0):
-        super().__init__()
+    def __init__(self, max_ac = 0, ac = 0, def_firearm = 0, sprite_name, weight, cost):
+        super().__init__(sprite_name, weight, cost)
         self.max_ac = max_ac # max_ac - максимальная прочность брони
         self.ac = ac # ac - текущая прочность брони
         self.def_firearm = def_firearm # def_firearm - защита от огнестрельного оружия
@@ -40,8 +40,8 @@ class armor(item):
             
 class weapon(item):
     # stats = [damage, breachness, max_cartridge]
-    def __init__(self, weapon_type, stats):
-        super().__init__()
+    def __init__(self, stats, sprite_name, anim_name, weight, cost):
+        super().__init__(sprite_name, weight, cost)
         self.damage = stats[0] # damage - урон
         self.weapon_type = weapon_type
         self.breachness = stats[1] # breachness - пробивная способность
