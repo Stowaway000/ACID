@@ -12,11 +12,11 @@ class item():
         self.cost = cost
 
 class armor(item):
-    super.__init__()
     # 0 <= mac_ac <= 100
     # 0 <= def_cold <= 0.99
     # 0 <= def_firearm <= 0.99
     def __init__(self, max_ac = 0, ac = 0, def_cold = 0, def_firearm = 0):
+        super().__init__()
         self.max_ac = max_ac # max_ac - максимальная прочность брони
         self.ac = ac # ac - текущая прочность брони
         self.def_cold = def_cold # def_cold - защита от холодного оружия
@@ -49,12 +49,12 @@ class armor(item):
             #mainHero.disEquip
             
 class weapon(item):
-    
     # if weapon_type = "cold"
     # stats = [damage, sector, range]
     # if weapon_type = "firearm"
     # stats = [damage, breachness, max_cartridge]
     def __init__(self, weapon_type, stats):
+        super().__init__()
         # weapon_type - тип оружия; принимает значения "cold" или "firearm"
         self.damage = stats[0] # damage - урон
         self.weapon_type = weapon_type
