@@ -8,7 +8,7 @@ from pyglet.window import key, mouse
 
 class item(cocos.sprite.Sprite):
     def __init__(self, name, weight, cost):
-        self.sprite_name = name + ".png"
+        self.sprite_name = "res/img/weapon/" + name + ".png"
         self.weight = weight
         self.cost = cost
 
@@ -47,16 +47,21 @@ class armor_handler():
 class weapon(item):
     # stats = [damage, breachness, max_cartridge]
     # anim_name - sprite анимации
-    def __init__(self, weapon_name, stats, weight, cost, height_anim, width_anim, count_anim):
-        super().__init__(weapon_name, weight, cost)
-        self.anim_name = weapon_name + "_anim.png"
+    def __init__(self, weapon_name):
+        file = open("res/stats/weapon/" + weapon_name + ".txt")
+        stats = list(map(float, file.readline().split()))
+        print(stats)
+        file.close()
+        
+        super().__init__(weapon_name, stats[3], stats[4])
+        self.anim_name = "res/img/weapon/" + weapon_name + "_anim.png"
         self.damage = stats[0]  # damage - урон
         self.breachness = stats[1]  # breachness - пробивная способность
         self.max_cartridge = stats[2]  # max_cartridge - размер обоймы
 
-        self.count_anim = count_anim
-        self.width_anim = width_anim
-        self.height_anim = height_anim
+        self.count_anim = int(stats[7])
+        self.width_anim = int(stats[6])
+        self.height_anim = int(stats[5])
 
         self.weapon_sprite = Sprite(self.sprite_name, scale=8)
         self.weapon_sprite.position = 400, 400
