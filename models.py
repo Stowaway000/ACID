@@ -50,7 +50,6 @@ class weapon(item):
     def __init__(self, weapon_name):
         file = open("res/stats/weapon/" + weapon_name + ".txt")
         stats = list(map(float, file.readline().split()))
-        print(stats)
         file.close()
         
         super().__init__(weapon_name, stats[3], stats[4])
