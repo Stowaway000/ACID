@@ -14,13 +14,14 @@ class item():
 class armor(item):
     # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
-    def __init__(self, max_ac=0, def_firearm=0):
-        super().__init__()
+    def __init__(self, max_ac=0, def_firearm=0, sprite_name, weight, cost):
+        super().__init__(sprite_name, weight, cost)
         self.max_ac = max_ac # max_ac - максимальная прочность брони
         self.def_firearm = def_firearm # def_firearm - защита от огнестрельного оружия        
 
 class armor_handler():
-    def __init__():
+    def __init__(ac, armor_name):
+        self.armor_nae = armor_name
         self.ac = ac # ac - текущая прочность брони
     
     def get_damage(self, dmg=1, k=1):
