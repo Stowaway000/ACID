@@ -55,3 +55,30 @@ class weapon(item):
         self.weapon_sprite = Sprite(self.sprite_name, scale=8)
         self.weapon_sprite.position = 400, 400
         self.weapon_sprite.velocity = (0, 0)
+
+class weapon_handler(cocos.layer.Layer):
+    is_event_handler = True
+    def __init__(self, weapon_name):
+        super().__init__()
+        self.weapon_name = weapon_name
+        self.cartridge = 0
+        self.anim_name = items[weapon_name].anim_name
+        self.sprite_name = items[weapon_name].sprite_name
+        
+        self.shoot_img = load(self.anim_name)
+        self.shoot_grid = ImageGrid(self.shoot_img, 1,
+                                    items[weapon_name].count_anim,
+                                    item_height=items[weapon_name].height_anim,
+                                    item_width=items[weapon_name].width_anim)
+        self.weapon_sprite = items[weapon_name].weapon_sprite
+        self.add(self.weapon_sprite)
+        
+    def on_mouse_press(self, x, y, button, modifiers):
+        if button & mouse.LEFT:
+            self.weapon_sprite.image = Animation.from_image_sequence(self.shoot_grid[:], 0.05, loop=False)    
+    
+    def recharge(self, bulletType):
+        # bulletType - патроны определенного типа в инвентаре
+        # .count - кол-во патронов данного типа в нвентаре
+        bulletType.count -= self.max_cartridge - self.cartridge
+        self.cartridge = self.max_cartridge
