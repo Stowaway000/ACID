@@ -16,7 +16,7 @@ class item(cocos.sprite.Sprite):
 class armor(item):
     # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
-    def __init__(self, armor_name): # , max_ac, def_firearm, sprite_name, weight, cost):
+    def __init__(self, armor_name):
         # формат файла
         # max_ac def_firearm weight cost
         file = open("res/stats/armor/" + armor_name + ".txt")
