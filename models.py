@@ -58,6 +58,13 @@ class weapon(item):
         
         self.weapon_sprite = Sprite(self.sprite_name, scale=8)
         self.weapon_sprite.position = 400, 400
+        
+        shoot_img = load(self.anim_name)
+        shoot_grid = ImageGrid(shoot_img, 1,
+                                   self.count_anim,
+                                   item_height=self.height_anim,
+                                   item_width=self.width_anim)
+        self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], 0.05, loop=False)        
 
 
 class weapon_handler(cocos.layer.Layer):
@@ -69,11 +76,7 @@ class weapon_handler(cocos.layer.Layer):
         self.anim_name = items[weapon_name].anim_name
         self.sprite_name = items[weapon_name].sprite_name
         
-        self.shoot_img = load(self.anim_name)
-        self.shoot_grid = ImageGrid(self.shoot_img, 1,
-                                    items[weapon_name].count_anim,
-                                    item_height=items[weapon_name].height_anim,
-                                    item_width=items[weapon_name].width_anim)
+        self.weapon_anim = items[weapon_name].weapon_anim
         self.weapon_sprite = items[weapon_name].weapon_sprite
         self.add(self.weapon_sprite)
         
