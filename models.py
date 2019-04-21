@@ -40,16 +40,18 @@ class armor_handler():
             
 class weapon(item):
     # stats = [damage, breachness, max_cartridge]
-    def __init__(self, stats, sprite_name, anim_name, weight, cost):
+    # anim_name - sprite анимации
+    def __init__(self, stats, sprite_name, anim_name, weight, cost, height_anim, width_anim, count_anim):
         super().__init__(sprite_name, weight, cost)
+        self.anim_name = anim_name
         self.damage = stats[0] # damage - урон
-        self.weapon_type = weapon_type
         self.breachness = stats[1] # breachness - пробивная способность
         self.max_cartridge = stats[2] # max_cartridge - размер обоймы
-        self.cartridge = stats[2]
-            
-    def recharge(self, bulletType):
-        # bulletType - патроны определенного типа в инвентаре
-        # .count - кол-во патронов данного типа в нвентаре
-        bulletType.count -= self.max_cartridge - self.cartridge
-        self.cartridge = self.max_cartridge
+        
+        self.count_anim = count_anim
+        self.width_anim = width_anim
+        self.height_anim = height_anim
+        
+        self.weapon_sprite = Sprite(self.sprite_name, scale=8)
+        self.weapon_sprite.position = 400, 400
+        self.weapon_sprite.velocity = (0, 0)
