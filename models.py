@@ -18,13 +18,14 @@ class armor(item):
     def __init__(self, max_ac, def_firearm, sprite_name, weight, cost):
         super().__init__(sprite_name, weight, cost)
         self.max_ac = max_ac # max_ac - максимальная прочность брони
-        self.def_firearm = def_firearm # def_firearm - защита от огнестрельного оружия        
+        self.def_firearm = def_firearm # def_firearm - защита от огнестрельного оружия
+        self.ac = max_ac  # ac - текущая прочность брони
 
 
 class armor_handler():
     def __init__(ac, armor_name):
         self.armor_name = armor_name
-        self.ac = ac # ac - текущая прочность брони
+        self.ac = items[armor_name].ac
     
     def get_damage(self, dmg=1, k=1):
         # dmg - кол-во урона
