@@ -12,21 +12,24 @@ class item():
         self.cost = cost
 
 class armor(item):
-    # 0 <= mac_ac <= 100\
+    # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
-    def __init__(self, max_ac = 0, ac = 0, def_firearm = 0, sprite_name, weight, cost):
-        super().__init__(sprite_name, weight, cost)
+    def __init__(self, max_ac=0, def_firearm=0):
+        super().__init__()
         self.max_ac = max_ac # max_ac - максимальная прочность брони
+        self.def_firearm = def_firearm # def_firearm - защита от огнестрельного оружия        
+
+class armor_handler():
+    def __init__():
         self.ac = ac # ac - текущая прочность брони
-        self.def_firearm = def_firearm # def_firearm - защита от огнестрельного оружия
     
-    def get_damage(self, dmg, k = 1):
+    def get_damage(self, dmg=1, k=1):
         # dmg - кол-во урона
         # k - коэффициент пробития
         # mainHero.hp -= dmg * k * (1 - self.def_firearm)
         mainHero.hp -= dmg
     
-    def statusAC(self, dmg, k = 1):
+    def statusAC(self, dmg=1, k=1):
         # dmg - кол-во урона
         # k - коэффициент пробития
         # self.ac -= dmg * k / self.max_ac
