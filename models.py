@@ -57,7 +57,6 @@ class weapon(item):
         
         self.weapon_sprite = Sprite(self.sprite_name, scale=8)
         self.weapon_sprite.position = 400, 400
-        self.weapon_sprite.velocity = (0, 0)
 
 
 class weapon_handler(cocos.layer.Layer):
