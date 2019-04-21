@@ -29,8 +29,16 @@ class inventory():
             self.armors.append(armor_handler(item))
 
     def get(self, item):
-        return self.items[i]
+        return items[item]
 
+    def count(item):
+        if item in items:
+            return items[item]
+        elif item in weapons:
+            return weapons[item]
+        elif item in armors:
+            return armors[item]
+    
     def get_armor(i):
         return self.armors[i]
 
@@ -54,6 +62,8 @@ class character(cocos.layer.ScrollableLayer):
         self.armor = -1
 
         self.skin = Skin(name)
+
+        self.stand = 'normal'
 
         self.fraction = fraction
 
@@ -80,7 +90,10 @@ class character(cocos.layer.ScrollableLayer):
             self.inventory.get_weapon(self.weapon_right).shoot()
         elif self.weapon_left != -1:
             self.inventory.get_weapon(self.weapon_left).shoot()
-            
+
+    def get_bullets(ammo, ammo_type):
+        return min(ammo, self.inventory.count(ammo_type))
+    
     def reload(self, hand):
         if hand == 'r' and self.weapon_right != -1:
             ammo, ammo_type = self.inventory.get_weapon(self.weapon_right)\
@@ -104,6 +117,12 @@ class character(cocos.layer.ScrollableLayer):
     def store_item(self):
         pass
 
+    def seat():
+        if self.stand == 'normal':
+            self.stand = 'seat'
+        else:
+            self.stand = 'normal'
+
 
 class NPC(character):
     def __init__(self, name, fraction):
@@ -119,3 +138,20 @@ class NPC(character):
     def think(self):
         pass
     
+
+class hero(character):
+    def __init__(self, name, fraction, seacil, stats):
+        super().__init__(name, fraction, seacil)
+
+        '''
+        TODO
+        '''
+        self.expirience = 0
+        self.level = 0
+        self.next_level = 1000
+    
+    def die():
+        pass
+
+    def get_level():
+        pass
