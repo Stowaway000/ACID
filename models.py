@@ -24,19 +24,15 @@ class armor(item):
         # dmg - кол-во урона
         # k - коэффициент пробития
         # mainHero.hp -= dmg * k * (1 - self.def_firearm)
-        mainHero.hp -= 23
-    
-    def destroyArmor(self):
-        return self.ac <= 0
+        mainHero.hp -= dmg
     
     def statusAC(self, dmg, k = 1):
         # dmg - кол-во урона
         # k - коэффициент пробития
         # self.ac -= dmg * k / self.max_ac
         self.ac -= 1
-        if self.destroyArmor():
+        if self.ac <= 0:
             self.def_firearm = 0
-            #mainHero.disEquip
             
 class weapon(item):
     # stats = [damage, breachness, max_cartridge]
