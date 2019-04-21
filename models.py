@@ -8,7 +8,7 @@ from pyglet.window import key, mouse
 
 class item(cocos.sprite.Sprite):
     def __init__(self, name, weight, cost):
-        self.sprite_name = "res/img/items/" + name + ".png"
+        self.sprite_name = Sprite("res/img/items/" + name + ".png", scale=8)
         self.weight = weight
         self.cost = cost
 
@@ -23,6 +23,7 @@ class armor(item):
         stats = list(map(float, file.readline().split()))
         file.close()
         
+        self.armor_name = armor_name
         super().__init__(armor_name, stats[2], stats[3])
         self.max_ac = stats[0]  # max_ac - максимальная прочность брони
         self.def_firearm = stats[1]  # def_firearm - защита от огнестрельного оружия
@@ -59,6 +60,7 @@ class weapon(item):
         file.close()
         
         super().__init__(weapon_name, stats[3], stats[4])
+        self.weapon_name = weapon_name
         self.anim_name = "res/img/items/" + weapon_name + "_anim.png"
         self.damage = stats[0]  # damage - урон
         self.breachness = stats[1]  # breachness - пробивная способность
@@ -68,9 +70,8 @@ class weapon(item):
         self.width_anim = int(stats[6])
         self.height_anim = int(stats[5])
 
-        self.weapon_sprite = Sprite(self.sprite_name, scale=8)
-        self.weapon_sprite.position = 400, 400
-        test_shoot.add(self.weapon_sprite)
+        self.sprite_name.position = 400, 400
+        test_shoot.add(self.sprite_name)
         
         shoot_img = load(self.anim_name)
         shoot_grid = ImageGrid(shoot_img, 1,
@@ -91,12 +92,12 @@ class weapon_handler(cocos.layer.Layer):
         self.sprite_name = items[weapon_name].sprite_name
 
         self.weapon_anim = items[weapon_name].weapon_anim
-        self.weapon_sprite = items[weapon_name].weapon_sprite
-        self.add(self.weapon_sprite)
+        self.sprite_name = items[weapon_name].sprite_name
+        self.add(self.sprite_name)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button & mouse.LEFT:
-            self.weapon_sprite.image = self.weapon_anim
+            self.sprite_name.image = self.weapon_anim
 
     def recharge(self, bulletType):
         # bulletType - патроны определенного типа в инвентаре
