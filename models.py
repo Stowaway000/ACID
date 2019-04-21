@@ -103,3 +103,19 @@ class character(cocos.layer.ScrollableLayer):
 
     def store_item(self):
         pass
+
+
+class NPC(character):
+    def __init__(self, name, fraction):
+        info = open('stats/chars/'+name+'txt', 'r')
+        '''
+        TODO
+        '''
+        info.close()
+        super().__init__(name, fraction, seacil)
+
+        self.state = 'friendly'
+
+    def think(self):
+        pass
+    
