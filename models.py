@@ -11,6 +11,7 @@ class item():
         self.weight = weight
         self.cost = cost
 
+
 class armor(item):
     # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
@@ -19,9 +20,10 @@ class armor(item):
         self.max_ac = max_ac # max_ac - максимальная прочность брони
         self.def_firearm = def_firearm # def_firearm - защита от огнестрельного оружия        
 
+
 class armor_handler():
     def __init__(ac, armor_name):
-        self.armor_nae = armor_name
+        self.armor_name = armor_name
         self.ac = ac # ac - текущая прочность брони
     
     def get_damage(self, dmg=1, k=1):
@@ -37,6 +39,7 @@ class armor_handler():
         self.ac -= 1
         if self.ac <= 0:
             self.def_firearm = 0
+            
             
 class weapon(item):
     # stats = [damage, breachness, max_cartridge]
@@ -55,6 +58,7 @@ class weapon(item):
         self.weapon_sprite = Sprite(self.sprite_name, scale=8)
         self.weapon_sprite.position = 400, 400
         self.weapon_sprite.velocity = (0, 0)
+
 
 class weapon_handler(cocos.layer.Layer):
     is_event_handler = True
