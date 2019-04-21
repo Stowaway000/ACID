@@ -8,7 +8,7 @@ from pyglet.window import key, mouse
 
 class item(cocos.sprite.Sprite):
     def __init__(self, name, weight, cost):
-        self.sprite_name = "res/img/weapon/" + name + ".png"
+        self.sprite_name = "res/img/items/" + name + ".png"
         self.weight = weight
         self.cost = cost
 
@@ -16,10 +16,16 @@ class item(cocos.sprite.Sprite):
 class armor(item):
     # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
-    def __init__(self, armor_name, max_ac, def_firearm, sprite_name, weight, cost):
-        super().__init__(armor_name, weight, cost)
-        self.max_ac = max_ac  # max_ac - максимальная прочность брони
-        self.def_firearm = def_firearm  # def_firearm - защита от огнестрельного оружия
+    def __init__(self, armor_name): # , max_ac, def_firearm, sprite_name, weight, cost):
+        # формат файла
+        # max_ac def_firearm weight cost
+        file = open("res/stats/armor/" + armor_name + ".txt")
+        stats = list(map(float, file.readline().split()))
+        file.close()
+        
+        super().__init__(armor_name, stats[2], stats[3])
+        self.max_ac = stats[0]  # max_ac - максимальная прочность брони
+        self.def_firearm = stats[1]  # def_firearm - защита от огнестрельного оружия
         self.ac = max_ac # ac - текущая прочность брони
 
 
@@ -53,7 +59,7 @@ class weapon(item):
         file.close()
         
         super().__init__(weapon_name, stats[3], stats[4])
-        self.anim_name = "res/img/weapon/" + weapon_name + "_anim.png"
+        self.anim_name = "res/img/items/" + weapon_name + "_anim.png"
         self.damage = stats[0]  # damage - урон
         self.breachness = stats[1]  # breachness - пробивная способность
         self.max_cartridge = stats[2]  # max_cartridge - размер обоймы
