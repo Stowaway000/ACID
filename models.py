@@ -13,32 +13,76 @@ def get_weight(item):
 class inventory():
     def __init__(self):
         self.weight = 0
-        self.items = []
+        self.items = {}
         self.weapons = []
         self.armors = []
 
-    def add(self, item):
+    def add(self, item, count):
         if item in items:
             if item in self.items:
-                self.items[item] += 1
+                self.items[item] += count
             else:
-                self.items[item] = 1
+                self.items[item] = count
         elif item in weapons:
-            self.weapons.append(weapon_handler(item))
+            for i in range(count):
+                self.weapons.append(weapon_handler(item))
         elif item in armors:
-            self.armors.append(armor_handler(item))
+            for i in range(count):
+                self.armors.append(armor_handler(item))
 
     def get(self, item):
-        return items[item]
-
-    def count(item):
-        if item in items:
+        if item in self.items:
             return items[item]
+        return None
+
+    def take(self, item, count):
+        d = 0
+        n = self.count(item)
+        if n < count:
+            d = count - self.count(item)
+            count = n
+        
+        if item in items:
+            self.items[item] -= n
+        
         elif item in weapons:
-            return weapons[item]
+            get = 0
+            i = 0
+            while get < count:
+                if self.weapons[i].name == item:
+                    self.weapons.pop(i)
+                    i -= 1
+                    get += 1
+                i += 1
+        
         elif item in armors:
-            return armors[item]
+            get = 0
+            i = 0
+            while get < count:
+                if self.armors[i].name == item:
+                    self.armors.pop(i)
+                    i -= 1
+                    get += 1
+                i += 1
+        
+        return d
     
+    def count(self, item):
+        if item in items:
+            return self.items[item]
+        elif item in weapons:
+            n = 0
+            for i in self.weapons:
+                if i.name == item:
+                    n += 1
+            return n
+        elif item in armors:
+            n = 0
+            for i in self.armors:
+                if i.name == item:
+                    n += 1
+            return n
+
     def get_armor(i):
         return self.armors[i]
 
@@ -66,6 +110,8 @@ class character(cocos.layer.ScrollableLayer):
         self.stand = 'normal'
 
         self.fraction = fraction
+
+        self.overweight = False
 
     def take_damage(self, dmg, k):
         if self.armor != -1:
@@ -107,9 +153,9 @@ class character(cocos.layer.ScrollableLayer):
             self.inventory.get_weapon(self.weapon_left).recharge(ammo)
 
     def take_item(self, item, count):
-        for i in range(count):
-            if self.inventory.weight + get_weight(item) < 4*self.SEACIL[0]:
-                self.inventory.add(item)
+        if self.inventory.weight + get_weight(item)*count > 4*self.SEACIL[0]:
+            self.overweight = True
+        self.inventory.add(item, count)
 
     def drop_item(self):
         pass
