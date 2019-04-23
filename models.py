@@ -36,10 +36,8 @@ class inventory():
         return None
 
     def take(self, item, count):
-        d = 0
         n = self.count(item)
         if n < count:
-            d = count - self.count(item)
             count = n
         
         if item in items:
@@ -65,7 +63,7 @@ class inventory():
                     get += 1
                 i += 1
         
-        return d
+        return count
     
     def count(self, item):
         if item in items:
@@ -83,10 +81,10 @@ class inventory():
                     n += 1
             return n
 
-    def get_armor(i):
+    def get_armor(self, i):
         return self.armors[i]
 
-    def get_weapon(i):
+    def get_weapon(self, i):
         return self.weapons[i]
 
 
@@ -127,9 +125,11 @@ class character(cocos.layer.ScrollableLayer):
         if self.weapon_left == -1 and self.weapon_right == -1:
             self.weapon_left == self.weapon_l_equip
             self.weapon_right == self.weapon_r_equip
+            self.skin.show()
         else:
             self.weapon_left == -1
             self.weapon_right == -1
+            self.skin.hide()
 
     def attack(self, hand):
         if hand == 'r' and self.weapon_right != -1:
@@ -144,12 +144,12 @@ class character(cocos.layer.ScrollableLayer):
         if hand == 'r' and self.weapon_right != -1:
             ammo, ammo_type = self.inventory.get_weapon(self.weapon_right)\
                               .get_max_cartridge()
-            ammo = self.get_bullets(ammo, ammo_type)
+            ammo = self.inventory.take(ammo_type, ammo)
             self.inventory.get_weapon(self.weapon_right).recharge(ammo)
         elif self.weapon_left != -1:
             ammo, ammo_type = self.inventory.get_weapon(self.weapon_left)\
                               .get_max_cartridge()
-            ammo = self.get_bullets(ammo, ammo_type)
+            ammo = self.inventory.take(ammo_type, ammo)
             self.inventory.get_weapon(self.weapon_left).recharge(ammo)
 
     def take_item(self, item, count):
@@ -163,7 +163,7 @@ class character(cocos.layer.ScrollableLayer):
     def store_item(self):
         pass
 
-    def seat():
+    def seat(self):
         if self.stand == 'normal':
             self.stand = 'seat'
         else:
