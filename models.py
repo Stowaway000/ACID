@@ -88,7 +88,6 @@ class weapon_handler(cocos.sprite.Sprite):
 
     def __init__(self, weapon_name):
         super().__init__()
-        self.weapon_name = weapon_name
         self.cartridge = 0
         self.anim_name = weapons[weapon_name].anim_name
         self.item_sprite = weapons[weapon_name].item_sprite
