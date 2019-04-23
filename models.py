@@ -37,12 +37,6 @@ class armor_handler(cocos.sprite.Sprite):
         self.ac = armors[armor_name].ac
         self.def_firearm = armors[armor_name].def_firearm
 
-    def get_damage(self, dmg=1, k=1):
-        # dmg - кол-во урона
-        # k - коэффициент пробития
-        # mainHero.hp -= dmg * k * (1 - self.def_firearm)
-        mainHero.hp -= dmg
-
     def statusAC(self, dmg=1, k=1):
         # dmg - кол-во урона
         # k - коэффициент пробития
@@ -87,8 +81,6 @@ class weapon_handler(cocos.sprite.Sprite):
     def __init__(self, weapon_name):
         super().__init__()
         self.cartridge = 0
-        self.item_sprite = weapons[weapon_name].item_sprite
-
         self.weapon_anim = weapons[weapon_name].weapon_anim
         self.item_sprite = weapons[weapon_name].item_sprite
         self.add(self.item_sprite)
