@@ -63,7 +63,7 @@ class weapon(item):
         
         super().__init__(weapon_name, stats[3], stats[4])
         self.weapon_name = weapon_name
-        self.anim_name = "res/img/items/" + weapon_name + "_anim.png"
+        anim_name = "res/img/items/" + weapon_name + "_anim.png"
         self.damage = stats[0]  # damage - урон
         self.breachness = stats[1]  # breachness - пробивная способность
         self.max_cartridge = stats[2]  # max_cartridge - размер обоймы
@@ -75,7 +75,7 @@ class weapon(item):
         self.item_sprite.position = 400, 400
         test_shoot.add(self.item_sprite)
         
-        shoot_img = load(self.anim_name)
+        shoot_img = load(anim_name)
         shoot_grid = ImageGrid(shoot_img, 1,
                                self.count_anim,
                                item_height=self.height_anim,
