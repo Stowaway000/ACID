@@ -1,6 +1,7 @@
 import cocos
 from cocos.director import director
 
+# Получить вес какого-то предмета
 def get_weight(item):
     if item in items:
         return items[item].weight
@@ -10,6 +11,7 @@ def get_weight(item):
         return armors[item].weight
 
 
+# Класс инвентаря
 class inventory():
     def __init__(self):
         self.weight = 0
@@ -17,6 +19,7 @@ class inventory():
         self.weapons = []
         self.armors = []
 
+    # Добавить count предметов типа item в инвентарь
     def add(self, item, count):
         if item in items:
             if item in self.items:
@@ -30,11 +33,13 @@ class inventory():
             for i in range(count):
                 self.armors.append(armor_handler(item))
 
+    # Получить экземпляр предмета по имени
     def get(self, item):
         if item in self.items:
             return items[item]
         return None
 
+    # Забрать count предметов из инвентаря
     def take(self, item, count):
         n = self.count(item)
         if n < count:
@@ -64,7 +69,8 @@ class inventory():
                 i += 1
         
         return count
-    
+
+    # Посчитать количество предметов типа item в инвентаре
     def count(self, item):
         if item in items:
             return self.items[item]
@@ -81,13 +87,16 @@ class inventory():
                     n += 1
             return n
 
+    # Получить экземпляр брони из инвентаря по номеру
     def get_armor(self, i):
         return self.armors[i]
 
+    # Получить экземпляр оружия из инвентаря по номеру
     def get_weapon(self, i):
         return self.weapons[i]
 
 
+# Класс персонажа
 class character(cocos.layer.ScrollableLayer):
     def __init__(self, name, fraction, seacil):
         self.photo = cocos.sprite.Sprite('res/img/portraits/' + name + '.png')
@@ -111,6 +120,7 @@ class character(cocos.layer.ScrollableLayer):
 
         self.overweight = False
 
+    # Получение урона
     def take_damage(self, dmg, k):
         if self.armor != -1:
             dmg -= self.inventory.get_armor(armor).statusAC(dmg, k)
@@ -118,9 +128,11 @@ class character(cocos.layer.ScrollableLayer):
         if dmg > 0:
             self.hp -= dmg
 
+    # Специальная способность
     def use_ability(self):
         pass
 
+    # Достать\спрятать оружие
     def switch_weapon(self):
         if self.weapon_left == -1 and self.weapon_right == -1:
             self.weapon_left == self.weapon_l_equip
@@ -131,15 +143,14 @@ class character(cocos.layer.ScrollableLayer):
             self.weapon_right == -1
             self.skin.hide()
 
+    # Атаковать оружием
     def attack(self, hand):
         if hand == 'r' and self.weapon_right != -1:
             self.inventory.get_weapon(self.weapon_right).shoot()
         elif self.weapon_left != -1:
             self.inventory.get_weapon(self.weapon_left).shoot()
 
-    def get_bullets(ammo, ammo_type):
-        return min(ammo, self.inventory.count(ammo_type))
-    
+    # Перезарядить оружие
     def reload(self, hand):
         if hand == 'r' and self.weapon_right != -1:
             ammo, ammo_type = self.inventory.get_weapon(self.weapon_right)\
@@ -152,17 +163,21 @@ class character(cocos.layer.ScrollableLayer):
             ammo = self.inventory.take(ammo_type, ammo)
             self.inventory.get_weapon(self.weapon_left).recharge(ammo)
 
+    # Положить вещь в инвентарь
     def take_item(self, item, count):
         if self.inventory.weight + get_weight(item)*count > 4*self.SEACIL[0]:
             self.overweight = True
         self.inventory.add(item, count)
 
+    # Выбросить педмет из инвентаря
     def drop_item(self):
         pass
 
+    # Выложить предмет в ящик
     def store_item(self):
         pass
 
+    # Присесть\встать
     def seat(self):
         if self.stand == 'normal':
             self.stand = 'seat'
@@ -170,6 +185,7 @@ class character(cocos.layer.ScrollableLayer):
             self.stand = 'normal'
 
 
+# Класс NPC
 class NPC(character):
     def __init__(self, name, fraction):
         info = open('stats/chars/'+name+'.txt', 'r')
@@ -184,10 +200,12 @@ class NPC(character):
 
         self.state = 'friendly'
 
+    # AI
     def think(self):
         pass
     
 
+# Класс ГГ
 class hero(character):
     def __init__(self, name, fraction, seacil, stats):
         super().__init__(name, fraction, seacil)
@@ -199,9 +217,11 @@ class hero(character):
         self.expirience = 0
         self.level = 0
         self.next_level = 1000
-    
+
+    # Закончить игру из-за смерти ГГ   
     def die():
         pass
 
+    # Получить новый уровень
     def get_level():
         pass
