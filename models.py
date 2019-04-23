@@ -9,7 +9,7 @@ from pyglet.window import key, mouse
 class item(cocos.sprite.Sprite):
     def __init__(self, name, weight, cost):
         self.name = name
-        self.sprite_name = Sprite("res/img/items/" + name + ".png", scale=8)
+        self.item_sprite = Sprite("res/img/items/" + name + ".png", scale=8)
         self.weight = weight
         self.cost = cost
 
@@ -71,8 +71,8 @@ class weapon(item):
         self.width_anim = int(stats[6])
         self.height_anim = int(stats[5])
 
-        self.sprite_name.position = 400, 400
-        test_shoot.add(self.sprite_name)
+        self.item_sprite.position = 400, 400
+        test_shoot.add(self.item_sprite)
         
         shoot_img = load(self.anim_name)
         shoot_grid = ImageGrid(shoot_img, 1,
@@ -90,15 +90,15 @@ class weapon_handler(cocos.layer.Layer):
         self.weapon_name = weapon_name
         self.cartridge = 0
         self.anim_name = items[weapon_name].anim_name
-        self.sprite_name = items[weapon_name].sprite_name
+        self.item_sprite = items[weapon_name].item_sprite
 
         self.weapon_anim = items[weapon_name].weapon_anim
-        self.sprite_name = items[weapon_name].sprite_name
-        self.add(self.sprite_name)
+        self.item_sprite = items[weapon_name].item_sprite
+        self.add(self.item_sprite)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button & mouse.LEFT:
-            self.sprite_name.image = self.weapon_anim
+            self.item_sprite.image = self.weapon_anim
 
     def recharge(self, bulletType):
         # bulletType - патроны определенного типа в инвентаре
