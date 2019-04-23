@@ -96,9 +96,8 @@ class weapon_handler(cocos.layer.Layer):
         self.item_sprite = items[weapon_name].item_sprite
         self.add(self.item_sprite)
 
-    def on_mouse_press(self, x, y, button, modifiers):
-        if button & mouse.LEFT:
-            self.item_sprite.image = self.weapon_anim
+    def shoot_anim():
+        self.item_sprite.image = self.weapon_anim
 
     def recharge(self, bulletType):
         # bulletType - патроны определенного типа в инвентаре
