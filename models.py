@@ -34,8 +34,8 @@ class armor(item):
 class armor_handler(cocos.sprite.Sprite):
     def __init__(armor_name):
         self.armor_name = armor_name
-        self.ac = items[armor_name].ac
-        self.def_firearm = items[armor_name].def_firearm
+        self.ac = armors[armor_name].ac
+        self.def_firearm = armors[armor_name].def_firearm
 
     def get_damage(self, dmg=1, k=1):
         # dmg - кол-во урона
@@ -90,11 +90,11 @@ class weapon_handler(cocos.sprite.Sprite):
         super().__init__()
         self.weapon_name = weapon_name
         self.cartridge = 0
-        self.anim_name = items[weapon_name].anim_name
-        self.item_sprite = items[weapon_name].item_sprite
+        self.anim_name = weapons[weapon_name].anim_name
+        self.item_sprite = weapons[weapon_name].item_sprite
 
-        self.weapon_anim = items[weapon_name].weapon_anim
-        self.item_sprite = items[weapon_name].item_sprite
+        self.weapon_anim = weapons[weapon_name].weapon_anim
+        self.item_sprite = weapons[weapon_name].item_sprite
         self.add(self.item_sprite)
 
     def shoot_anim():
