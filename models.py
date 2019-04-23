@@ -172,11 +172,10 @@ class character(cocos.layer.ScrollableLayer):
 
 class NPC(character):
     def __init__(self, name, fraction):
-        info = open('stats/chars/'+name+'txt', 'r')
-        '''
-        TODO
-        '''
+        info = open('stats/chars/'+name+'.txt', 'r')
+        seacil = list(map(float, info.readline().split()))
         info.close()
+        
         super().__init__(name, fraction, seacil)
 
         self.state = 'friendly'
