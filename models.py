@@ -9,7 +9,7 @@ from pyglet.window import key, mouse
 class item(cocos.sprite.Sprite):
     def __init__(self, name, weight, cost):
         self.name = name
-        self.item_sprite = Sprite("res/img/items/" + name + ".png", scale=8)
+        self.item_sprite = Sprite("res/img/items/" + name + ".png")
         self.weight = weight
         self.cost = cost
 
