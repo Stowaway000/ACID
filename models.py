@@ -173,10 +173,14 @@ class character(cocos.layer.ScrollableLayer):
 class NPC(character):
     def __init__(self, name, fraction):
         info = open('stats/chars/'+name+'.txt', 'r')
-        seacil = list(map(float, info.readline().split()))
+        stats = list(map(float, info.readline().split()))
         info.close()
+
+        self.hp = stats[0]
+        self.stamina = stats[1]
+        self.sp_stamina = stats[2]
         
-        super().__init__(name, fraction, seacil)
+        super().__init__(name, fraction, stats[3:])
 
         self.state = 'friendly'
 
@@ -188,9 +192,10 @@ class hero(character):
     def __init__(self, name, fraction, seacil, stats):
         super().__init__(name, fraction, seacil)
 
-        '''
-        TODO
-        '''
+        self.hp = stats[0]
+        self.stamina = stats[1]
+        self.sp_stamina = stats[2]
+        
         self.expirience = 0
         self.level = 0
         self.next_level = 1000
