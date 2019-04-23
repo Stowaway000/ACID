@@ -28,13 +28,12 @@ class armor(item):
         super().__init__(armor_name, stats[2], stats[3])
         self.max_ac = stats[0]  # max_ac - максимальная прочность брони
         self.def_firearm = stats[1]  # def_firearm - защита от огнестрельного оружия
-        self.ac = max_ac # ac - текущая прочность брони
 
 
 class armor_handler(cocos.sprite.Sprite):
     def __init__(armor_name):
         self.armor_name = armor_name
-        self.ac = armors[armor_name].ac
+        self.ac = armors[armor_name].max_ac
         self.def_firearm = armors[armor_name].def_firearm
 
     def statusAC(self, dmg=1, k=1):
