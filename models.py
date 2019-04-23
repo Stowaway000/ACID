@@ -31,7 +31,7 @@ class armor(item):
         self.ac = max_ac # ac - текущая прочность брони
 
 
-class armor_handler():
+class armor_handler(cocos.sprite.Sprite):
     def __init__(armor_name):
         self.armor_name = armor_name
         self.ac = items[armor_name].ac
@@ -82,7 +82,7 @@ class weapon(item):
         self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], 0.05, loop=False)
 
 
-class weapon_handler(cocos.layer.Layer):
+class weapon_handler(cocos.sprite.Sprite):
     is_event_handler = True
 
     def __init__(self, weapon_name):
