@@ -73,7 +73,6 @@ class weapon(item):
         self.height_anim = int(stats[5])
 
         self.item_sprite.position = 400, 400
-        test_shoot.add(self.item_sprite)
         
         shoot_img = load(anim_name)
         shoot_grid = ImageGrid(shoot_img, 1,
@@ -84,12 +83,10 @@ class weapon(item):
 
 
 class weapon_handler(cocos.sprite.Sprite):
-    is_event_handler = True
 
     def __init__(self, weapon_name):
         super().__init__()
         self.cartridge = 0
-        self.anim_name = weapons[weapon_name].anim_name
         self.item_sprite = weapons[weapon_name].item_sprite
 
         self.weapon_anim = weapons[weapon_name].weapon_anim
