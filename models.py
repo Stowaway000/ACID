@@ -50,6 +50,7 @@ class armor_handler(cocos.sprite.Sprite):
         self.ac -= 1
         if self.ac <= 0:
             self.def_firearm = 0
+        return dmg * 0.5 # пока я не придумаю адекватную формулу, будет так, потом исправим
 
 
 class weapon(item):
