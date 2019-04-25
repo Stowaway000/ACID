@@ -53,16 +53,17 @@ class weapon(item):
         stats = list(map(float, file.readline().split()))
         file.close()
         
-        super().__init__(weapon_name, stats[3], stats[4])
+        super().__init__(weapon_name, stats[4], stats[5])
         self.weapon_name = weapon_name # weapon_name - имя оружия
         anim_name = "res/img/items/" + weapon_name + "_anim.png"
         self.damage = stats[0]  # damage - урон
         self.breachness = stats[1]  # breachness - пробивная способность
         self.max_cartridge = stats[2]  # max_cartridge - размер обоймы
+        self.ammo_type = stats[3] # ammo_type - тип патронов
 
-        self.count_anim = int(stats[7]) # count_anim - кол-во спрайтов в анимации
-        self.width_anim = int(stats[6]) # width_anim - ширина спрайта в анимации"
-        self.height_anim = int(stats[5]) # height_anim - высота спрайта в анимации
+        self.count_anim = int(stats[8]) # count_anim - кол-во спрайтов в анимации
+        self.width_anim = int(stats[7]) # width_anim - ширина спрайта в анимации"
+        self.height_anim = int(stats[6]) # height_anim - высота спрайта в анимации
 
         # self.item_sprite.position = 400, 400
         
