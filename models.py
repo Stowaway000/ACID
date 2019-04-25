@@ -75,6 +75,9 @@ class weapon(item):
                                item_height=self.height_anim,
                                item_width=self.width_anim)
         self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], 0.05, loop=False)
+        
+        def shoot(x, y):
+            pass
 
 
 class weapon_handler(cocos.sprite.Sprite):
@@ -102,4 +105,7 @@ class weapon_handler(cocos.sprite.Sprite):
         else:
             self.cartridge += count_bullet
             return 0
+    
+    def shoot():
+        pass
 
