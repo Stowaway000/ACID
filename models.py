@@ -1,14 +1,15 @@
 import cocos
 from cocos.director import director
+from math import sqrt, sin, cos, radians
 
 # Получить вес какого-то предмета
 def get_weight(item):
-    if item in items:
-        return items[item].weight
-    elif item in weapons:
-        return weapons[item].weight
-    elif item in armors:
-        return armors[item].weight
+    if item in item.items:
+        return item.items[item].weight
+    elif item in weapon.weapons:
+        return weapon.weapons[item].weight
+    elif item in armor.armors:
+        return armor.armors[item].weight
 
 
 # Класс инвентаря
@@ -98,6 +99,8 @@ class inventory():
 
 # Класс персонажа
 class character(cocos.layer.ScrollableLayer):
+    characters = []
+    
     def __init__(self, name, fraction, seacil):
         self.photo = cocos.sprite.Sprite('res/img/portraits/' + name + '.png')
 
@@ -120,6 +123,31 @@ class character(cocos.layer.ScrollableLayer):
 
         self.overweight = False
 
+    @staticmethod
+    def get_in_sector(me, angle, r, look):
+        chars = []
+        
+        angle = radians(angle)/2
+        vector = (look[0]*srqt(r), look[1]*srqt(r))
+        r_vector = (vector[0]*cos(angle)-vector[1]*sin(angle),\
+                    vector[0]*sin(angle)+vector[1]*cos(angle))
+        s = abs(vector[0]*r_vector[1]-vector[1]*r_vector[0]) / 2
+        
+        for i in character.characters:
+            vect = [me[0]-i.skin.x, me[1]-i.skin.y]
+            dist = sqrt(vect[0]*vect[0]+vect[1]*vect[1])
+            vect[0] *= sqrt(r/dist)
+            vect[1] *= sqrt(r/dist)
+            if dist <= r:
+                if abs(vect[0]*vector[1]-vect[1]*vector[0])/2 <= s:
+                    chars.append(i.get_info())
+
+        return chars
+
+    def get_info(self):
+        #TODO
+        return (fraction, self.skin.position)
+    
     # Получение урона
     def take_damage(self, dmg, k):
         if self.armor != -1:
