@@ -65,7 +65,7 @@ class weapon(item):
         self.width_anim = int(stats[6])
         self.height_anim = int(stats[5])
 
-        self.item_sprite.position = 400, 400
+        # self.item_sprite.position = 400, 400
         
         shoot_img = load(anim_name)
         shoot_grid = ImageGrid(shoot_img, 1,
