@@ -48,23 +48,21 @@ class armor_handler():
 
 
 class weapon(item):
-    # stats = [damage, breachness, max_cartridge]
-    # anim_name - sprite анимации
     def __init__(self, weapon_name):
         file = open("res/stats/weapon/" + weapon_name + ".txt")
         stats = list(map(float, file.readline().split()))
         file.close()
         
         super().__init__(weapon_name, stats[3], stats[4])
-        self.weapon_name = weapon_name
+        self.weapon_name = weapon_name # weapon_name - имя оружия
         anim_name = "res/img/items/" + weapon_name + "_anim.png"
         self.damage = stats[0]  # damage - урон
         self.breachness = stats[1]  # breachness - пробивная способность
         self.max_cartridge = stats[2]  # max_cartridge - размер обоймы
 
-        self.count_anim = int(stats[7])
-        self.width_anim = int(stats[6])
-        self.height_anim = int(stats[5])
+        self.count_anim = int(stats[7]) # count_anim - кол-во спрайтов в анимации
+        self.width_anim = int(stats[6]) # width_anim - ширина спрайта в анимации"
+        self.height_anim = int(stats[5]) # height_anim - высота спрайта в анимации
 
         # self.item_sprite.position = 400, 400
         
@@ -81,6 +79,7 @@ class weapon_handler(cocos.sprite.Sprite):
     def __init__(self, weapon_name):
         super().__init__()
         self.cartridge = 0
+        self.weapon_name = weapon_name
         self.weapon_anim = weapons[weapon_name].weapon_anim
         self.item_sprite = weapons[weapon_name].item_sprite
         self.add(self.item_sprite)
