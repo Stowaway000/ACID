@@ -54,6 +54,7 @@ class weapon(item):
         file.close()
         
         super().__init__(weapon_name, stats[5], stats[6])
+        self.flag_shoot = False
         self.weapon_name = weapon_name # weapon_name - имя оружия
         anim_name = "res/img/items/" + weapon_name + "_anim.png"
         self.damage = stats[0]  # damage - урон
