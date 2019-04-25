@@ -91,9 +91,13 @@ class weapon_handler(cocos.sprite.Sprite):
     def get_max_artrige():
         return weapons[self.weapon_name].max_cartridge, weapons[self.weapon_name].ammo_type
 
-    def recharge(self, bulletType):
-        # bulletType - патроны определенного типа в инвентаре
-        # .count - кол-во патронов данного типа в нвентаре
-        bulletType.count -= self.max_cartridge - self.cartridge
-        self.cartridge = self.max_cartridge
+    def recharge(self, count_bullet):
+        # count_bullet - кол-во патронов для перезарядки
+        if self.cartridge + count_bullet > weapons[self.weapon_name].max_cartridge:
+            remainder = self.cartridge + count_bullet - weapons[self.weapon_name].max_cartridge
+            self.cartridge = weapons[self.weapon_name].max_cartridge
+            return remainder
+        else:
+            self.cartridge += count_bullet
+            return 0
 
