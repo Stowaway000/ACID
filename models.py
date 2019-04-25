@@ -30,7 +30,7 @@ class armor(item):
         self.def_firearm = stats[1]  # def_firearm - защита от огнестрельного оружия
 
 
-class armor_handler(cocos.sprite.Sprite):
+class armor_handler():
     def __init__(armor_name):
         self.armor_name = armor_name
         self.ac = armors[armor_name].max_ac
