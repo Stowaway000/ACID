@@ -87,6 +87,9 @@ class weapon_handler(cocos.sprite.Sprite):
 
     def shoot_anim():
         self.item_sprite.image = self.weapon_anim
+    
+    def get_max_artrige():
+        return weapons[self.weapon_name].max_cartridge, weapons[self.weapon_name].ammo_type
 
     def recharge(self, bulletType):
         # bulletType - патроны определенного типа в инвентаре
