@@ -186,12 +186,14 @@ class character(cocos.layer.ScrollableLayer):
             ammo, ammo_type = self.inventory.get_weapon(self.weapon_right)\
                               .get_max_cartridge()
             ammo = self.inventory.take(ammo_type, ammo)
-            self.inventory.get_weapon(self.weapon_right).recharge(ammo)
+            change = self.inventory.get_weapon(self.weapon_right).recharge(ammo)
+            self.inventory.add(ammo_type, change)
         elif self.weapon_left != -1:
             ammo, ammo_type = self.inventory.get_weapon(self.weapon_left)\
                               .get_max_cartridge()
             ammo = self.inventory.take(ammo_type, ammo)
-            self.inventory.get_weapon(self.weapon_left).recharge(ammo)
+            change = self.inventory.get_weapon(self.weapon_left).recharge(ammo)
+            self.inventory.add(ammo_type, change)
 
     # Положить вещь в инвентарь
     def take_item(self, item, count):
