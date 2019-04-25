@@ -33,6 +33,7 @@ class armor(item):
 class armor_handler():
     def __init__(armor_name):
         self.armor_name = armor_name
+        self.item_sprite = armors[armor_name].item_sprite
         self.ac = armors[armor_name].max_ac
         self.def_firearm = armors[armor_name].def_firearm
 
