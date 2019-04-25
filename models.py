@@ -22,6 +22,7 @@ class inventory():
 
     # Добавить count предметов типа item в инвентарь
     def add(self, item, count):
+        self.weight += get_weight(item) * count
         if item in items:
             if item in self.items:
                 self.items[item] += count
@@ -43,6 +44,7 @@ class inventory():
     # Забрать count предметов из инвентаря
     def take(self, item, count):
         n = self.count(item)
+        self.weight -= get_weight(item) * n
         if n < count:
             count = n
         
@@ -193,9 +195,9 @@ class character(cocos.layer.ScrollableLayer):
 
     # Положить вещь в инвентарь
     def take_item(self, item, count):
-        if self.inventory.weight + get_weight(item)*count > 4*self.SEACIL[0]:
-            self.overweight = True
         self.inventory.add(item, count)
+        if self.inventory.weight > 4*self.SEACIL[0]:
+            self.overweight = True
 
     # Выбросить педмет из инвентаря
     def drop_item(self):
