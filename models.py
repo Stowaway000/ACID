@@ -51,7 +51,10 @@ class armor_handler():
 
 
 class weapon(item):
+    weapons = dict()
     def __init__(self, weapon_name):
+        if not weapon_name in weapon.weapons:
+            weapon.weapons[weapon_name] = self
         file = open("res/stats/weapon/" + weapon_name + ".txt")
         stats = list(map(float, file.readline().split()))
         file.close()
