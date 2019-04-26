@@ -5,6 +5,8 @@ from pyglet.window import key, mouse
 from cocos import mapcolliders
 from cocos.actions import *
 from math import atan, degrees
+import cocos.euclid as eu
+import cocos.collision_model as cm
 import os
 
 mouse_x = 10
@@ -24,13 +26,20 @@ class Mover(cocos.actions.Move):
 
         dx = vel_x * dt
         dy = vel_y * dt
-        last = self.target.rect()
-
+        last = self.target.skin.circle()
         new = last.copy()
-        new.x += dx
-        new.y += dy
 
-        self.target.velocity = self.target.collide_map(last, new, vel_x, vel_y)
+        new.center = eu.Vector2(new.center.x + dx, new.center.y + dy)
+        isCollide = False
+        for obj in self.target.skin.collision_manager.objects:
+            if self.target.skin.collision_manager.any_near(new, new.radius):
+                isCollide = True
+                break
+        if isCollide:
+            vel_x = 0
+            vel_y = 0
+
+        self.target.velocity = (vel_x, vel_y)
         self.target.position = new.center
         self.target.scroller.set_focus(*new.center)
 
@@ -67,11 +76,12 @@ class Skin(cocos.sprite.Sprite):
 
         self.do(Mover())
 
-    def rect(self):
+    def circle(self):
         x, y = self.position
         x -= self.rect_img_cur.image_anchor_x
         y -= self.rect_img_cur.image_anchor_y
-        return cocos.rect.Rect(x, y, self.rect_img_cur.width, self.rect_img_cur.height)
+        return cm.CircleShape(eu.Vector2(x, y), 29)
+
 
 
 class Hero(cocos.layer.ScrollableLayer):
@@ -112,9 +122,8 @@ class Hero(cocos.layer.ScrollableLayer):
 
         if not y and x < 0:
             angle = 180
-
         angle = -angle + 90
-	
+
         if self.skin.rotation != angle:
 
             h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
@@ -125,16 +134,24 @@ class Hero(cocos.layer.ScrollableLayer):
 
         self.skin.rotation = angle
 
-    def set_collision(self, layer):
-        mapcollider = mapcolliders.TmxObjectMapCollider()
-        mapcollider.on_bump_handler = mapcollider.on_bump_bounce
-        collision_handler = mapcolliders.make_collision_handler(mapcollider, layer)
-
-        self.skin.collide_map = collision_handler
-
     def set_scroller(self, scr):
         self.skin.scroller = scr
 
+    def set_collision(self, manager):
+        self.skin.collision_manager = manager
+
+class CircleMapCollider():
+    def __init__(self, maplayer):
+        self.collision_manager = cm.CollisionManagerGrid(0, 1000, 0, 1000, 1, 1)
+        self.objects = []
+        for obj in maplayer.objects:
+            collision_manager.add(cm.AARectShape(obj.position, obj.size[0]//2, obj.size[1]//2))
+
+        print(collision_manager.known_objs())
+
+
+    def collide_map(self, last, new, vx, vy):
+        pass
 
 class MapLayer(cocos.layer.ScrollableLayer):
     def __init__(self, name):

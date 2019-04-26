@@ -4,6 +4,8 @@ from cocos.scene import Scene
 from cocos.actions import RotateBy, Repeat
 from pyglet import font
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
+import cocos.euclid as eu
+import cocos.collision_model as cm
 from polygon import *
 
 version = '0.002'  # Версия игры
@@ -22,8 +24,8 @@ def set_menu_style(menu, size=32):
 
 def load_map(name, hero):
     map_layer = MapLayer(name)
-
-    hero.set_collision(map_layer.layer_collision)
+    map_collider = CircleMapCollider(map_layer)
+    hero.set_collision(map_collider)
 
     scroller = cocos.layer.ScrollingManager()
     scroller.scale = 2
