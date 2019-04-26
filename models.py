@@ -62,6 +62,9 @@ class weapon(item):
         self.max_cartridge = stats[2]  # max_cartridge - размер обоймы
         self.ammo_type = stats[3] # ammo_type - тип патронов
         self.shoot_type = stats[4] # shoot_type - тип стрельбы - auto/half auto
+        
+        if self.shoot_type == "auto":
+            self.firerate = stats[10] # firerate - скорострельность
 
         self.count_anim = int(stats[9]) # count_anim - кол-во спрайтов в анимации
         self.width_anim = int(stats[8]) # width_anim - ширина спрайта в анимации"
