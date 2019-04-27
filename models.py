@@ -1,6 +1,52 @@
 import cocos
 from cocos.director import director
-from math import sqrt, sin, cos, radians
+from pyglet.window import key, mouse
+from cocos.actions import *
+from math import sqrt, sin, cos, radians, atan, degrees
+
+# Параметры мыши
+mouse_x = 10
+mouse_y = 10
+vector = [0, 0]
+
+class hero_mover(cocos.actions.Move):
+    def step(self, dt):
+        keyboard = self.target.keyboard
+        vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
+        vel_y = (keyboard[key.W] - keyboard[key.S]) * 50
+
+        if (self.target.velocity[0] or self.target.velocity[1]) and not(type(self.target.image) is pyglet.image.Animation):
+            self.target.image = self.target.walk
+        elif not (self.target.velocity[0] or self.target.velocity[1]):
+            self.target.image = self.target.static
+
+        dx = vel_x * dt
+        dy = vel_y * dt
+        last = self.target.rect()
+
+        new = last.copy()
+        new.x += dx
+        new.y += dy
+
+        self.target.velocity = self.target.collide_map(last, new, vel_x, vel_y)
+        self.target.position = new.center
+        self.target.scroller.set_focus(*new.center)
+
+        self.target.scroller.set_focus(self.target.x, self.target.y)
+
+        global mouse_x, mouse_y
+        if self.target.velocity[0] or self.target.velocity[1]:
+            mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)
+            mouse_x += vector[0]
+            mouse_y += vector[1]
+            director.window.set_mouse_position(mouse_x, mouse_y)
+
+
+class npc_mover(cocos.actions.Move):
+    def step(self, dt):
+        #TODO
+        pass
+
 
 # Получить вес какого-то предмета
 def get_weight(item):
@@ -113,7 +159,7 @@ class inventory():
 class character(cocos.layer.ScrollableLayer):
     characters = []
     
-    def __init__(self, name, fraction, seacil):
+    def __init__(self, name, fraction, seacil, mover):
         self.photo = cocos.sprite.Sprite('res/img/portraits/' + name + '.png')
 
         self.SEACIL = seacil
@@ -127,7 +173,7 @@ class character(cocos.layer.ScrollableLayer):
         
         self.armor = -1
 
-        self.skin = Skin(name)
+        self.skin = Skin(name, mover)
 
         self.stand = 'normal'
 
@@ -240,7 +286,7 @@ class NPC(character):
         self.stamina = stats[1]
         self.sp_stamina = stats[2]
         
-        super().__init__(name, fraction, stats[3:])
+        super().__init__(name, fraction, stats[3:], npc_mover())
 
         self.state = 'friendly'
 
@@ -256,7 +302,7 @@ class NPC(character):
 # Класс ГГ
 class hero(character):
     def __init__(self, name, fraction, seacil, stats):
-        super().__init__(name, fraction, seacil)
+        super().__init__(name, fraction, seacil, hero_mover())
 
         self.hp = stats[0]
         self.stamina = stats[1]
