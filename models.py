@@ -12,6 +12,16 @@ def get_weight(item):
         return armor.armors[item].weight
 
 
+# Получить вес какого-то предмета
+def get_cost(item):
+    if item in item.items:
+        return item.items[item].cost
+    elif item in weapon.weapons:
+        return weapon.weapons[item].cost
+    elif item in armor.armors:
+        return armor.armors[item].cost
+
+
 # Класс инвентаря
 class inventory():
     def __init__(self):
@@ -38,7 +48,7 @@ class inventory():
     # Получить экземпляр предмета по имени
     def get(self, item):
         if item in self.items:
-            return items[item]
+            return item.items[item]
         return None
 
     # Забрать count предметов из инвентаря
@@ -219,6 +229,8 @@ class character(cocos.layer.ScrollableLayer):
 
 # Класс NPC
 class NPC(character):
+    is_event_handler = True
+    
     def __init__(self, name, fraction):
         info = open('stats/chars/'+name+'.txt', 'r')
         stats = list(map(float, info.readline().split()))
@@ -234,6 +246,10 @@ class NPC(character):
 
     # AI
     def think(self):
+        pass
+
+    # Создать труп и прочее
+    def die():
         pass
     
 
@@ -257,3 +273,43 @@ class hero(character):
     # Получить новый уровень
     def get_level():
         pass
+
+    # Поворот взгляда
+    def on_mouse_motion(self, x, y, dx, dy):
+        global mouse_x, mouse_y
+        mouse_x = x
+        mouse_y = y
+
+        scroller = self.skin.scroller
+        
+        mid_x, mid_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+
+        x -= mid_x
+        y -= mid_y
+
+        if x:
+            angle = degrees(atan(y/x))
+        elif y > 0:
+            angle = 90
+        else:
+            angle = -90        
+
+        if x < 0 and y < 0:
+            angle -= 180
+        elif x < 0:
+            angle += 180
+
+        if not y and x < 0:
+            angle = 180
+
+        angle = -angle + 90
+	
+        if self.skin.rotation != angle:
+
+            h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+                
+            vector[0] = int(mouse_x - h_x)
+                
+            vector[1] = int(mouse_y - h_y)
+
+        self.skin.rotation = angle
