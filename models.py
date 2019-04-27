@@ -159,7 +159,7 @@ class inventory():
 class character(cocos.layer.ScrollableLayer):
     characters = []
     
-    def __init__(self, name, fraction, seacil, mover):
+    def __init__(self, name, fraction, seacil, mover, pos):
         self.photo = cocos.sprite.Sprite('res/img/portraits/' + name + '.png')
 
         self.SEACIL = seacil
@@ -173,7 +173,7 @@ class character(cocos.layer.ScrollableLayer):
         
         self.armor = -1
 
-        self.skin = Skin(name, mover)
+        self.skin = Skin(name, mover, pos)
 
         self.stand = 'normal'
 
@@ -286,7 +286,9 @@ class NPC(character):
         self.stamina = stats[1]
         self.sp_stamina = stats[2]
         
-        super().__init__(name, fraction, stats[3:], npc_mover())
+        super().__init__(name, fraction, stats[3:-1], npc_mover(), stats[-1])
+
+        self.angle_velocity = 0
 
         self.state = 'friendly'
 
@@ -301,8 +303,8 @@ class NPC(character):
 
 # Класс ГГ
 class hero(character):
-    def __init__(self, name, fraction, seacil, stats):
-        super().__init__(name, fraction, seacil, hero_mover())
+    def __init__(self, name, fraction, seacil, stats, pos):
+        super().__init__(name, fraction, seacil, hero_mover(), pos)
 
         self.hp = stats[0]
         self.stamina = stats[1]
