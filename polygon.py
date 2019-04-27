@@ -26,22 +26,18 @@ class Mover(cocos.actions.Move):
 
         dx = vel_x * dt
         dy = vel_y * dt
-        last = self.target.skin.circle()
-        new = last.copy()
+        last = self.target.circle()
+        new = self.target.circle()
 
-        new.center = eu.Vector2(new.center.x + dx, new.center.y + dy)
-        isCollide = False
-        for obj in self.target.skin.collision_manager.objects:
-            if self.target.skin.collision_manager.any_near(new, new.radius):
-                isCollide = True
-                break
-        if isCollide:
+        new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y + dy)
+
+        if self.target.collider.collision_manager.any_near(new, new.cshape.r):
             vel_x = 0
             vel_y = 0
 
         self.target.velocity = (vel_x, vel_y)
-        self.target.position = new.center
-        self.target.scroller.set_focus(*new.center)
+        self.target.position = new.cshape.center
+        self.target.scroller.set_focus(*new.cshape.center)
 
         self.target.scroller.set_focus(self.target.x, self.target.y)
 
@@ -80,7 +76,7 @@ class Skin(cocos.sprite.Sprite):
         x, y = self.position
         x -= self.rect_img_cur.image_anchor_x
         y -= self.rect_img_cur.image_anchor_y
-        return cm.CircleShape(eu.Vector2(x, y), 29)
+        return CollisionUnit([eu.Vector2(x, y), 29], "circle")
 
 
 
@@ -138,20 +134,22 @@ class Hero(cocos.layer.ScrollableLayer):
         self.skin.scroller = scr
 
     def set_collision(self, manager):
-        self.skin.collision_manager = manager
+        self.skin.collider = manager
+
+class CollisionUnit():
+    def __init__(self, obj, type):
+        if type == "rect":
+            self.cshape = cm.AARectShape(obj.position, obj.size[0]//2, obj.size[1]//2)
+        elif type == "circle":
+            self.cshape = cm.CircleShape(obj[0], obj[1])
 
 class CircleMapCollider():
     def __init__(self, maplayer):
         self.collision_manager = cm.CollisionManagerGrid(0, 1000, 0, 1000, 1, 1)
-        self.objects = []
-        for obj in maplayer.objects:
-            collision_manager.add(cm.AARectShape(obj.position, obj.size[0]//2, obj.size[1]//2))
+        for obj in maplayer.layer_collision.objects:
+            block = CollisionUnit(obj, "rect")
+            self.collision_manager.add(block)
 
-        print(collision_manager.known_objs())
-
-
-    def collide_map(self, last, new, vx, vy):
-        pass
 
 class MapLayer(cocos.layer.ScrollableLayer):
     def __init__(self, name):

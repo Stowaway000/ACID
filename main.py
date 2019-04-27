@@ -13,7 +13,7 @@ version = '0.002'  # Версия игры
 width = 1280
 height = 720
 
-# Убираем настроки по-умолчанию
+# Убираем настройки по-умолчанию
 def set_menu_style(menu, size=32):
     menu.font_item_selected['font_size'] = size
     menu.font_item_selected['font_name'] = 'Calibri'
