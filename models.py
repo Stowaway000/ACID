@@ -14,3 +14,11 @@ class Quest:
                 self.description += args[i][:-2]
             self.description += args[i][:-3]
             i+=1
+            line = args[i].split()
+            if len(line) > 1:
+                self.item_name = line[0]
+                self.counter = 0;
+                self.counter_limit = int(line[len(line) - 1][:-1])
+                for j in range(0, len(line) - 2):
+                    self.item_name += line[j]
+            i+=1        
