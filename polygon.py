@@ -26,15 +26,15 @@ class Mover(cocos.actions.Move):
 
         dx = vel_x * dt
         dy = vel_y * dt
-        last = self.target.circle()
-        new = self.target.circle()
+        new = self.target.cshape
 
         new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y + dy)
 
         if self.target.collider.collision_manager.any_near(new, new.cshape.r):
-            vel_x = 0
-            vel_y = 0
-
+            vel_x, vel_y = 0, 0
+            new.cshape.center.x -= dx
+            new.cshape.center.y -= dy
+            print(self.target.position)
         self.target.velocity = (vel_x, vel_y)
         self.target.position = new.cshape.center
         self.target.scroller.set_focus(*new.cshape.center)
@@ -69,14 +69,8 @@ class Skin(cocos.sprite.Sprite):
         
         self.rect_img = cocos.sprite.Sprite('res/img/coll_h.png')
         self.rect_img_cur = self.rect_img
-
+        self.cshape = CollisionUnit([eu.Vector2(*self.position), 5], "circle")
         self.do(Mover())
-
-    def circle(self):
-        x, y = self.position
-        x -= self.rect_img_cur.image_anchor_x
-        y -= self.rect_img_cur.image_anchor_y
-        return CollisionUnit([eu.Vector2(x, y), 29], "circle")
 
 
 
@@ -139,12 +133,15 @@ class Hero(cocos.layer.ScrollableLayer):
 class CollisionUnit():
     def __init__(self, obj, type):
         if type == "rect":
-            self.cshape = cm.AARectShape(obj.position, obj.size[0]//2, obj.size[1]//2)
+            center = (obj.position[0]+obj.size[0]/2, obj.position[1]+obj.size[1]/2)
+            self.cshape = cm.AARectShape(center, obj.size[0]/2, obj.size[1]/2)
+            print(obj.position, obj.size)
         elif type == "circle":
             self.cshape = cm.CircleShape(obj[0], obj[1])
 
 class CircleMapCollider():
     def __init__(self, maplayer):
+#        self.collision_manager = cm.CollisionManagerBruteForce()
         self.collision_manager = cm.CollisionManagerGrid(0, 1000, 0, 1000, 1, 1)
         for obj in maplayer.layer_collision.objects:
             block = CollisionUnit(obj, "rect")
@@ -155,13 +152,9 @@ class MapLayer(cocos.layer.ScrollableLayer):
     def __init__(self, name):
         super().__init__()
         level = cocos.tiles.load("maps/" + name + "/map.tmx")
-
         self.layer_floor = level["floor"]
-
         self.layer_vertical = level["wall"]
-
         self.layer_above = level["up"]
-        
         self.layer_objects = level["obj"]
         self.layer_collision = level["collision"]
         self.layer_collision.objects += self.layer_objects.objects
