@@ -29,15 +29,15 @@ class Mover(cocos.actions.Move):
         new = self.target.cshape
 
         new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y)
-        if self.target.collider.collision_manager.any_near(new, new.cshape.r):
+        if self.target.collider.collision_manager.any_near(new, 0):
             vel_x = 0
             new.cshape.center.x -= dx
-
+#            print(self.target.position)
         new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
-        if self.target.collider.collision_manager.any_near(new, new.cshape.r):
+        if self.target.collider.collision_manager.any_near(new, 0):
             vel_y = 0
             new.cshape.center.y -= dy
-
+#           print(self.target.position)
         self.target.velocity = (vel_x, vel_y)
         self.target.position = new.cshape.center
         self.target.scroller.set_focus(*new.cshape.center)
@@ -72,7 +72,7 @@ class Skin(cocos.sprite.Sprite):
         
         self.rect_img = cocos.sprite.Sprite('res/img/coll_h.png')
         self.rect_img_cur = self.rect_img
-        self.cshape = CollisionUnit([eu.Vector2(*self.position), 5], "circle")
+        self.cshape = CollisionUnit([eu.Vector2(*self.position), 14], "circle")
         self.do(Mover())
 
 
@@ -144,8 +144,7 @@ class CollisionUnit():
 
 class CircleMapCollider():
     def __init__(self, maplayer):
-#        self.collision_manager = cm.CollisionManagerBruteForce()
-        self.collision_manager = cm.CollisionManagerGrid(0, 1000, 0, 1000, 1, 1)
+        self.collision_manager = cm.CollisionManagerBruteForce()
         for obj in maplayer.layer_collision.objects:
             block = CollisionUnit(obj, "rect")
             self.collision_manager.add(block)
