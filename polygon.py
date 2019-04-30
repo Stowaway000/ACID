@@ -72,7 +72,7 @@ class Skin(cocos.sprite.Sprite):
         
         self.rect_img = cocos.sprite.Sprite('res/img/coll_h.png')
         self.rect_img_cur = self.rect_img
-        self.cshape = CollisionUnit([eu.Vector2(*self.position), 14], "circle")
+        self.cshape = CollisionUnit([eu.Vector2(*self.position), self.static.width/2], "circle")
         self.do(Mover())
 
 
