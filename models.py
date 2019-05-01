@@ -17,6 +17,20 @@ class item(cocos.sprite.Sprite):
         self.cost = cost
 
 
+class usable_obj(item):
+    usable_objs = dict()
+    def __init__(self, usable_obj_name):
+        if not usable_obj_name in usable_obj.usable_objs:
+            usable_obj.usable_objs[usable_obj_name] = self
+        file = open("res/stats/usable_obj/" + usable_obj_name + ".txt")
+        stats = file.readline().split()
+        file.close()
+        
+        self.buff_type = stats[0] # Изменяемая характеристика
+        self.buff_value = int(stats[1]) # Значение, на которое изменяется характеристика
+        super().__init__(usable_obj_name, float(stats[2]), float(stats[3]))
+
+
 class armor(item):
     armors = dict()
     # 0 <= mac_ac <= 100
@@ -71,7 +85,7 @@ class weapon(item):
         self.ammo_type = stats[3] # ammo_type - тип патронов
         self.shoot_type = stats[4] # shoot_type - тип стрельбы - auto/half auto
         self.two_handed = stats[5] # two_handed - флаг двуручного оружия
-        # (True - двуручное, False - одноручное)
+        # (1 - двуручное, 0 - одноручное)
         
         if self.shoot_type == "auto":
             self.firerate = stats[11] # firerate - скорострельность
