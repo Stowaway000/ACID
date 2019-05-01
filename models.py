@@ -11,6 +11,12 @@ from math import sqrt, sin, cos, radians, atan, degrees
 from polygon import Skin as skin
 
 
+# Параметры мыши
+mouse_x = 10
+mouse_y = 10
+vector = [0, 0]
+
+
 class item(cocos.sprite.Sprite):
     items = dict()
     def __init__(self, name, weight, cost):
@@ -147,20 +153,6 @@ class weapon_handler(cocos.sprite.Sprite):
     def shoot():
         pass
 
-
-import cocos
-from cocos.director import director
-from cocos.actions import *
-from cocos import mapcolliders
-import pyglet
-from pyglet.window import key, mouse
-from math import sqrt, sin, cos, radians, atan, degrees
-from polygon import Skin as skin
-
-# Параметры мыши
-mouse_x = 10
-mouse_y = 10
-vector = [0, 0]
 
 class hero_mover(cocos.actions.Move):
     def step(self, dt):
