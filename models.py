@@ -293,18 +293,9 @@ class character(cocos.layer.ScrollableLayer):
     def store_item(self):
         pass
 
-    # Присесть\встать
-    def seat(self):
-        if self.stand == 'normal':
-            self.stand = 'seat'
-        else:
-            self.stand = 'normal'
-
 
 # Класс NPC
 class NPC(character):
-    is_event_handler = True
-    
     def __init__(self, name, fraction):
         info = open('stats/chars/'+name+'.txt', 'r')
         stats = list(map(float, info.readline().split()))
@@ -318,8 +309,6 @@ class NPC(character):
 
         self.angle_velocity = 0
 
-        self.state = 'friendly'
-
     # AI
     def think(self):
         pass
@@ -331,6 +320,8 @@ class NPC(character):
 
 # Класс ГГ
 class hero(character):
+    is_event_handler = True
+    
     def __init__(self, name, fraction, seacil, stats, pos):
         super().__init__(name, fraction, seacil, hero_mover(), pos)
 
@@ -341,6 +332,9 @@ class hero(character):
         self.expirience = 0
         self.level = 0
         self.next_level = 1000
+
+        self.lpressed = False
+        self.rpressed = False
 
     # Закончить игру из-за смерти ГГ   
     def die():
@@ -389,3 +383,43 @@ class hero(character):
             vector[1] = int(mouse_y - h_y)
 
         self.skin.rotation = angle
+    
+    def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
+        if buttons & mouse.LEFT:
+            self.attack('r')
+        elif buttons & mouse.RIGHT:
+            self.attack('l')
+        elif buttons & mouse.LEFT and buttons & mouse.RIGHT:
+            self.attack('r')
+            self.attack('l')
+
+    def on_mouse_press(x, y, button, modifiers):
+        if button == mouse.LEFT:
+            self.lpressed = True
+        if button == mouse.RIGHT:
+            self.rpressed = True
+
+    def on_mouse_release(x, y, button, modifiers):
+        if button == mouse.LEFT:
+            self.lpressed = False
+        if button == mouse.RIGHT:
+            self.rpressed = False
+    
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.R and self.lpressed:
+            self.reaload('r')
+        elif symbol == key.R and self.rpressed:
+            self.reaload('l')
+        elif symbol == key.R and modifiers & key.MOD_SHIFT:
+            self.switch_weapon()
+        elif symbol == key.R:
+            self.reaload('r')
+            self.reaload('l')
+        
+        if symbol == key.LCTRL or symbol == key.RCTRL:
+            self.stand = 'seat'
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == key.LCTRL or symbol == key.RCTRL:
+            self.stand = 'normal'
+
