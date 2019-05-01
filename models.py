@@ -307,7 +307,7 @@ class character(cocos.layer.ScrollableLayer):
             self.inventory.add(ammo_type, change)
 
     # Использовать бафф
-    def use(self, item):
+    def use_item(self, item):
         self.inventory.get_usable(item).use(self)
         self.inventory.take(item, 1)
     
