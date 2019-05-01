@@ -48,24 +48,44 @@ class npc_mover(cocos.actions.Move):
         pass
 
 
+# Получить тип какого-то предмета
+def get_type(item):
+    if item in item.items:
+        return 'item'
+    elif item in weapon.weapons:
+        return 'weapon'
+    elif item in armor.armors:
+        return 'armor'
+    elif item in usable_object.objects:
+        return 'usable'
+
+
+# Получить образец предмета
+def get_global(item):
+    tp = get_type(item)
+    
+    if tp == 'item':
+        return item.items[item]
+    elif tp == 'weapon':
+        return weapon.weapons[item]
+    elif tp == 'armor':
+        return armor.armors[item]
+    elif tp == 'usable':
+        return usable_object.objects[item]
+
+
 # Получить вес какого-то предмета
 def get_weight(item):
-    if item in item.items:
-        return item.items[item].weight
-    elif item in weapon.weapons:
-        return weapon.weapons[item].weight
-    elif item in armor.armors:
-        return armor.armors[item].weight
+    tp = get_type(item)
+
+    return get_global(item).weight
 
 
-# Получить вес какого-то предмета
+# Получить цену какого-то предмета
 def get_cost(item):
-    if item in item.items:
-        return item.items[item].cost
-    elif item in weapon.weapons:
-        return weapon.weapons[item].cost
-    elif item in armor.armors:
-        return armor.armors[item].cost
+    tp = get_type(item)
+    
+    return get_global(item).cost
 
 
 # Класс инвентаря
@@ -253,6 +273,11 @@ class character(cocos.layer.ScrollableLayer):
 
     # Положить вещь в инвентарь
     def take_item(self, item, count):
+        if get_type(item) == 'weapon' and self.weapon_l_equip*\
+           self.weapon_r_equip > 0:
+           self.weapon_r_equip = len(self.inventory.wepons)
+           self.switch_weapon()
+        
         self.inventory.add(item, count)
         if self.inventory.weight > 4*self.SEACIL[0]:
             self.overweight = True
