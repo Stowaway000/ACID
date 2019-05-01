@@ -45,16 +45,17 @@ class Mover(cocos.actions.Move):
 
 
 class Skin(cocos.sprite.Sprite):
-    def __init__(self, static, walk, kb):
-        stat = pyglet.image.load("res/img/" + static + ".png")
-        w_img = pyglet.image.load("res/img/" + walk + ".png")
+    def __init__(self, name, mover, pos):
+        stat = pyglet.image.load("res/img/" + name + ".png")
+        w_img = pyglet.image.load("res/img/" + name + "_walk.png")
         w_img_grid = pyglet.image.ImageGrid(w_img, 1, 9, item_width=29, item_height=14)
         anim = pyglet.image.Animation.from_image_sequence(w_img_grid[:], 0.05, loop=True)
         
         super().__init__(stat)
 
         self.scroller = None
-        self.keyboard = kb
+        self.keyboard = key.KeyStateHandler()
+        director.window.push_handlers(self.keyboard)
 
         self.static = stat
         self.walk = anim
@@ -65,7 +66,7 @@ class Skin(cocos.sprite.Sprite):
         self.rect_img = cocos.sprite.Sprite('res/img/coll_h.png')
         self.rect_img_cur = self.rect_img
 
-        self.do(Mover())
+        self.do(mover)
 
     def rect(self):
         x, y = self.position

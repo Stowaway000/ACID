@@ -1,8 +1,11 @@
 import cocos
 from cocos.director import director
-from pyglet.window import key, mouse
 from cocos.actions import *
+from cocos import mapcolliders
+import pyglet
+from pyglet.window import key, mouse
 from math import sqrt, sin, cos, radians, atan, degrees
+from polygon import Skin as skin
 
 # Параметры мыши
 mouse_x = 10
@@ -200,6 +203,8 @@ class character(cocos.layer.ScrollableLayer):
     characters = []
     
     def __init__(self, name, fraction, seacil, mover, pos):
+        super().__init__()
+        
         self.photo = cocos.sprite.Sprite('res/img/portraits/' + name + '.png')
 
         self.SEACIL = seacil
@@ -358,11 +363,11 @@ class hero(character):
         self.rpressed = False
 
     # Закончить игру из-за смерти ГГ   
-    def die():
+    def die(self):
         pass
 
     # Получить новый уровень
-    def get_level():
+    def get_level(self):
         pass
 
     # Поворот взгляда
@@ -405,7 +410,8 @@ class hero(character):
 
         self.skin.rotation = angle
     
-    def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        self.on_mouse_motion(x, y, dx, dy)
         if buttons & mouse.LEFT:
             self.attack('r')
         elif buttons & mouse.RIGHT:
@@ -414,13 +420,13 @@ class hero(character):
             self.attack('r')
             self.attack('l')
 
-    def on_mouse_press(x, y, button, modifiers):
+    def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = True
         if button == mouse.RIGHT:
             self.rpressed = True
 
-    def on_mouse_release(x, y, button, modifiers):
+    def on_mouse_release(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = False
         if button == mouse.RIGHT:
@@ -428,14 +434,14 @@ class hero(character):
     
     def on_key_press(self, symbol, modifiers):
         if symbol == key.R and self.lpressed:
-            self.reaload('r')
+            self.reload('r')
         elif symbol == key.R and self.rpressed:
-            self.reaload('l')
+            self.reload('l')
         elif symbol == key.R and modifiers & key.MOD_SHIFT:
             self.switch_weapon()
         elif symbol == key.R:
-            self.reaload('r')
-            self.reaload('l')
+            self.reload('r')
+            self.reload('l')
         
         if symbol == key.LCTRL or symbol == key.RCTRL:
             self.stand = 'seat'
@@ -443,3 +449,13 @@ class hero(character):
     def on_key_release(self, symbol, modifiers):
         if symbol == key.LCTRL or symbol == key.RCTRL:
             self.stand = 'normal'
+
+    def set_scroller(self, scr):
+        self.skin.scroller = scr
+
+    def set_collision(self, layer):
+        mapcollider = mapcolliders.TmxObjectMapCollider()
+        mapcollider.on_bump_handler = mapcollider.on_bump_bounce
+        collision_handler = mapcolliders.make_collision_handler(mapcollider, layer)
+
+        self.skin.collide_map = collision_handler

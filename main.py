@@ -1,10 +1,12 @@
 import cocos
+import pyglet
 from cocos.director import director
 from cocos.scene import Scene
 from cocos.actions import RotateBy, Repeat
 from pyglet import font
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
-from polygon import *
+from polygon import MapLayer
+from models import *
 
 version = '0.002'  # Версия игры
 # Ширина и высота окна
@@ -45,14 +47,11 @@ def enter():
     cur_i = pyglet.image.load("res/img/cursor.png")
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
     director.window.set_mouse_cursor(cursor)
-
-    keyboard = key.KeyStateHandler()
-    director.window.push_handlers(keyboard)
     
-    hero = Hero(keyboard)
+    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (100, 80))
     
-    scroller = load_map("map_test", hero)
-    hero.set_scroller(scroller)
+    scroller = load_map("map_test", main_hero)
+    main_hero.set_scroller(scroller)
     
     scene = cocos.scene.Scene(scroller)
     
