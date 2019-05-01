@@ -7,7 +7,10 @@ from pyglet.window import key, mouse
 
 
 class item(cocos.sprite.Sprite):
+    items = dict()
     def __init__(self, name, weight, cost):
+        if not (name in armor.armors or name in weapon.weapons or name in item.items):
+            item.items[name] = self
         self.name = name
         self.item_sprite = Sprite("res/img/items/" + name + ".png")
         self.weight = weight
