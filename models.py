@@ -213,7 +213,9 @@ class character(cocos.layer.ScrollableLayer):
         
         self.armor = -1
 
-        self.skin = Skin(name, mover, pos)
+        self.skin = skin(name, mover, pos)
+
+        self.add(self.skin)
 
         self.stand = 'normal'
 
@@ -296,6 +298,8 @@ class character(cocos.layer.ScrollableLayer):
         if get_type(item) == 'weapon' and self.weapon_l_equip*\
            self.weapon_r_equip > 0:
            self.weapon_r_equip = len(self.inventory.wepons)
+           self.skin.add_weapon(item, self.inventory\
+                                .get_weapon(self.weapon_r_equip), 'r')
            self.switch_weapon()
         
         self.inventory.add(item, count)
