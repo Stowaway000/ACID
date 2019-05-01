@@ -73,22 +73,22 @@ class weapon(item):
         if not weapon_name in weapon.weapons:
             weapon.weapons[weapon_name] = self
         file = open("res/stats/weapon/" + weapon_name + ".txt")
-        stats = list(map(float, file.readline().split()))
+        stats = file.readline().split()
         file.close()
         
-        super().__init__(weapon_name, stats[6], stats[7])
+        super().__init__(weapon_name, float(stats[6]), float(stats[7]))
         self.weapon_name = weapon_name # weapon_name - имя оружия
         anim_name = "res/img/items/" + weapon_name + "_anim.png"
-        self.damage = stats[0]  # damage - урон
-        self.breachness = stats[1]  # breachness - пробивная способность
-        self.max_cartridge = stats[2]  # max_cartridge - размер обоймы
+        self.damage = float(stats[0])  # damage - урон
+        self.breachness = float(stats[1])  # breachness - пробивная способность
+        self.max_cartridge = int(stats[2])  # max_cartridge - размер обоймы
         self.ammo_type = stats[3] # ammo_type - тип патронов
         self.shoot_type = stats[4] # shoot_type - тип стрельбы - auto/half auto
-        self.two_handed = stats[5] # two_handed - флаг двуручного оружия
+        self.two_handed = bool(stats[5]) # two_handed - флаг двуручного оружия
         # (1 - двуручное, 0 - одноручное)
         
         if self.shoot_type == "auto":
-            self.firerate = stats[11] # firerate - скорострельность
+            self.firerate = int(stats[11]) # firerate - скорострельность
 
         self.count_anim = int(stats[10]) # count_anim - кол-во спрайтов в анимации
         self.width_anim = int(stats[9]) # width_anim - ширина спрайта в анимации"
