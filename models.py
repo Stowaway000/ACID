@@ -107,9 +107,9 @@ class weapon_handler(cocos.sprite.Sprite):
 
     def recharge(self, count_bullet):
         # count_bullet - кол-во патронов для перезарядки
-        if self.cartridge + count_bullet > weapons[self.weapon_name].max_cartridge:
-            remainder = self.cartridge + count_bullet - weapons[self.weapon_name].max_cartridge
-            self.cartridge = weapons[self.weapon_name].max_cartridge
+        if self.cartridge + count_bullet > weapon.weapons[self.weapon_name].max_cartridge:
+            remainder = self.cartridge + count_bullet - weapon.weapons[self.weapon_name].max_cartridge
+            self.cartridge = weapon.weapons[self.weapon_name].max_cartridge
             return remainder
         else:
             self.cartridge += count_bullet
