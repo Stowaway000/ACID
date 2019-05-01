@@ -16,8 +16,8 @@ vector = [0, 0]
 
 class skin(cocos.sprite.Sprite):
     def __init__(self, name, mover, pos):
-        stat = pyglet.image.load("res/img/" + name + ".png")
-        w_img = pyglet.image.load("res/img/" + name + "_walk.png")
+        stat = pyglet.image.load("res/img/skins/" + name + "/" + name + ".png")
+        w_img = pyglet.image.load("res/img/skins/" + name + "/" + name + "_walk.png")
         w_img_grid = pyglet.image.ImageGrid(w_img, 1, 9, item_width=29, item_height=14)
         anim = pyglet.image.Animation.from_image_sequence(w_img_grid[:], 0.05, loop=True)
         
