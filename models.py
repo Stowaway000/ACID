@@ -59,7 +59,7 @@ class weapon(item):
         stats = list(map(float, file.readline().split()))
         file.close()
         
-        super().__init__(weapon_name, stats[5], stats[6])
+        super().__init__(weapon_name, stats[6], stats[7])
         self.weapon_name = weapon_name # weapon_name - имя оружия
         anim_name = "res/img/items/" + weapon_name + "_anim.png"
         self.damage = stats[0]  # damage - урон
@@ -67,13 +67,15 @@ class weapon(item):
         self.max_cartridge = stats[2]  # max_cartridge - размер обоймы
         self.ammo_type = stats[3] # ammo_type - тип патронов
         self.shoot_type = stats[4] # shoot_type - тип стрельбы - auto/half auto
+        self.two_handed = stats[5] # two_handed - флаг двуручного оружия
+        # (True - двуручное, False - одноручное)
         
         if self.shoot_type == "auto":
-            self.firerate = stats[10] # firerate - скорострельность
+            self.firerate = stats[11] # firerate - скорострельность
 
-        self.count_anim = int(stats[9]) # count_anim - кол-во спрайтов в анимации
-        self.width_anim = int(stats[8]) # width_anim - ширина спрайта в анимации"
-        self.height_anim = int(stats[7]) # height_anim - высота спрайта в анимации
+        self.count_anim = int(stats[10]) # count_anim - кол-во спрайтов в анимации
+        self.width_anim = int(stats[9]) # width_anim - ширина спрайта в анимации"
+        self.height_anim = int(stats[8]) # height_anim - высота спрайта в анимации
 
         # self.item_sprite.position = 400, 400
         
