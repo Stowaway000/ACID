@@ -1,17 +1,21 @@
 import cocos
+import pyglet
 from cocos.director import director
 from cocos.scene import Scene
 from cocos.actions import RotateBy, Repeat
 from pyglet import font
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
+from polygon import *
+from models import *
+from physics import *
 
-version = '0.001'  # Версия игры
+
+version = '0.002'  # Версия игры
 # Ширина и высота окна
 width = 1280
 height = 720
 
-
-# Убираем настроки по-умолчанию
+# Убираем настройки по-умолчанию
 def set_menu_style(menu, size=32):
     menu.font_item_selected['font_size'] = size
     menu.font_item_selected['font_name'] = 'Calibri'
@@ -20,12 +24,40 @@ def set_menu_style(menu, size=32):
     menu.font_item['color'] = (192, 192, 192, 200)
 
 
+def load_map(name, hero):
+    map_layer = MapLayer(name)
+    map_collider = circle_map_collider(map_layer)
+    hero.set_collision(map_collider)
+
+    scroller = cocos.layer.ScrollingManager()
+    scroller.scale = 2
+    
+    scroller.add(hero, 1)
+    scroller.add(map_layer.layer_floor, -1)
+    scroller.add(map_layer.layer_vertical, 1)
+    scroller.add(map_layer.layer_objects, 1)
+    scroller.add(map_layer.layer_above, 2)
+
+    return scroller
+
+
 def previous():
     director.pop()
 
 
 def enter():
-    director.push(Scene())
+    cur_i = pyglet.image.load("res/img/cursor.png")
+    cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
+    director.window.set_mouse_cursor(cursor)
+    
+    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (100, 80))
+    
+    scroller = load_map("map_test", main_hero)
+    main_hero.set_scroller(scroller)
+    
+    scene = cocos.scene.Scene(scroller)
+    
+    director.push(scene)
 
 
 def quit_game():
@@ -108,7 +140,8 @@ def create_menu():
 
 if __name__ == '__main__':
     director.init(width=width, height=height, caption='Game')
-
+    director.window.pop_handlers()
+    
     mainMenu = create_menu()
 
     director.run(mainMenu)
