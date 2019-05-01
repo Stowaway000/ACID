@@ -1,12 +1,14 @@
 import cocos
+import pyglet
 from cocos.director import director
 from cocos.scene import Scene
 from cocos.actions import RotateBy, Repeat
 from pyglet import font
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
-import cocos.euclid as eu
-import cocos.collision_model as cm
 from polygon import *
+from models import *
+from physics import *
+
 
 version = '0.002'  # Версия игры
 # Ширина и высота окна
@@ -24,7 +26,7 @@ def set_menu_style(menu, size=32):
 
 def load_map(name, hero):
     map_layer = MapLayer(name)
-    map_collider = CircleMapCollider(map_layer)
+    map_collider = circle_map_collider(map_layer)
     hero.set_collision(map_collider)
 
     scroller = cocos.layer.ScrollingManager()
@@ -47,14 +49,11 @@ def enter():
     cur_i = pyglet.image.load("res/img/cursor.png")
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
     director.window.set_mouse_cursor(cursor)
-
-    keyboard = key.KeyStateHandler()
-    director.window.push_handlers(keyboard)
     
-    hero = Hero(keyboard)
+    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (100, 80))
     
-    scroller = load_map("map_test", hero)
-    hero.set_scroller(scroller)
+    scroller = load_map("map_test", main_hero)
+    main_hero.set_scroller(scroller)
     
     scene = cocos.scene.Scene(scroller)
     
