@@ -93,6 +93,7 @@ class inventory():
     def __init__(self):
         self.weight = 0
         self.items = {}
+        self.usables = {}
         self.weapons = []
         self.armors = []
 
@@ -111,6 +112,11 @@ class inventory():
         elif tp == 'armor':
             for i in range(count):
                 self.armors.append(armor_handler(item))
+        elif tp == 'usable':
+            if item in self.usables:
+                self.usables[item] += count
+            else:
+                self.usables[item] = count
 
     # Получить экземпляр предмета по имени
     def get(self, item):
@@ -128,6 +134,9 @@ class inventory():
         tp = get_type(item)
         if tp == 'item':
             self.items[item] -= n
+
+        elif tp == 'usable':
+            self.usables[item] -= n
         
         elif tp == 'weapon':
             get = 0
@@ -156,6 +165,8 @@ class inventory():
         tp = get_type(item)
         if tp == 'item':
             return self.items[item]
+        elif tp == 'usable':
+            return self.usables[item]
         elif tp == 'weapon':
             n = 0
             for i in self.weapons:
@@ -176,6 +187,12 @@ class inventory():
     # Получить экземпляр оружия из инвентаря по номеру
     def get_weapon(self, i):
         return self.weapons[i]
+
+    # Получить экземпляр используемого из инвентаря по номеру
+    def get_usable(self, i):
+        if item in self.usables:
+            return usable_object.objects[item]
+        return None
 
 
 # Класс персонажа
@@ -422,4 +439,3 @@ class hero(character):
     def on_key_release(self, symbol, modifiers):
         if symbol == key.LCTRL or symbol == key.RCTRL:
             self.stand = 'normal'
-
