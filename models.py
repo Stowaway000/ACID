@@ -99,15 +99,16 @@ class inventory():
     # Добавить count предметов типа item в инвентарь
     def add(self, item, count):
         self.weight += get_weight(item) * count
-        if item in items:
+        tp = get_type(item)
+        if tp == 'item':
             if item in self.items:
                 self.items[item] += count
             else:
                 self.items[item] = count
-        elif item in weapons:
+        elif tp == 'weapon':
             for i in range(count):
                 self.weapons.append(weapon_handler(item))
-        elif item in armors:
+        elif tp == 'armor':
             for i in range(count):
                 self.armors.append(armor_handler(item))
 
@@ -123,11 +124,12 @@ class inventory():
         self.weight -= get_weight(item) * n
         if n < count:
             count = n
-        
-        if item in items:
+
+        tp = get_type(item)
+        if tp == 'item':
             self.items[item] -= n
         
-        elif item in weapons:
+        elif tp == 'weapon':
             get = 0
             i = 0
             while get < count:
@@ -137,7 +139,7 @@ class inventory():
                     get += 1
                 i += 1
         
-        elif item in armors:
+        elif tp == 'armor':
             get = 0
             i = 0
             while get < count:
@@ -151,15 +153,16 @@ class inventory():
 
     # Посчитать количество предметов типа item в инвентаре
     def count(self, item):
-        if item in items:
+        tp = get_type(item)
+        if tp == 'item':
             return self.items[item]
-        elif item in weapons:
+        elif tp == 'weapon':
             n = 0
             for i in self.weapons:
                 if i.name == item:
                     n += 1
             return n
-        elif item in armors:
+        elif tp == 'armor':
             n = 0
             for i in self.armors:
                 if i.name == item:
