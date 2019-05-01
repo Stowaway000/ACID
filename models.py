@@ -30,6 +30,9 @@ class usable_obj(item):
         self.buff_type = stats[0] # Изменяемая характеристика
         self.buff_value = int(stats[1]) # Значение, на которое изменяется характеристика
         super().__init__(usable_obj_name, float(stats[2]), float(stats[3]))
+    
+    def use(self, char):
+        char.set(self.buff_type, self.buff_value)
 
 
 class armor(item):
