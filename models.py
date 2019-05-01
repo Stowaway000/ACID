@@ -59,7 +59,7 @@ def get_type(item):
         return 'weapon'
     elif item in armor.armors:
         return 'armor'
-    elif item in usable_object.objects:
+    elif item in usable_object.usable_objs:
         return 'usable'
 
 
@@ -74,7 +74,7 @@ def get_global(item):
     elif tp == 'armor':
         return armor.armors[item]
     elif tp == 'usable':
-        return usable_object.objects[item]
+        return usable_object.usable_objs[item]
 
 
 # Получить вес какого-то предмета
@@ -192,7 +192,7 @@ class inventory():
         return self.weapons[i]
 
     # Получить экземпляр используемого из инвентаря по номеру
-    def get_usable(self, i):
+    def get_usable(self, item):
         if item in self.usables:
             return usable_object.objects[item]
         return None
@@ -249,9 +249,17 @@ class character(cocos.layer.ScrollableLayer):
 
         return chars
 
+    # Получить информацию о персонаже
     def get_info(self):
         #TODO
         return (fraction, self.skin.position)
+
+    # Увеличить характеристику
+    def set(self, attr, add):
+        if attr == 'hp':
+            self.hp += add
+        elif attr == 'stamina':
+            self.stamina += add
     
     # Получение урона
     def take_damage(self, dmg, k):
@@ -298,6 +306,11 @@ class character(cocos.layer.ScrollableLayer):
             change = self.inventory.get_weapon(self.weapon_left).recharge(ammo)
             self.inventory.add(ammo_type, change)
 
+    # Использовать бафф
+    def use_item(self, item):
+        self.inventory.get_usable(item).use(self)
+        self.inventory.take(item, 1)
+    
     # Положить вещь в инвентарь
     def take_item(self, item, count):
         if get_type(item) == 'weapon' and self.weapon_l_equip*\
@@ -310,7 +323,7 @@ class character(cocos.layer.ScrollableLayer):
         self.inventory.add(item, count)
         if self.inventory.weight > 4*self.SEACIL[0]:
             self.overweight = True
-
+    
     # Выбросить педмет из инвентаря
     def drop_item(self):
         pass
