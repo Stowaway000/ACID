@@ -5,15 +5,17 @@ from cocos.scene import Scene
 from cocos.actions import RotateBy, Repeat
 from pyglet import font
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
-from polygon import MapLayer
+from polygon import *
 from models import *
+from physics import *
+
 
 version = '0.002'  # Версия игры
 # Ширина и высота окна
 width = 1280
 height = 720
 
-# Убираем настроки по-умолчанию
+# Убираем настройки по-умолчанию
 def set_menu_style(menu, size=32):
     menu.font_item_selected['font_size'] = size
     menu.font_item_selected['font_name'] = 'Calibri'
@@ -24,8 +26,8 @@ def set_menu_style(menu, size=32):
 
 def load_map(name, hero):
     map_layer = MapLayer(name)
-
-    hero.set_collision(map_layer.layer_collision)
+    map_collider = circle_map_collider(map_layer)
+    hero.set_collision(map_collider)
 
     scroller = cocos.layer.ScrollingManager()
     scroller.scale = 2

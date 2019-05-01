@@ -8,7 +8,8 @@ from pyglet.window import key, mouse
 from cocos.actions import *
 from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
-from polygon import Skin as skin
+from polygon import skin
+from physics import *
 
 
 # Параметры мыши
@@ -160,22 +161,29 @@ class hero_mover(cocos.actions.Move):
         vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
         vel_y = (keyboard[key.W] - keyboard[key.S]) * 50
 
-        if (self.target.velocity[0] or self.target.velocity[1]) and not(type(self.target.image) is pyglet.image.Animation):
+        if (self.target.velocity[0] or self.target.velocity[1]) and not (
+                type(self.target.image) is pyglet.image.Animation):
             self.target.image = self.target.walk
         elif not (self.target.velocity[0] or self.target.velocity[1]):
             self.target.image = self.target.static
 
         dx = vel_x * dt
         dy = vel_y * dt
-        last = self.target.rect()
+        new = self.target.cshape
 
-        new = last.copy()
-        new.x += dx
-        new.y += dy
+        new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y)
+        if self.target.collider.collision_manager.any_near(new, 0):
+            vel_x = 0
+            new.cshape.center.x -= dx
 
-        self.target.velocity = self.target.collide_map(last, new, vel_x, vel_y)
-        self.target.position = new.center
-        self.target.scroller.set_focus(*new.center)
+        new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
+        if self.target.collider.collision_manager.any_near(new, 0):
+            vel_y = 0
+            new.cshape.center.y -= dy
+
+        self.target.velocity = (vel_x, vel_y)
+        self.target.position = new.cshape.center
+        self.target.scroller.set_focus(*new.cshape.center)
 
         self.target.scroller.set_focus(self.target.x, self.target.y)
 
@@ -608,10 +616,5 @@ class hero(character):
     def set_scroller(self, scr):
         self.skin.scroller = scr
 
-    def set_collision(self, layer):
-        mapcollider = mapcolliders.TmxObjectMapCollider()
-        mapcollider.on_bump_handler = mapcollider.on_bump_bounce
-        collision_handler = mapcolliders.make_collision_handler(mapcollider, layer)
-
-        self.skin.collide_map = collision_handler
-
+    def set_collision(self, manager):
+        self.skin.collider = manager

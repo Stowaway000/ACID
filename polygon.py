@@ -6,45 +6,15 @@ from cocos import mapcolliders
 from cocos.actions import *
 from math import atan, degrees
 import os
+from physics import *
+
 
 mouse_x = 10
 mouse_y = 10
 vector = [0, 0]
 
-class Mover(cocos.actions.Move):
-    def step(self, dt):
-        keyboard = self.target.keyboard
-        vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
-        vel_y = (keyboard[key.W] - keyboard[key.S]) * 50
 
-        if (self.target.velocity[0] or self.target.velocity[1]) and not(type(self.target.image) is pyglet.image.Animation):
-            self.target.image = self.target.walk
-        elif not (self.target.velocity[0] or self.target.velocity[1]):
-            self.target.image = self.target.static
-
-        dx = vel_x * dt
-        dy = vel_y * dt
-        last = self.target.rect()
-
-        new = last.copy()
-        new.x += dx
-        new.y += dy
-
-        self.target.velocity = self.target.collide_map(last, new, vel_x, vel_y)
-        self.target.position = new.center
-        self.target.scroller.set_focus(*new.center)
-
-        self.target.scroller.set_focus(self.target.x, self.target.y)
-
-        global mouse_x, mouse_y
-        if self.target.velocity[0] or self.target.velocity[1]:
-            mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)
-            mouse_x += vector[0]
-            mouse_y += vector[1]
-            director.window.set_mouse_position(mouse_x, mouse_y)
-
-
-class Skin(cocos.sprite.Sprite):
+class skin(cocos.sprite.Sprite):
     def __init__(self, name, mover, pos):
         stat = pyglet.image.load("res/img/" + name + ".png")
         w_img = pyglet.image.load("res/img/" + name + "_walk.png")
@@ -66,88 +36,17 @@ class Skin(cocos.sprite.Sprite):
         self.rect_img = cocos.sprite.Sprite('res/img/coll_h.png')
         self.rect_img_cur = self.rect_img
 
+        self.cshape = collision_unit([eu.Vector2(*self.position), self.static.width/2], "circle")
         self.do(mover)
-
-    def rect(self):
-        x, y = self.position
-        x -= self.rect_img_cur.image_anchor_x
-        y -= self.rect_img_cur.image_anchor_y
-        return cocos.rect.Rect(x, y, self.rect_img_cur.width, self.rect_img_cur.height)
-
-
-class Hero(cocos.layer.ScrollableLayer):
-    is_event_handler = True
-
-    def __init__(self, kb):
-        super().__init__()
-
-        self.skin = Skin("hero", "walk", kb)
-
-        self.color = (0, 0, 0, 0)
-
-        self.add(self.skin)
-
-    def on_mouse_motion(self, x, y, dx, dy):
-        global mouse_x, mouse_y
-        mouse_x = x
-        mouse_y = y
-
-        scroller = self.skin.scroller
-        
-        mid_x, mid_y = scroller.world_to_screen(scroller.fx, scroller.fy)
-
-        x -= mid_x
-        y -= mid_y
-
-        if x:
-            angle = degrees(atan(y/x))
-        elif y > 0:
-            angle = 90
-        else:
-            angle = -90        
-
-        if x < 0 and y < 0:
-            angle -= 180
-        elif x < 0:
-            angle += 180
-
-        if not y and x < 0:
-            angle = 180
-
-        angle = -angle + 90
-	
-        if self.skin.rotation != angle:
-
-            h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
-                
-            vector[0] = int(mouse_x - h_x)
-                
-            vector[1] = int(mouse_y - h_y)
-
-        self.skin.rotation = angle
-
-    def set_collision(self, layer):
-        mapcollider = mapcolliders.TmxObjectMapCollider()
-        mapcollider.on_bump_handler = mapcollider.on_bump_bounce
-        collision_handler = mapcolliders.make_collision_handler(mapcollider, layer)
-
-        self.skin.collide_map = collision_handler
-
-    def set_scroller(self, scr):
-        self.skin.scroller = scr
 
 
 class MapLayer(cocos.layer.ScrollableLayer):
     def __init__(self, name):
         super().__init__()
         level = cocos.tiles.load("maps/" + name + "/map.tmx")
-
         self.layer_floor = level["floor"]
-
         self.layer_vertical = level["wall"]
-
         self.layer_above = level["up"]
-        
         self.layer_objects = level["obj"]
         self.layer_collision = level["collision"]
         self.layer_collision.objects += self.layer_objects.objects
