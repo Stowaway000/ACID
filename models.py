@@ -335,7 +335,10 @@ class inventory():
 
     # Получить экземпляр брони из инвентаря по номеру
     def get_armor(self, i):
-        return self.armors[i]
+        if len(self.armors):
+            return self.armors[i]
+        else:
+            return None
 
     # Получить экземпляр оружия из инвентаря по номеру
     def get_weapon(self, i):
@@ -404,6 +407,16 @@ class character(cocos.layer.ScrollableLayer):
         #TODO
         return (fraction, self.skin.position)
 
+    def get_stats(self):
+        armor = self.inventory.get_armor(self.armor)
+        ar_ac = 0
+        if armor:
+            ar_ac = armor.ac
+
+        dct = {'hp': [self.hp],
+               'armor': [ar_ac]}
+        return dct
+
     # Увеличить характеристику
     def set(self, attr, add):
         if attr == 'hp':
@@ -426,12 +439,12 @@ class character(cocos.layer.ScrollableLayer):
     # Достать\спрятать оружие
     def switch_weapon(self):
         if self.weapon_left == -1 and self.weapon_right == -1:
-            self.weapon_left == self.weapon_l_equip
-            self.weapon_right == self.weapon_r_equip
+            self.weapon_left = self.weapon_l_equip
+            self.weapon_right = self.weapon_r_equip
             self.skin.show()
         else:
-            self.weapon_left == -1
-            self.weapon_right == -1
+            self.weapon_left = -1
+            self.weapon_right = -1
             self.skin.hide()
 
     # Атаковать оружием
@@ -524,6 +537,20 @@ class hero(character):
 
         self.lpressed = False
         self.rpressed = False
+
+        self.interface = None
+
+    def take_damage(self, dmg, k):
+        super().take_damage(dmg, k)
+
+        arm = self.inventory.get_armor(self.armor)
+        ar_ac = 0
+        if arm:
+            ar_ac = arm.ac
+
+        dct = {'hp': self.hp,
+               'armor': ar_ac}
+        self.interface.update(dct)
 
     # Закончить игру из-за смерти ГГ   
     def die(self):

@@ -6,14 +6,16 @@ from cocos.actions import RotateBy, Repeat
 from pyglet import font
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from polygon import *
-from models import *
+from models import hero
 from physics import *
+from interface import interface
 
 
 version = '0.002'  # Версия игры
 # Ширина и высота окна
 width = 1280
 height = 720
+
 
 # Убираем настройки по-умолчанию
 def set_menu_style(menu, size=32):
@@ -45,6 +47,18 @@ def previous():
     director.pop()
 
 
+def create_interface(scene, hero):
+    stats = hero.get_stats()
+
+    stats['hp'].append((100, 100))
+    stats['armor'].append((width-100, 100))
+
+    inter = interface(stats)
+    hero.interface = inter
+
+    scene.add(inter, 100)
+
+
 def enter():
     cur_i = pyglet.image.load("res/img/cursor.png")
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
@@ -54,8 +68,10 @@ def enter():
     
     scroller = load_map("map_test", main_hero)
     main_hero.set_scroller(scroller)
-    
+
     scene = cocos.scene.Scene(scroller)
+
+    create_interface(scene, main_hero)
     
     director.push(scene)
 
