@@ -18,6 +18,7 @@ vector = [0, 0]
 
 class item(cocos.sprite.Sprite):
     items = dict()
+
     def __init__(self, name, weight, cost):
         if not (name in armor.armors or name in weapon.weapons\
                 or name in item.items or name in usable_obj.usable_objs):
@@ -30,15 +31,16 @@ class item(cocos.sprite.Sprite):
 
 class usable_obj(item):
     usable_objs = dict()
+
     def __init__(self, usable_obj_name):
-        if not usable_obj_name in usable_obj.usable_objs:
+        if usable_obj_name not in usable_obj.usable_objs:
             usable_obj.usable_objs[usable_obj_name] = self
         file = open("res/stats/usable_obj/" + usable_obj_name + ".txt")
         stats = file.readline().split()
         file.close()
         
-        self.buff_type = stats[0] # Изменяемая характеристика
-        self.buff_value = int(stats[1]) # Значение, на которое изменяется характеристика
+        self.buff_type = stats[0]  # Изменяемая характеристика
+        self.buff_value = int(stats[1])  # Значение, на которое изменяется характеристика
         super().__init__(usable_obj_name, float(stats[2]), float(stats[3]))
     
     def use(self, char):
@@ -49,8 +51,9 @@ class armor(item):
     armors = dict()
     # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
+
     def __init__(self, armor_name):
-        if not armor_name in armor.armors:
+        if armor_name not in armor.armors:
             armor.armors[armor_name] = self
         # формат файла
         # max_ac def_firearm weight cost
@@ -65,7 +68,7 @@ class armor(item):
 
 
 class armor_handler():
-    def __init__(armor_name):
+    def __init__(self, armor_name):
         self.armor_name = armor_name
         self.item_sprite = armors[armor_name].item_sprite
         self.ac = armors[armor_name].max_ac
@@ -78,35 +81,36 @@ class armor_handler():
         self.ac -= 1
         if self.ac <= 0:
             self.def_firearm = 0
-        return dmg * 0.5 # пока я не придумаю адекватную формулу, будет так, потом исправим
+        return dmg * 0.5  # пока я не придумаю адекватную формулу, будет так, потом исправим
 
 
 class weapon(item):
     weapons = dict()
+
     def __init__(self, weapon_name):
-        if not weapon_name in weapon.weapons:
+        if weapon_name not in weapon.weapons:
             weapon.weapons[weapon_name] = self
         file = open("res/stats/weapon/" + weapon_name + ".txt")
         stats = file.readline().split()
         file.close()
         
         super().__init__(weapon_name, float(stats[6]), float(stats[7]))
-        self.weapon_name = weapon_name # weapon_name - имя оружия
+        self.weapon_name = weapon_name  # weapon_name - имя оружия
         anim_name = "res/img/items/" + weapon_name + "_anim.png"
         self.damage = float(stats[0])  # damage - урон
         self.breachness = float(stats[1])  # breachness - пробивная способность
         self.max_cartridge = int(stats[2])  # max_cartridge - размер обоймы
-        self.ammo_type = stats[3] # ammo_type - тип патронов
-        self.shoot_type = stats[4] # shoot_type - тип стрельбы - auto/half auto
-        self.two_handed = bool(stats[5]) # two_handed - флаг двуручного оружия
+        self.ammo_type = stats[3]  # ammo_type - тип патронов
+        self.shoot_type = stats[4]  # shoot_type - тип стрельбы - auto/half auto
+        self.two_handed = bool(stats[5])  # two_handed - флаг двуручного оружия
         # (1 - двуручное, 0 - одноручное)
         
         if self.shoot_type == "auto":
-            self.firerate = int(stats[11]) # firerate - скорострельность
+            self.firerate = int(stats[11])  # firerate - скорострельность
 
-        self.count_anim = int(stats[10]) # count_anim - кол-во спрайтов в анимации
-        self.width_anim = int(stats[9]) # width_anim - ширина спрайта в анимации"
-        self.height_anim = int(stats[8]) # height_anim - высота спрайта в анимации
+        self.count_anim = int(stats[10])  # count_anim - кол-во спрайтов в анимации
+        self.width_anim = int(stats[9])  # width_anim - ширина спрайта в анимации"
+        self.height_anim = int(stats[8])  # height_anim - высота спрайта в анимации
 
         # self.item_sprite.position = 400, 400
         
@@ -117,7 +121,7 @@ class weapon(item):
                                item_width=self.width_anim)
         self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], 0.05, loop=False)
         
-        def shoot(x, y):
+        def shoot(self, x, y):
             pass
 
 
@@ -132,10 +136,10 @@ class weapon_handler(cocos.sprite.Sprite):
         self.item_sprite = weapons[weapon_name].item_sprite
         self.add(self.item_sprite)
 
-    def shoot_anim():
+    def shoot_anim(self):
         self.item_sprite.image = self.weapon_anim
     
-    def get_max_сartrige():
+    def get_max_сartrige(self):
         return weapon.weapons[self.weapon_name].max_cartridge,\
                weapon.weapons[self.weapon_name].ammo_type
 
@@ -149,7 +153,7 @@ class weapon_handler(cocos.sprite.Sprite):
             self.cartridge += count_bullet
             return 0
     
-    def shoot():
+    def shoot(self):
         pass
 
 
@@ -195,7 +199,7 @@ class hero_mover(cocos.actions.Move):
 
 class npc_mover(cocos.actions.Move):
     def step(self, dt):
-        #TODO
+        # TODO
         pass
 
 
@@ -587,7 +591,7 @@ class hero(character):
             angle = 180
 
         angle = -angle + 90
-	
+
         if self.skin.rotation != angle:
 
             h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
