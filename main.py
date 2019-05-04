@@ -1,9 +1,4 @@
-import cocos
-import pyglet
-from cocos.director import director
 from cocos.scene import Scene
-from cocos.actions import RotateBy, Repeat
-from pyglet import font
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from polygon import *
 from models import hero
@@ -11,7 +6,7 @@ from physics import *
 from interface import interface
 
 
-version = '0.002'  # Версия игры
+version = '0.006'  # Версия игры
 # Ширина и высота окна
 width = 1280
 height = 720

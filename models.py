@@ -5,8 +5,6 @@ import pyglet
 from pyglet.image import load, ImageGrid, Animation
 from pyglet.window import key, mouse
 
-from cocos.actions import *
-from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
 from polygon import skin
 from physics import *
