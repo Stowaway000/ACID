@@ -2,7 +2,8 @@ import cocos
 from cocos.director import director
 from cocos.sprite import Sprite
 from cocos.text import Label
-from cocos.actions import FadeIn, FadeOut, MoveBy, Hide, RotateBy, CallFunc
+from cocos.actions import FadeIn, FadeOut, MoveBy, RotateBy, CallFunc
+from pyglet.window import key
 
 
 def add_label(txt, point, anchor='center'):
@@ -12,6 +13,8 @@ def add_label(txt, point, anchor='center'):
 
 
 class interface(cocos.layer.Layer):
+    is_event_handler = True
+    
     def __init__(self, stats):
         self.bars = {}
 
@@ -84,3 +87,7 @@ class interface(cocos.layer.Layer):
         self.queue.append(title)
         if len(self.queue) == 1:
             self.make_announce(title)
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.ESCAPE:
+            director.pop()

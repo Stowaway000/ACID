@@ -12,6 +12,11 @@ width = 1280
 height = 720
 
 
+def on_key_press(symbol, modifiers):
+    if symbol == key.ESCAPE:
+        return True
+
+
 # Убираем настройки по-умолчанию
 def set_menu_style(menu, size=32):
     menu.font_item_selected['font_size'] = size
@@ -70,6 +75,7 @@ def enter():
     create_interface(scene, main_hero)
     
     director.push(scene)
+    #director.window.pop_handlers()
 
     main_hero.interface.quest_done('Родиться')
     main_hero.interface.quest_done('Умереть')
@@ -157,6 +163,7 @@ def create_menu():
 if __name__ == '__main__':
     director.init(width=width, height=height, caption='Game')
     director.window.pop_handlers()
+    director.window.push_handlers(on_key_press)
     
     mainMenu = create_menu()
 
