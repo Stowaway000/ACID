@@ -71,6 +71,10 @@ def enter():
     
     director.push(scene)
 
+    main_hero.interface.quest_done('Родиться')
+    main_hero.interface.quest_done('Умереть')
+    
+
 
 def quit_game():
     director.window.close()
