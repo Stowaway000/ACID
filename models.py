@@ -409,16 +409,6 @@ class character(cocos.layer.ScrollableLayer):
         #TODO
         return (fraction, self.skin.position)
 
-    def get_stats(self):
-        armor = self.inventory.get_armor(self.armor)
-        ar_ac = 0
-        if armor:
-            ar_ac = armor.ac
-
-        dct = {'hp': [self.hp],
-               'armor': [ar_ac]}
-        return dct
-
     # Увеличить характеристику
     def set(self, attr, add):
         if attr == 'hp':
@@ -554,6 +544,17 @@ class hero(character):
                'armor': ar_ac}
         self.interface.update(dct)
 
+    def get_stats(self):
+        armor = self.inventory.get_armor(self.armor)
+        ar_ac = 0
+        if armor:
+            ar_ac = armor.ac
+
+        dct = {'hp': [self.hp],
+               'armor': [ar_ac],
+               'stamina': [self.stamina]}
+        return dct
+    
     # Закончить игру из-за смерти ГГ   
     def die(self):
         pass
