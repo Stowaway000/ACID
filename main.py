@@ -54,7 +54,7 @@ def create_interface(scene, hero):
     stats['armor'].append((200, 100))
     stats['stamina'].append((width-100, 100))
 
-    inter = interface(stats)
+    inter = interface(stats, scene)
     hero.interface = inter
 
     scene.add(inter, 100)

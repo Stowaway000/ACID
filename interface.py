@@ -4,6 +4,7 @@ from cocos.sprite import Sprite
 from cocos.text import Label
 from cocos.actions import FadeIn, FadeOut, MoveBy, RotateBy, CallFunc
 from pyglet.window import key
+from cocos.scenes import pause
 
 
 def add_label(txt, point, anchor='center'):
@@ -15,7 +16,7 @@ def add_label(txt, point, anchor='center'):
 class interface(cocos.layer.Layer):
     is_event_handler = True
     
-    def __init__(self, stats):
+    def __init__(self, stats, scene):
         self.bars = {}
 
         super().__init__()
@@ -34,6 +35,8 @@ class interface(cocos.layer.Layer):
                                    director.window.height-100)
         self.announcer.opacity = 0
         self.add(self.announcer)
+
+        self.pause = pause.PauseScene(scene)
 
         self.queue = []
 
@@ -90,4 +93,4 @@ class interface(cocos.layer.Layer):
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
-            director.pop()
+            director.push(self.pause)
