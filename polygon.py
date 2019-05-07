@@ -27,17 +27,103 @@ class skin(cocos.sprite.Sprite):
         self.keyboard = key.KeyStateHandler()
         director.window.push_handlers(self.keyboard)
 
+        self.body = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_body.png")
+        self.body_seat = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_body_seat.png")
+        self.lhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_lhand.png")
+        self.rhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_rhand.png")
+        self.head = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_head.png")
+
+        self.body.position = 0, 0
+        self.body_seat.position = 0, 0
+        self.head.position = 0, 0
+        self.lhand.position = -10, 7
+        self.rhand.position = 10, 7
+
+        self.add(self.lhand, z=0)
+        self.add(self.rhand, z=0)
+        self.add(self.body, z=1)
+        self.add(self.head, z=2)
+
+        self.armor = None
+        self.lweapon = None
+        self.rweapon = None
+        self.both = False
+
         self.static = stat
         self.walk = anim
-        
-        self.position = 100, 80
+
+        self.seating = False
+        self.walking = False
+
+        self.position = pos
         self.velocity = (0, 0)
         
-        self.rect_img = cocos.sprite.Sprite('res/img/coll_h.png')
-        self.rect_img_cur = self.rect_img
-
         self.cshape = collision_unit([eu.Vector2(*self.position), self.static.width/2], "circle")
         self.do(mover)
+
+    def draw(self):
+        if self.both:
+            self.remove(self.lhand)
+            self.remove(self.rhand)
+            self.add(self.rweapon, z=0)
+        else:
+            if self.lweapon:
+                self.add(self.lhand, z=0)
+            if self.rweapon:
+                self.add(self.rhand, z=0)
+
+        if self.seating:
+            self.add(self.body_seat, z=1)
+        else:
+
+            if self.armor:
+                self.add(self.armor, z=1)
+            else:
+                self.add(self.body, z=1)
+
+        self.show_weapon()
+
+    def walk(self):
+        self.walking = not self.walking
+
+    def seat(self):
+        self.seating = not self.seating
+        if not self.seating:
+            self.remove(self.body_seat)
+
+    def add_weapon(self, name, sprite, hand):
+        if weapon.weapons[name].two_handed:
+            self.remove(self.lhand)
+            self.remove(self.rhand)
+            self.lweapon = False
+            self.rweapon = sprite
+            self.rweapon.position = 10, 10
+        else:
+            if hand == 'l':
+                self.lweapon = sprite
+                self.lweapon.position = -10, 10
+            if hand == 'r':
+                self.rweapon = sprite
+                self.rweapon.position = 10, 10
+
+    def add_armor(self, sprite):
+        self.armor = sprite
+
+    def remove_armor(self):
+        self.armor = None
+
+    def show_weapon(self):
+        if self.both:
+            self.add(self.rweapon, z=0)
+        else:
+            if self.lweapon:
+                self.add(self.lweapon, z=0)
+            if self.rweapon:
+                self.add(self.rweapon, z=0)
+
+    def hide_weapon(self):
+        self.remove(self.lweapon)
+        self.remove(self.rweapon)
 
 
 class MapLayer(cocos.layer.ScrollableLayer):

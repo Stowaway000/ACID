@@ -124,7 +124,6 @@ class weapon(item):
 
 
 class weapon_handler(cocos.sprite.Sprite):
-
     def __init__(self, weapon_name):
         super().__init__()
         self.cartridge = 0
@@ -607,11 +606,11 @@ class hero(character):
             self.reload('l')
         
         if symbol == key.LCTRL or symbol == key.RCTRL:
-            self.stand = 'seat'
+            self.skin.seat()
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.LCTRL or symbol == key.RCTRL:
-            self.stand = 'normal'
+            self.skin.seat()
 
     def set_scroller(self, scr):
         self.skin.scroller = scr
