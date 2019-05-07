@@ -160,11 +160,10 @@ class hero_mover(cocos.actions.Move):
         vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
         vel_y = (keyboard[key.W] - keyboard[key.S]) * 50
 
-        if (self.target.velocity[0] or self.target.velocity[1]) and not (
-                type(self.target.image) is pyglet.image.Animation):
-            self.target.image = self.target.walk
+        if self.target.velocity[0] or self.target.velocity[1]:
+            self.target.walk(True)
         elif not (self.target.velocity[0] or self.target.velocity[1]):
-            self.target.image = self.target.static
+            self.target.walk(False)
 
         dx = vel_x * dt
         dy = vel_y * dt
@@ -427,11 +426,11 @@ class character(cocos.layer.ScrollableLayer):
         if self.weapon_left == -1 and self.weapon_right == -1:
             self.weapon_left == self.weapon_l_equip
             self.weapon_right == self.weapon_r_equip
-            self.skin.show()
+            self.skin.show_weapon()
         else:
             self.weapon_left == -1
             self.weapon_right == -1
-            self.skin.hide()
+            self.skin.hide_weapon()
 
     # Атаковать оружием
     def attack(self, hand):
