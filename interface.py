@@ -2,15 +2,42 @@ import cocos
 from cocos.director import director
 from cocos.sprite import Sprite
 from cocos.text import Label
+from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from cocos.actions import FadeIn, FadeOut, MoveBy, RotateBy, CallFunc
+import pyglet
 from pyglet.window import key
 from cocos.scenes import pause
+from cocos.scene import Scene
+from menu import set_menu_style, go_back, quit_game
 
 
 def add_label(txt, point, anchor='center'):
     return Label(txt, point, font_name='Calibri',\
                  color=(229, 23, 20, 255), anchor_x=anchor,\
                  anchor_y='center')
+
+
+class game_menu(cocos.layer.Layer):
+    is_event_handler = True
+    
+    def __init__(self):
+        super().__init__()
+
+        menu = cocos.menu.Menu()
+        menu.menu_halign = CENTER
+        menu.menu_valign = CENTER
+        set_menu_style(menu)
+
+        items = list()
+        items.append(cocos.menu.MenuItem("Главное меню", lambda:go_back(2)))
+        items.append(cocos.menu.MenuItem("Выйти", quit_game))
+
+        menu.create_menu(items)
+        self.add(menu)
+    
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.ESCAPE:
+            director.pop()
 
 
 class interface(cocos.layer.Layer):
@@ -35,8 +62,6 @@ class interface(cocos.layer.Layer):
                                    director.window.height-100)
         self.announcer.opacity = 0
         self.add(self.announcer)
-
-        self.pause = pause.PauseScene(scene)
 
         self.queue = []
 
@@ -93,4 +118,13 @@ class interface(cocos.layer.Layer):
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
-            director.push(self.pause)
+            pause_sc = pause.get_pause_scene()
+            
+            #for i in pause_sc.get_children().copy():
+            #    pause_sc.remove(i)
+            pause_sc.remove(pause_sc.get_children()[1])
+
+            pause_sc.add(game_menu())
+            #cursor = director.window.get_system_mouse_cursor(CURSOR_HELP)
+            #director.window.set_mouse_cursor(cursor)
+            director.push(pause_sc)

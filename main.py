@@ -4,6 +4,7 @@ from polygon import *
 from models import hero
 from physics import *
 from interface import interface
+from menu import set_menu_style, previous, quit_game
 
 
 version = '0.006'  # Версия игры
@@ -15,15 +16,6 @@ height = 720
 def on_key_press(symbol, modifiers):
     if symbol == key.ESCAPE:
         return True
-
-
-# Убираем настройки по-умолчанию
-def set_menu_style(menu, size=32):
-    menu.font_item_selected['font_size'] = size
-    menu.font_item_selected['font_name'] = 'Calibri'
-    menu.font_item['font_name'] = 'Calibri'
-    menu.font_item_selected['color'] = (229, 43, 80, 240)
-    menu.font_item['color'] = (192, 192, 192, 200)
 
 
 def load_map(name, hero):
@@ -41,10 +33,6 @@ def load_map(name, hero):
     scroller.add(map_layer.layer_above, 2)
 
     return scroller
-
-
-def previous():
-    director.pop()
 
 
 def create_interface(scene, hero):
@@ -79,11 +67,6 @@ def enter():
 
     main_hero.interface.quest_done('Родиться')
     main_hero.interface.quest_done('Умереть')
-    
-
-
-def quit_game():
-    director.window.close()
 
 
 # Сцена "Об игре"
