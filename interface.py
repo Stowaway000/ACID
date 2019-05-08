@@ -13,7 +13,7 @@ from menu import set_menu_style, go_back, quit_game
 
 def add_label(txt, point, anchor='center'):
     return Label(txt, point, font_name='Calibri',\
-                 color=(229, 23, 20, 255), anchor_x=anchor,\
+                 anchor_x=anchor,\
                  anchor_y='center')
 
 
@@ -29,6 +29,7 @@ class game_menu(cocos.layer.Layer):
         set_menu_style(menu)
 
         items = list()
+        items.append(cocos.menu.MenuItem("Продолжить", lambda:go_back(1)))
         items.append(cocos.menu.MenuItem("Главное меню", lambda:go_back(2)))
         items.append(cocos.menu.MenuItem("Выйти", quit_game))
 
@@ -64,10 +65,9 @@ class interface(cocos.layer.Layer):
         for key, val in self.bars.items():
             self.add(val, name=key)
 
-        self.announcer = cocos.layer.ColorLayer(255, 255, 255, 255)
+        self.announcer = cocos.layer.ColorLayer(18, 22, 0, 0)
         self.announcer.position = (director.window.width/2,\
                                    director.window.height-100)
-        self.announcer.opacity = 0
         self.add(self.announcer)
 
         self.queue = []
@@ -129,11 +129,8 @@ class interface(cocos.layer.Layer):
         if symbol == key.ESCAPE:
             pause_sc = pause.get_pause_scene()
             
-            #for i in pause_sc.get_children().copy():
-            #    pause_sc.remove(i)
             pause_sc.remove(pause_sc.get_children()[1])
 
             pause_sc.add(game_menu(self.mouse_pos))
-            #cursor = director.window.get_system_mouse_cursor(CURSOR_HELP)
-            #director.window.set_mouse_cursor(cursor)
+            
             director.push(pause_sc)
