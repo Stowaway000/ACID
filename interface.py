@@ -20,7 +20,7 @@ def add_label(txt, point, anchor='center'):
 class game_menu(cocos.layer.Layer):
     is_event_handler = True
     
-    def __init__(self):
+    def __init__(self, pos):
         super().__init__()
 
         menu = cocos.menu.Menu()
@@ -34,6 +34,13 @@ class game_menu(cocos.layer.Layer):
 
         menu.create_menu(items)
         self.add(menu)
+
+        self.mouse_pos = pos
+
+    def on_exit(self):
+        director.window.set_mouse_position(*self.mouse_pos)
+        
+        super().on_exit()
     
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
@@ -64,6 +71,8 @@ class interface(cocos.layer.Layer):
         self.add(self.announcer)
 
         self.queue = []
+
+        self.mouse_pos = (0, 0)
 
     def update(self, stats):
         for key, val in stats.items():
@@ -124,7 +133,7 @@ class interface(cocos.layer.Layer):
             #    pause_sc.remove(i)
             pause_sc.remove(pause_sc.get_children()[1])
 
-            pause_sc.add(game_menu())
+            pause_sc.add(game_menu(self.mouse_pos))
             #cursor = director.window.get_system_mouse_cursor(CURSOR_HELP)
             #director.window.set_mouse_cursor(cursor)
             director.push(pause_sc)

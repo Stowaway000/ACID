@@ -569,6 +569,8 @@ class hero(character):
         mouse_x = x
         mouse_y = y
 
+        self.interface.mouse_pos = x, y
+
         scroller = self.skin.scroller
         
         mid_x, mid_y = scroller.world_to_screen(scroller.fx, scroller.fy)
