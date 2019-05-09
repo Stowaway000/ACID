@@ -48,10 +48,39 @@ class game_menu(cocos.layer.Layer):
             director.pop()
 
 
-class interface(cocos.layer.Layer):
+class visual_inventory(cocos.layer.Layer):
     is_event_handler = True
     
-    def __init__(self, stats, scene):
+    def __init__(self):
+        super().__init__()
+
+        menu = cocos.menu.Menu()
+        menu.menu_halign = CENTER
+        menu.menu_valign = CENTER
+        set_menu_style(menu)
+
+        items = list()
+        items.append(cocos.menu.MenuItem("Продолжить", lambda:go_back(1)))
+        items.append(cocos.menu.MenuItem("Главное меню", lambda:go_back(2)))
+        items.append(cocos.menu.MenuItem("Выйти", quit_game))
+
+        menu.create_menu(items)
+        self.add(menu)
+
+    def update(self, pos, invent, hero):
+        self.mouse_pos = pos
+        self.hero_ref = hero
+    
+    def on_exit(self):
+        director.window.set_mouse_position(*self.mouse_pos)
+        
+        super().on_exit()
+
+
+class stat_interface(cocos.layer.Layer):
+    is_event_handler = True
+    
+    def __init__(self, stats):
         self.bars = {}
 
         super().__init__()
@@ -65,15 +94,6 @@ class interface(cocos.layer.Layer):
         for key, val in self.bars.items():
             self.add(val, name=key)
 
-        self.announcer = cocos.layer.ColorLayer(18, 22, 0, 0)
-        self.announcer.position = (director.window.width/2,\
-                                   director.window.height-100)
-        self.add(self.announcer)
-
-        self.queue = []
-
-        self.mouse_pos = (0, 0)
-
     def update(self, stats):
         for key, val in stats.items():
             self.change(key, val)
@@ -86,6 +106,53 @@ class interface(cocos.layer.Layer):
 
         self.add(self.bars[stat], name=stat)
 
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.ESCAPE:
+            pause_sc = pause.get_pause_scene()
+            
+            pause_sc.remove(pause_sc.get_children()[1])
+
+            pause_sc.add(game_menu(self.parent.mouse_pos))
+            
+            director.push(pause_sc)
+
+
+class interface(cocos.layer.MultiplexLayer):
+    is_event_handler = True
+    
+    def __init__(self, stats, host):
+        self.stats = stat_interface(stats)
+        self.invent = visual_inventory()
+        super().__init__(self.stats, self.invent)
+
+        self.mouse_pos = (0, 0)
+        
+        self.host = host
+
+        self.announcer = cocos.layer.ColorLayer(18, 22, 0, 0)
+        self.announcer.position = (director.window.width/2,\
+                                   director.window.height-100)
+        self.add(self.announcer)
+
+        self.queue = []
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.Q:
+            if self.enabled_layer != 1:
+                self.host.lurking = True
+                self.invent.update(self.mouse_pos, self.host.inventory, self.host)
+                self.switch_to(1)
+            else:
+                self.host.lurking = False
+                self.switch_to(0)
+
+    def change(self, stat, new):
+        self.stats.change(stat, new)
+
+    def update(self, stats):
+        self.stats.update(stats)
+    
     def next(self, title):
         self.queue.remove(title)
         if len(self.queue):
@@ -124,13 +191,3 @@ class interface(cocos.layer.Layer):
         self.queue.append(title)
         if len(self.queue) == 1:
             self.make_announce(title)
-
-    def on_key_press(self, symbol, modifiers):
-        if symbol == key.ESCAPE:
-            pause_sc = pause.get_pause_scene()
-            
-            pause_sc.remove(pause_sc.get_children()[1])
-
-            pause_sc.add(game_menu(self.mouse_pos))
-            
-            director.push(pause_sc)

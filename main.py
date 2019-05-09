@@ -42,7 +42,7 @@ def create_interface(scene, hero):
     stats['armor'].append((200, 100))
     stats['stamina'].append((width-100, 100))
 
-    inter = interface(stats, scene)
+    inter = interface(stats, hero)
     hero.interface = inter
 
     scene.add(inter, 100)
@@ -63,8 +63,8 @@ def enter():
     create_interface(scene, main_hero)
     
     director.push(scene)
-    #director.window.pop_handlers()
 
+    main_hero.take_damage(20, 1)
     main_hero.interface.quest_done('Родиться')
     main_hero.interface.quest_done('Умереть')
 
