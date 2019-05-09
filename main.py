@@ -1,7 +1,7 @@
 from cocos.scene import Scene
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from polygon import *
-from models import hero
+from models import hero, Item
 from physics import *
 from interface import interface
 from menu import set_menu_style, previous, quit_game
@@ -67,6 +67,24 @@ def enter():
     main_hero.take_damage(20, 1)
     main_hero.interface.quest_done('Родиться')
     main_hero.interface.quest_done('Умереть')
+    Item('apple', 1, 1)
+    Item('bottle', 1, 1)
+    Item('beer', 1, 1)
+    Item('water', 1, 1)
+    Item('devil', 1, 1)
+    Item('pig', 1, 1)
+    Item('whale', 1, 1)
+    Item('salad', 1, 1)
+    Item('metal', 1, 1)
+    main_hero.take_item('apple', 2)
+    main_hero.take_item('bottle', 1)
+    main_hero.take_item('beer', 1)
+    main_hero.take_item('water', 1)
+    main_hero.take_item('devil', 1)
+    main_hero.take_item('pig', 1)
+    main_hero.take_item('whale', 1)
+    main_hero.take_item('metal', 1)
+    main_hero.take_item('salad', 1)
 
 
 # Сцена "Об игре"

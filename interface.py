@@ -2,12 +2,13 @@ import cocos
 from cocos.director import director
 from cocos.sprite import Sprite
 from cocos.text import Label
+from cocos.layer import Layer, ColorLayer, MultiplexLayer, ScrollingManager, ScrollableLayer
+from cocos.scenes import pause
+from cocos.scene import Scene
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from cocos.actions import FadeIn, FadeOut, MoveBy, RotateBy, CallFunc
 import pyglet
 from pyglet.window import key
-from cocos.scenes import pause
-from cocos.scene import Scene
 from menu import set_menu_style, go_back, quit_game
 
 
@@ -17,7 +18,7 @@ def add_label(txt, point, anchor='center'):
                  anchor_y='center')
 
 
-class game_menu(cocos.layer.Layer):
+class game_menu(Layer):
     is_event_handler = True
     
     def __init__(self, pos):
@@ -48,36 +49,93 @@ class game_menu(cocos.layer.Layer):
             director.pop()
 
 
-class visual_inventory(cocos.layer.Layer):
+class visual_inventory(Layer):
     is_event_handler = True
     
     def __init__(self):
         super().__init__()
 
-        menu = cocos.menu.Menu()
-        menu.menu_halign = CENTER
-        menu.menu_valign = CENTER
-        set_menu_style(menu)
+        w = director.window.width
+        h = director.window.height
+        self.position = (w/6, h/6)
+        self.width = int(2*w/3)
+        self.height = int(2*h/3)
+        
+        bg = ColorLayer(31, 38, 0, 255)
+        bg.width = int(2*w/3)
+        bg.height = int(2*h/3)
+        bg.position = (0, 0)
 
-        items = list()
-        items.append(cocos.menu.MenuItem("Продолжить", lambda:go_back(1)))
-        items.append(cocos.menu.MenuItem("Главное меню", lambda:go_back(2)))
-        items.append(cocos.menu.MenuItem("Выйти", quit_game))
+        self.on_one = h/96
 
-        menu.create_menu(items)
-        self.add(menu)
+        self.item_window = ScrollingManager(cocos.rect.Rect(w/6, h/6, 200, int(2*h/3)))
+        self.item_window.anchor = (0, 0)
+        self.item_window.position = (w/6, h/6)
+        
+        self.item_stack = ScrollableLayer()
+        self.item_stack.position = (0, 0)
 
-    def update(self, pos, invent, hero):
+        self.viewpoint = (w/6+50, h/6+self.height/4+16)
+        
+        self.item_window.set_focus(*self.viewpoint)
+        self.item_window.scale = 2
+
+        self.scrollbar = ColorLayer(255, 200, 100, 255)
+        self.scrollbar.width = 15
+        self.scrollbar.position = (200, 0)
+
+        self.up = h/6+self.height/4+16
+        self.down = 0
+
+        self.item_window.add(self.item_stack)
+        self.add(bg)
+        self.add(self.scrollbar)
+        self.add(self.item_window)
+
+    def update(self, pos, hero):
         self.mouse_pos = pos
-        self.hero_ref = hero
+        invent = hero.inventory
+        
+        h = 0
+
+        total = len(invent.items) + len(invent.weapons) + len(invent.armors)
+        self.scrollbar.height = int(self.height*min(self.on_one/total, 1))
+        self.scrollbar.position = (200, self.height-self.scrollbar.height)
+
+        self.down = self.up - 32*(total-self.on_one)
+        
+        for key, val in invent.items.items():
+            item = invent.get(key)
+            spr = item.item_inv_sprite
+            spr.position = (50, self.height/2-h*32)
+
+            count = add_label(str(val), (80, self.height/2-h*32))
+            self.item_stack.add(spr)
+            self.item_stack.add(count)
+            
+            h += 1
     
     def on_exit(self):
         director.window.set_mouse_position(*self.mouse_pos)
-        
         super().on_exit()
 
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        x -= self.position[0]
+        y -= self.position[1]
 
-class stat_interface(cocos.layer.Layer):
+        if 195 < x < 220:
+            if self.viewpoint[1]+dy/2 > self.up:
+                dy = self.up - self.viewpoint[1]
+            if self.viewpoint[1]+dy/2 < self.down:
+                dy = self.down-self.viewpoint[1]
+            
+            self.viewpoint = (self.viewpoint[0], self.viewpoint[1]+dy/2)
+            self.item_window.set_focus(*self.viewpoint)
+
+            self.scrollbar.position = (200, self.scrollbar.position[1]+dy)
+
+
+class stat_interface(Layer):
     is_event_handler = True
     
     def __init__(self, stats):
@@ -118,7 +176,7 @@ class stat_interface(cocos.layer.Layer):
             director.push(pause_sc)
 
 
-class interface(cocos.layer.MultiplexLayer):
+class interface(MultiplexLayer):
     is_event_handler = True
     
     def __init__(self, stats, host):
@@ -141,7 +199,7 @@ class interface(cocos.layer.MultiplexLayer):
         if symbol == key.Q:
             if self.enabled_layer != 1:
                 self.host.lurking = True
-                self.invent.update(self.mouse_pos, self.host.inventory, self.host)
+                self.invent.update(self.mouse_pos, self.host)
                 self.switch_to(1)
             else:
                 self.host.lurking = False

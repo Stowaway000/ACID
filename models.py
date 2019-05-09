@@ -280,7 +280,7 @@ class inventory():
     # Получить экземпляр предмета по имени
     def get(self, item):
         if item in self.items:
-            return item.items[item]
+            return Item.items[item]
         return None
 
     # Забрать count предметов из инвентаря
