@@ -16,25 +16,26 @@ mouse_y = 10
 vector = [0, 0]
 
 
-class item(cocos.sprite.Sprite):
+class Item(cocos.sprite.Sprite):
     items = dict()
 
     def __init__(self, name, weight, cost):
-        if not (name in armor.armors or name in weapon.weapons\
-                or name in item.items or name in usable_obj.usable_objs):
-            item.items[name] = self
+        if not (name in Armor.armors or name in Weapon.weapons\
+                or name in Item.items or name in UsableObj.usable_objs):
+            Item.items[name] = self
         self.name = name
         self.item_sprite = Sprite("res/img/items/" + name + ".png")
+        self.item_inv_sprite = Sprite("res/img/items/" + name + "_inv.png")
         self.weight = weight
         self.cost = cost
 
 
-class usable_obj(item):
+class UsableObj(Item):
     usable_objs = dict()
 
     def __init__(self, usable_obj_name):
-        if usable_obj_name not in usable_obj.usable_objs:
-            usable_obj.usable_objs[usable_obj_name] = self
+        if usable_obj_name not in UsableObj.usable_objs:
+            UsableObj.usable_objs[usable_obj_name] = self
         file = open("res/stats/usable_obj/" + usable_obj_name + ".txt")
         stats = file.readline().split()
         file.close()
@@ -47,14 +48,14 @@ class usable_obj(item):
         char.set(self.buff_type, self.buff_value)
 
 
-class armor(item):
+class Armor(Item):
     armors = dict()
     # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
 
     def __init__(self, armor_name):
-        if armor_name not in armor.armors:
-            armor.armors[armor_name] = self
+        if armor_name not in Armor.armors:
+            Armor.armors[armor_name] = self
         # формат файла
         # max_ac def_firearm weight cost
         file = open("res/stats/armor/" + armor_name + ".txt")
@@ -67,7 +68,7 @@ class armor(item):
         self.def_firearm = stats[1]  # def_firearm - защита от огнестрельного оружия
 
 
-class armor_handler():
+class ArmorHandler():
     def __init__(self, armor_name):
         self.armor_name = armor_name
         self.item_sprite = armors[armor_name].item_sprite
@@ -84,12 +85,12 @@ class armor_handler():
         return dmg * 0.5  # пока я не придумаю адекватную формулу, будет так, потом исправим
 
 
-class weapon(item):
+class Weapon(Item):
     weapons = dict()
 
     def __init__(self, weapon_name):
-        if weapon_name not in weapon.weapons:
-            weapon.weapons[weapon_name] = self
+        if weapon_name not in Weapon.weapons:
+            Weapon.weapons[weapon_name] = self
         file = open("res/stats/weapon/" + weapon_name + ".txt")
         stats = file.readline().split()
         file.close()
@@ -125,15 +126,15 @@ class weapon(item):
             pass
 
 
-class weapon_handler(cocos.sprite.Sprite):
+class WeaponHandler(cocos.sprite.Sprite):
 
     def __init__(self, weapon_name):
         super().__init__()
         self.cartridge = 0
         self.flag_shoot = False
         self.weapon_name = weapon_name
-        self.weapon_anim = weapons[weapon_name].weapon_anim
-        self.item_sprite = weapons[weapon_name].item_sprite
+        self.weapon_anim = Weapon.weapons[weapon_name].weapon_anim
+        self.item_sprite = Weapon.weapons[weapon_name].item_sprite
         self.add(self.item_sprite)
 
     def shoot_anim(self):
@@ -208,13 +209,13 @@ class npc_mover(cocos.actions.Move):
 
 # Получить тип какого-то предмета
 def get_type(item):
-    if item in item.items:
+    if item in Item.items:
         return 'item'
-    elif item in weapon.weapons:
+    elif item in Weapon.weapons:
         return 'weapon'
-    elif item in armor.armors:
+    elif item in Armor.armors:
         return 'armor'
-    elif item in usable_object.usable_objs:
+    elif item in UsableObj.usable_objs:
         return 'usable'
 
 
@@ -223,13 +224,13 @@ def get_global(item):
     tp = get_type(item)
     
     if tp == 'item':
-        return item.items[item]
+        return Item.items[item]
     elif tp == 'weapon':
-        return weapon.weapons[item]
+        return Weapon.weapons[item]
     elif tp == 'armor':
-        return armor.armors[item]
+        return Armor.armors[item]
     elif tp == 'usable':
-        return usable_object.usable_objs[item]
+        return UsableObj.usable_objs[item]
 
 
 # Получить вес какого-то предмета
