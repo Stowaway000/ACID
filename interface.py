@@ -126,6 +126,18 @@ class visual_inventory(Layer):
         director.window.set_mouse_position(*self.mouse_pos)
         super().on_exit()
 
+    def move_view(self, dy):
+        if self.viewpoint[1]+dy/2 > self.up:
+            dy = 2*(self.up - self.viewpoint[1])
+        if self.viewpoint[1]+dy/2 < self.down:
+            dy = 2*(self.down-self.viewpoint[1])
+
+        self.scrollbar.position = (200, self.scrollbar.position[1]\
+                                    +dy*self.pixel_rel)
+                
+        self.viewpoint = (self.viewpoint[0], self.viewpoint[1]+dy/2)
+        self.item_window.set_focus(*self.viewpoint)
+    
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         self.on_mouse_press(x, y, buttons, modifiers)
         
@@ -133,15 +145,7 @@ class visual_inventory(Layer):
         y -= self.position[1]
 
         if 195 < x < 220 and 0 < y < self.height:
-            if self.viewpoint[1]+dy/2 > self.up:
-                dy = 2*(self.up - self.viewpoint[1])
-            if self.viewpoint[1]+dy/2 < self.down:
-                dy = 2*(self.down-self.viewpoint[1])
-            
-            self.viewpoint = (self.viewpoint[0], self.viewpoint[1]+dy/2)
-            self.item_window.set_focus(*self.viewpoint)
-
-            self.scrollbar.position = (200, self.scrollbar.position[1]+dy*self.pixel_rel)
+            self.move_view(dy)
 
     def on_mouse_press(self, x, y, button, modifiers):
         x -= self.position[0]
@@ -153,16 +157,7 @@ class visual_inventory(Layer):
                 dy = y - self.scrollbar.position[1] - self.scrollbar.height/2
                 dy /= self.pixel_rel
 
-                if self.viewpoint[1]+dy/2 > self.up:
-                    dy = 2*(self.up - self.viewpoint[1])
-                if self.viewpoint[1]+dy/2 < self.down:
-                    dy = 2*(self.down-self.viewpoint[1])
-
-                self.scrollbar.position = (200, self.scrollbar.position[1]\
-                                           +dy*self.pixel_rel)
-                
-                self.viewpoint = (self.viewpoint[0], self.viewpoint[1]+dy/2)
-                self.item_window.set_focus(*self.viewpoint)
+                self.move_view(dy)
 
 
 class stat_interface(Layer):
