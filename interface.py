@@ -166,8 +166,6 @@ class visual_inventory(Layer):
 
 
 class stat_interface(Layer):
-    is_event_handler = True
-    
     def __init__(self, stats):
         self.bars = {}
 
@@ -193,17 +191,6 @@ class stat_interface(Layer):
         self.bars[stat] = add_label(str(new), old_pos)
 
         self.add(self.bars[stat], name=stat)
-
-
-    def on_key_press(self, symbol, modifiers):
-        if symbol == key.ESCAPE:
-            pause_sc = pause.get_pause_scene()
-            
-            pause_sc.remove(pause_sc.get_children()[1])
-
-            pause_sc.add(game_menu(self.parent.mouse_pos))
-            
-            director.push(pause_sc)
 
 
 class interface(MultiplexLayer):
@@ -234,7 +221,15 @@ class interface(MultiplexLayer):
             else:
                 self.host.lurking = False
                 self.switch_to(0)
+        if symbol == key.ESCAPE:
+            pause_sc = pause.get_pause_scene()
+            
+            pause_sc.remove(pause_sc.get_children()[1])
 
+            pause_sc.add(game_menu(self.mouse_pos))
+            
+            director.push(pause_sc)
+    
     def change(self, stat, new):
         self.stats.change(stat, new)
 
