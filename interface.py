@@ -8,7 +8,7 @@ from cocos.scene import Scene
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from cocos.actions import FadeIn, FadeOut, MoveBy, RotateBy, CallFunc
 import pyglet
-from pyglet.window import key
+from pyglet.window import key, mouse
 from menu import set_menu_style, go_back, quit_game
 
 
@@ -92,6 +92,8 @@ class visual_inventory(Layer):
         self.add(self.scrollbar)
         self.add(self.item_window)
 
+        self.pixel_rel = 1
+
     def update(self, pos, hero):
         self.mouse_pos = pos
         invent = hero.inventory
@@ -102,7 +104,12 @@ class visual_inventory(Layer):
         self.scrollbar.height = int(self.height*min(self.on_one/total, 1))
         self.scrollbar.position = (200, self.height-self.scrollbar.height)
 
+        self.pixel_rel = self.scrollbar.height / self.height
+
         self.down = self.up - 32*(total-self.on_one)
+
+        self.viewpoint = (self.viewpoint[0], self.up)
+        self.item_window.set_focus(*self.viewpoint)
         
         for key, val in invent.items.items():
             item = invent.get(key)
@@ -120,19 +127,42 @@ class visual_inventory(Layer):
         super().on_exit()
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        self.on_mouse_press(x, y, buttons, modifiers)
+        
         x -= self.position[0]
         y -= self.position[1]
 
-        if 195 < x < 220:
+        if 195 < x < 220 and 0 < y < self.height:
             if self.viewpoint[1]+dy/2 > self.up:
-                dy = self.up - self.viewpoint[1]
+                dy = 2*(self.up - self.viewpoint[1])
             if self.viewpoint[1]+dy/2 < self.down:
-                dy = self.down-self.viewpoint[1]
+                dy = 2*(self.down-self.viewpoint[1])
             
             self.viewpoint = (self.viewpoint[0], self.viewpoint[1]+dy/2)
             self.item_window.set_focus(*self.viewpoint)
 
-            self.scrollbar.position = (200, self.scrollbar.position[1]+dy)
+            self.scrollbar.position = (200, self.scrollbar.position[1]+dy*self.pixel_rel)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        x -= self.position[0]
+        y -= self.position[1]
+        
+        if button == mouse.LEFT:
+            if 195 < x < 220 and (self.scrollbar.position[1] > y or\
+               y > self.scrollbar.position[1]+self.scrollbar.height):
+                dy = y - self.scrollbar.position[1] - self.scrollbar.height/2
+                dy /= self.pixel_rel
+
+                if self.viewpoint[1]+dy/2 > self.up:
+                    dy = 2*(self.up - self.viewpoint[1])
+                if self.viewpoint[1]+dy/2 < self.down:
+                    dy = 2*(self.down-self.viewpoint[1])
+
+                self.scrollbar.position = (200, self.scrollbar.position[1]\
+                                           +dy*self.pixel_rel)
+                
+                self.viewpoint = (self.viewpoint[0], self.viewpoint[1]+dy/2)
+                self.item_window.set_focus(*self.viewpoint)
 
 
 class stat_interface(Layer):
