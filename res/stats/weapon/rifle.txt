@@ -1,0 +1,1 @@
+10 1 20 bul auto False 1 1 30 4 8 10
