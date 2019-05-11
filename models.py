@@ -17,19 +17,19 @@ mouse_y = 10
 vector = [0, 0]
 
 
-class item(cocos.sprite.Sprite):
+class Item(cocos.sprite.Sprite):
     items = dict()
     def __init__(self, name, weight, cost):
         if not (name in armor.armors or name in weapon.weapons\
-                or name in item.items or name in usable_obj.usable_objs):
-            item.items[name] = self
+                or name in Item.items or name in usable_obj.usable_objs):
+            Item.items[name] = self
         self.name = name
         self.item_sprite = Sprite("res/img/items/" + name + ".png")
         self.weight = weight
         self.cost = cost
 
 
-class usable_obj(item):
+class usable_obj(Item):
     usable_objs = dict()
     def __init__(self, usable_obj_name):
         if not usable_obj_name in usable_obj.usable_objs:
@@ -46,7 +46,7 @@ class usable_obj(item):
         char.set(self.buff_type, self.buff_value)
 
 
-class armor(item):
+class armor(Item):
     armors = dict()
     # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
@@ -82,7 +82,7 @@ class armor_handler():
         return dmg * 0.5 # пока я не придумаю адекватную формулу, будет так, потом исправим
 
 
-class weapon(item):
+class weapon(Item):
     weapons = dict()
     def __init__(self, weapon_name):
         if not weapon_name in weapon.weapons:
@@ -200,7 +200,7 @@ class npc_mover(cocos.actions.Move):
 
 # Получить тип какого-то предмета
 def get_type(item):
-    if item in item.items:
+    if item in Item.items:
         return 'item'
     elif item in weapon.weapons:
         return 'weapon'
@@ -215,7 +215,7 @@ def get_global(item):
     tp = get_type(item)
     
     if tp == 'item':
-        return item.items[item]
+        return Item.items[item]
     elif tp == 'weapon':
         return weapon.weapons[item]
     elif tp == 'armor':
