@@ -66,7 +66,7 @@ class armor(Item):
 
 
 class armor_handler():
-    def __init__(armor_name):
+    def __init__(self, armor_name):
         self.armor_name = armor_name
         self.item_sprite = armors[armor_name].item_sprite
         self.ac = armors[armor_name].max_ac
@@ -118,24 +118,26 @@ class weapon(Item):
                                item_width=self.width_anim)
         self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], 0.05, loop=False)
         
-        def shoot(x, y):
+        def shoot(self, x, y):
             pass
 
 
 class weapon_handler(cocos.sprite.Sprite):
     def __init__(self, weapon_name):
-        super().__init__()
         self.cartridge = 0
         self.flag_shoot = False
         self.weapon_name = weapon_name
-        self.weapon_anim = weapons[weapon_name].weapon_anim
-        self.item_sprite = weapons[weapon_name].item_sprite
-        self.add(self.item_sprite)
+        self.weapon_anim = weapon.weapons[weapon_name].weapon_anim
+        self.item_sprite = weapon.weapons[weapon_name].item_sprite
 
-    def shoot_anim():
+        super().__init__(self.item_sprite.image)
+        
+        #self.add(self.item_sprite)
+
+    def shoot_anim(self):
         self.item_sprite.image = self.weapon_anim
     
-    def get_max_сartrige():
+    def get_max_сartrige(self):
         return weapon.weapons[self.weapon_name].max_cartridge,\
                weapon.weapons[self.weapon_name].ammo_type
 
@@ -149,7 +151,7 @@ class weapon_handler(cocos.sprite.Sprite):
             self.cartridge += count_bullet
             return 0
     
-    def shoot():
+    def shoot(self):
         pass
 
 
@@ -467,7 +469,7 @@ class character(cocos.layer.ScrollableLayer):
             if self.inventory.weight > 4*self.SEACIL[0]:
                 self.overweight = True
 
-            self.skin.add_weapon(item, self.inventory\
+            self.skin.add_weapon(self.inventory\
                                 .get_weapon(self.weapon_r_equip), 'r')
             self.switch_weapon()
     
