@@ -423,12 +423,12 @@ class character(cocos.layer.ScrollableLayer):
     # Достать\спрятать оружие
     def switch_weapon(self):
         if self.weapon_left == -1 and self.weapon_right == -1:
-            self.weapon_left == self.weapon_l_equip
-            self.weapon_right == self.weapon_r_equip
+            self.weapon_left = self.weapon_l_equip
+            self.weapon_right = self.weapon_r_equip
             self.skin.show_weapon()
         else:
-            self.weapon_left == -1
-            self.weapon_right == -1
+            self.weapon_left = -1
+            self.weapon_right = -1
             self.skin.hide_weapon()
 
     # Атаковать оружием
@@ -462,14 +462,14 @@ class character(cocos.layer.ScrollableLayer):
     def take_item(self, item, count):
         if get_type(item) == 'weapon' and self.weapon_l_equip*\
            self.weapon_r_equip > 0:
-           self.weapon_r_equip = len(self.inventory.wepons)
-           self.skin.add_weapon(item, self.inventory\
+            self.weapon_r_equip = len(self.inventory.weapons)
+            self.inventory.add(item, count)
+            if self.inventory.weight > 4*self.SEACIL[0]:
+                self.overweight = True
+
+            self.skin.add_weapon(item, self.inventory\
                                 .get_weapon(self.weapon_r_equip), 'r')
-           self.switch_weapon()
-        
-        self.inventory.add(item, count)
-        if self.inventory.weight > 4*self.SEACIL[0]:
-            self.overweight = True
+            self.switch_weapon()
     
     # Выбросить педмет из инвентаря
     def drop_item(self):
