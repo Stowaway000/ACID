@@ -135,7 +135,7 @@ class weapon_handler(cocos.sprite.Sprite):
         #self.add(self.item_sprite)
 
     def shoot_anim(self):
-        self.item_sprite.image = self.weapon_anim
+        self.image = self.weapon_anim
     
     def get_max_сartrige(self):
         return weapon.weapons[self.weapon_name].max_cartridge,\
@@ -152,7 +152,7 @@ class weapon_handler(cocos.sprite.Sprite):
             return 0
     
     def shoot(self):
-        pass
+        self.shoot_anim()
 
 
 class hero_mover(cocos.actions.Move):
@@ -587,6 +587,8 @@ class hero(character):
             self.lpressed = True
         if button == mouse.RIGHT:
             self.rpressed = True
+
+        self.on_mouse_drag(x, y, 0, 0, button, modifiers)
 
     def on_mouse_release(self, x, y, button, modifiers):
         if button == mouse.LEFT:
