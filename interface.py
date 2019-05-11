@@ -49,54 +49,52 @@ class game_menu(Layer):
             director.pop()
 
 
-class visual_inventory(Layer):
+class visual_inventory(ColorLayer):
     is_event_handler = True
     
     def __init__(self):
-        super().__init__()
+        super().__init__(31, 38, 0, 255)
 
         w = director.window.width
         h = director.window.height
         self.position = (w/6, h/6)
         self.width = int(2*w/3)
         self.height = int(2*h/3)
-        
-        bg = ColorLayer(31, 38, 0, 255)
-        bg.width = int(2*w/3)
-        bg.height = int(2*h/3)
-        bg.position = (0, 0)
 
         self.on_one = h/96
 
         self.item_window = ScrollingManager(cocos.rect.Rect(w/6, h/6, 200, int(2*h/3)))
-        self.item_window.anchor = (0, 0)
         self.item_window.position = (w/6, h/6)
+        self.item_window.scale = 2
         
         self.item_stack = ScrollableLayer()
-        self.item_stack.position = (0, 0)
 
         self.viewpoint = (w/6+50, h/6+self.height/4+16)
-        
-        self.item_window.set_focus(*self.viewpoint)
-        self.item_window.scale = 2
 
         self.scrollbar = ColorLayer(255, 200, 100, 255)
         self.scrollbar.width = 15
-        self.scrollbar.position = (200, 0)
-
+        
         self.up = h/6+self.height/4+16
         self.down = 0
 
         self.item_window.add(self.item_stack)
-        self.add(bg)
         self.add(self.scrollbar)
         self.add(self.item_window)
 
         self.pixel_rel = 1
 
+        self.hero_ref = None
+
     def update(self, pos, hero):
         self.mouse_pos = pos
         invent = hero.inventory
+
+        if not self.hero_ref:
+            portr = hero.photo
+            portr.scale = 1/3
+            portr.position = (self.width/2, self.height - portr.height)
+            self.add(portr)
+            self.hero_ref = hero
         
         h = 0
 

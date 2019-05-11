@@ -364,7 +364,7 @@ class character(cocos.layer.ScrollableLayer):
     def __init__(self, name, fraction, seacil, mover, pos):
         super().__init__()
         
-        self.photo = cocos.sprite.Sprite('res/img/portraits/' + name + '.png')
+        self.photo = cocos.sprite.Sprite('res/img/portraits/' + name + '.png', anchor=(0, 0))
 
         self.SEACIL = seacil
         
