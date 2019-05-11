@@ -8,7 +8,6 @@ from pyglet.window import key, mouse
 from cocos.actions import *
 from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
-from polygon import skin
 from physics import *
 
 
@@ -584,14 +583,19 @@ class hero(character):
     def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = True
+            self.skin.add_weapon("weapon", cocos.sprite.Sprite("weapon.jpg"), "l")
         if button == mouse.RIGHT:
             self.rpressed = True
+            self.skin.add_weapon("weapon", cocos.sprite.Sprite("weapon.jpg"), "r")
 
     def on_mouse_release(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = False
+            self.skin.remove_weapon("l")
         if button == mouse.RIGHT:
             self.rpressed = False
+            self.skin.remove_weapon("r")
+
     
     def on_key_press(self, symbol, modifiers):
         if symbol == key.R and self.lpressed:
@@ -616,3 +620,155 @@ class hero(character):
 
     def set_collision(self, manager):
         self.skin.collider = manager
+
+
+class skin(cocos.sprite.Sprite):
+    def __init__(self, name, mover, pos):
+        stat = pyglet.image.load("res/img/skins/" + name + "/" + name + ".png")
+        w_img = pyglet.image.load("res/img/skins/" + name + "/" + name + "_walk.png")
+        w_img_grid = pyglet.image.ImageGrid(w_img, 1, 9, item_width=29, item_height=14)
+        anim = pyglet.image.Animation.from_image_sequence(w_img_grid[:], 0.05, loop=True)
+
+        super().__init__(stat)
+
+        self.scroller = None
+        self.keyboard = key.KeyStateHandler()
+        director.window.push_handlers(self.keyboard)
+
+        self.body = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_body.png")
+        self.body_seat = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_body_seat.png")
+        self.lhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_lhand.png")
+        self.rhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_rhand.png")
+        self.head = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_head.png")
+
+        self.body.position = 0, 0
+        self.body_seat.position = 0, 0
+        self.head.position = 0, 0
+        self.lhand.position = -10, 7
+        self.rhand.position = 10, 7
+
+        #        self.add(self.lhand, z=0)
+        #        self.add(self.rhand, z=0)
+        self.add(self.body, z=1, name="body")
+        self.add(self.head, z=2, name="head")
+
+        self.armor = None
+        self.lweapon = None
+        self.rweapon = None
+        self.both = False
+
+        self.static = stat
+        self.animation = anim
+
+        self.seating = False
+        self.walking = False
+
+        self.position = pos
+        self.velocity = (0, 0)
+
+        self.cshape = collision_unit([eu.Vector2(*self.position), self.static.width / 2], "circle")
+        self.do(mover)
+
+    def redraw(self):
+        if self.both:
+            self.remove(self.lhand)
+            self.remove(self.rhand)
+            self.add(self.rweapon, z=0)
+        else:
+            if self.lweapon:
+                self.add(self.lhand, z=0)
+            if self.rweapon:
+                self.add(self.rhand, z=0)
+
+        if self.seating:
+            self.add(self.body_seat, z=1)
+        else:
+
+            if self.armor:
+                self.add(self.armor, z=1)
+            else:
+                self.add(self.body, z=1)
+
+        self.show_weapon()
+
+    def walk(self, new_state):
+        if self.walking != new_state:
+            self.walking = new_state
+            self.redraw()
+        else:
+            self.walking = new_state
+
+    def seat(self):
+        self.seating = not self.seating
+        if self.seating:
+            self.remove("body")
+            self.add(self.body_seat, name="body_seat")
+        if not self.seating:
+            self.remove("body_seat")
+            self.add(self.body, name="body")
+
+    def add_weapon(self, name, sprite, hand):
+        if False:
+#        if weapon.weapons[name].two_handed:
+            if self.lhand:
+                self.remove(self.lhand)
+            if self.rhand:
+                self.remove(self.rhand)
+            self.lweapon = False
+            self.rweapon = sprite
+            self.rweapon.position = 10, 10
+            self.both = True
+        else:
+            self.both = False
+            if hand == 'l':
+                self.lweapon = sprite
+                self.lweapon.position = -10, 10
+                self.add(self.lhand, name="lhand", z=1)
+                self.add(self.lweapon, name="lweapon", z=2)
+            if hand == 'r':
+                self.rweapon = sprite
+                self.rweapon.position = 10, 10
+                self.add(self.rhand, name="rhand", z=1)
+                self.add(self.rweapon, name="rweapon", z=2)
+
+    def remove_weapon(self, hand):
+        if hand == "l":
+            self.lweapon = None
+            self.remove("lhand")
+            self.remove("lweapon")
+        else:
+            self.rweapon = None
+            self.remove("rhand")
+            self.remove("rweapon")
+
+    def add_armor(self, sprite):
+        self.armor = sprite
+        self.remove("body")
+        self.add(self.armor, name="body", z=0)
+
+    def remove_armor(self):
+        self.armor = None
+        self.remove("body")
+        self.add(self.body, name="body", z=0)
+
+    def show_weapon(self):
+        if self.both:
+            self.add(self.rweapon, name="rweapon", z=0)
+        else:
+            if self.lweapon:
+                self.add(self.lhand, name="lhand", z=1)
+                self.add(self.lweapon, name="lweapon", z=2)
+            if self.rweapon:
+                self.add(self.rhand, name="rhand", z=1)
+                self.add(self.rweapon, name="rweapon", z=2)
+
+    def hide_weapon(self):
+        if self.both:
+            self.remove("both")
+        else:
+            if self.lweapon:
+                self.remove("lhand")
+                self.remove("lweapon")
+            if self.rweapon:
+                self.remove("rhand")
+                self.remove("rweapon")
