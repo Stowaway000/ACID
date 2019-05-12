@@ -470,7 +470,7 @@ class character(cocos.layer.ScrollableLayer):
                 self.overweight = True
 
             self.skin.add_weapon(self.inventory\
-                                .get_weapon(self.weapon_r_equip), 'r')
+                                 .get_weapon(self.weapon_r_equip), 'r')
             self.switch_weapon()
     
     # Выбросить педмет из инвентаря
@@ -641,6 +641,7 @@ class skin(cocos.sprite.Sprite):
         self.lhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_lhand.png")
         self.rhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_rhand.png")
         self.head = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_head.png")
+        self.animation = cocos.sprite.Sprite(anim)
 
         self.body.position = 0, 0
         self.body_seat.position = 0, 0
@@ -656,9 +657,6 @@ class skin(cocos.sprite.Sprite):
         self.rweapon = None
         self.both = False
 
-#        self.static = stat
-        self.animation = cocos.sprite.Sprite(anim)
-
         self.seating = False
         self.walking = False
 
@@ -667,28 +665,6 @@ class skin(cocos.sprite.Sprite):
 
         self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle")
         self.do(mover)
-
-    def redraw(self):
-        if self.both:
-            self.remove(self.lhand)
-            self.remove(self.rhand)
-            self.add(self.rweapon, z=2)
-        else:
-            if self.lweapon:
-                self.add(self.lhand, z=0)
-            if self.rweapon:
-                self.add(self.rhand, z=0)
-
-        if self.seating:
-            self.add(self.body_seat, z=1)
-        else:
-
-            if self.armor:
-                self.add(self.armor, z=1)
-            else:
-                self.add(self.body, z=1)
-
-        self.show_weapon()
 
     def walk(self, new_state):
         if self.walking != new_state:
@@ -711,8 +687,7 @@ class skin(cocos.sprite.Sprite):
             self.add(self.body, name="body", z=1)
 
     def add_weapon(self, sprite, hand):
-        if False:
-#        if weapon.weapons[name].two_handed:
+        if weapon.weapons[name].two_handed:
             if self.lhand:
                 self.remove("lhand")
             if self.rhand:
