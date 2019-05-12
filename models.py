@@ -70,9 +70,9 @@ class armor(Item):
 class armor_handler():
     def __init__(self, armor_name):
         self.armor_name = armor_name
-        self.item_sprite = armors[armor_name].item_sprite
-        self.ac = armors[armor_name].max_ac
-        self.def_firearm = armors[armor_name].def_firearm
+        self.item_sprite = armor.armors[armor_name].item_sprite
+        self.ac = armor.armors[armor_name].max_ac
+        self.def_firearm = armor.armors[armor_name].def_firearm
 
     def statusAC(self, dmg=1, k=1):
         # dmg - кол-во урона
