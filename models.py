@@ -10,7 +10,6 @@ from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
 from physics import *
 
-
 # Параметры мыши
 mouse_x = 10
 mouse_y = 10
@@ -19,8 +18,9 @@ vector = [0, 0]
 
 class Item(cocos.sprite.Sprite):
     items = dict()
+
     def __init__(self, name, weight, cost):
-        if not (name in armor.armors or name in weapon.weapons\
+        if not (name in armor.armors or name in weapon.weapons \
                 or name in Item.items or name in usable_obj.usable_objs):
             Item.items[name] = self
         self.name = name
@@ -31,6 +31,7 @@ class Item(cocos.sprite.Sprite):
 
 class usable_obj(Item):
     usable_objs = dict()
+
     def __init__(self, usable_obj_name):
         if not usable_obj_name in usable_obj.usable_objs:
             usable_obj.usable_objs[usable_obj_name] = self
@@ -38,8 +39,8 @@ class usable_obj(Item):
         stats = file.readline().split()
         file.close()
 
-        self.buff_type = stats[0] # Изменяемая характеристика
-        self.buff_value = int(stats[1]) # Значение, на которое изменяется характеристика
+        self.buff_type = stats[0]  # Изменяемая характеристика
+        self.buff_value = int(stats[1])  # Значение, на которое изменяется характеристика
         super().__init__(usable_obj_name, float(stats[2]), float(stats[3]))
 
     def use(self, char):
@@ -48,6 +49,7 @@ class usable_obj(Item):
 
 class armor(Item):
     armors = dict()
+
     # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
     def __init__(self, armor_name):
@@ -79,11 +81,12 @@ class armor_handler():
         self.ac -= 1
         if self.ac <= 0:
             self.def_firearm = 0
-        return dmg * 0.5 # пока я не придумаю адекватную формулу, будет так, потом исправим
+        return dmg * 0.5  # пока я не придумаю адекватную формулу, будет так, потом исправим
 
 
 class weapon(Item):
     weapons = dict()
+
     def __init__(self, weapon_name):
         if not weapon_name in weapon.weapons:
             weapon.weapons[weapon_name] = self
@@ -92,22 +95,22 @@ class weapon(Item):
         file.close()
 
         super().__init__(weapon_name, float(stats[6]), float(stats[7]))
-        self.weapon_name = weapon_name # weapon_name - имя оружия
+        self.weapon_name = weapon_name  # weapon_name - имя оружия
         anim_name = "res/img/items/" + weapon_name + "_anim.png"
         self.damage = float(stats[0])  # damage - урон
         self.breachness = float(stats[1])  # breachness - пробивная способность
         self.max_cartridge = int(stats[2])  # max_cartridge - размер обоймы
-        self.ammo_type = stats[3] # ammo_type - тип патронов
-        self.shoot_type = stats[4] # shoot_type - тип стрельбы - auto/half auto
-        self.two_handed = bool(stats[5]) # two_handed - флаг двуручного оружия
+        self.ammo_type = stats[3]  # ammo_type - тип патронов
+        self.shoot_type = stats[4]  # shoot_type - тип стрельбы - auto/half auto
+        self.two_handed = bool(stats[5])  # two_handed - флаг двуручного оружия
         # (1 - двуручное, 0 - одноручное)
 
         if self.shoot_type == "auto":
-            self.firerate = int(stats[11]) # firerate - скорострельность
+            self.firerate = int(stats[11])  # firerate - скорострельность
 
-        self.count_anim = int(stats[10]) # count_anim - кол-во спрайтов в анимации
-        self.width_anim = int(stats[9]) # width_anim - ширина спрайта в анимации"
-        self.height_anim = int(stats[8]) # height_anim - высота спрайта в анимации
+        self.count_anim = int(stats[10])  # count_anim - кол-во спрайтов в анимации
+        self.width_anim = int(stats[9])  # width_anim - ширина спрайта в анимации"
+        self.height_anim = int(stats[8])  # height_anim - высота спрайта в анимации
 
         # self.item_sprite.position = 400, 400
 
@@ -132,13 +135,13 @@ class weapon_handler(cocos.sprite.Sprite):
 
         super().__init__(self.item_sprite.image)
 
-        #self.add(self.item_sprite)
+        # self.add(self.item_sprite)
 
     def shoot_anim(self):
         self.image = self.weapon_anim
 
     def get_max_сartrige(self):
-        return weapon.weapons[self.weapon_name].max_cartridge,\
+        return weapon.weapons[self.weapon_name].max_cartridge, \
                weapon.weapons[self.weapon_name].ammo_type
 
     def recharge(self, count_bullet):
@@ -196,7 +199,7 @@ class hero_mover(cocos.actions.Move):
 
 class npc_mover(cocos.actions.Move):
     def step(self, dt):
-        #TODO
+        # TODO
         pass
 
 
@@ -381,26 +384,26 @@ class character(cocos.layer.ScrollableLayer):
     def get_in_sector(me, angle, r, look):
         chars = []
 
-        angle = radians(angle)/2
-        vector = (look[0]*srqt(r), look[1]*srqt(r))
-        r_vector = (vector[0]*cos(angle)-vector[1]*sin(angle),\
-                    vector[0]*sin(angle)+vector[1]*cos(angle))
-        s = abs(vector[0]*r_vector[1]-vector[1]*r_vector[0]) / 2
+        angle = radians(angle) / 2
+        vector = (look[0] * srqt(r), look[1] * srqt(r))
+        r_vector = (vector[0] * cos(angle) - vector[1] * sin(angle), \
+                    vector[0] * sin(angle) + vector[1] * cos(angle))
+        s = abs(vector[0] * r_vector[1] - vector[1] * r_vector[0]) / 2
 
         for i in character.characters:
-            vect = [me[0]-i.skin.x, me[1]-i.skin.y]
-            dist = sqrt(vect[0]*vect[0]+vect[1]*vect[1])
-            vect[0] *= sqrt(r/dist)
-            vect[1] *= sqrt(r/dist)
+            vect = [me[0] - i.skin.x, me[1] - i.skin.y]
+            dist = sqrt(vect[0] * vect[0] + vect[1] * vect[1])
+            vect[0] *= sqrt(r / dist)
+            vect[1] *= sqrt(r / dist)
             if dist <= r:
-                if abs(vect[0]*vector[1]-vect[1]*vector[0])/2 <= s:
+                if abs(vect[0] * vector[1] - vect[1] * vector[0]) / 2 <= s:
                     chars.append(i.get_info())
 
         return chars
 
     # Получить информацию о персонаже
     def get_info(self):
-        #TODO
+        # TODO
         return (fraction, self.skin.position)
 
     # Увеличить характеристику
@@ -443,13 +446,13 @@ class character(cocos.layer.ScrollableLayer):
     # Перезарядить оружие
     def reload(self, hand):
         if hand == 'r' and self.weapon_right != -1:
-            ammo, ammo_type = self.inventory.get_weapon(self.weapon_right)\
+            ammo, ammo_type = self.inventory.get_weapon(self.weapon_right) \
                 .get_max_cartridge()
             ammo = self.inventory.take(ammo_type, ammo)
             change = self.inventory.get_weapon(self.weapon_right).recharge(ammo)
             self.inventory.add(ammo_type, change)
         elif self.weapon_left != -1:
-            ammo, ammo_type = self.inventory.get_weapon(self.weapon_left)\
+            ammo, ammo_type = self.inventory.get_weapon(self.weapon_left) \
                 .get_max_cartridge()
             ammo = self.inventory.take(ammo_type, ammo)
             change = self.inventory.get_weapon(self.weapon_left).recharge(ammo)
@@ -462,14 +465,14 @@ class character(cocos.layer.ScrollableLayer):
 
     # Положить вещь в инвентарь
     def take_item(self, item, count):
-        if get_type(item) == 'weapon' and self.weapon_l_equip*\
-           self.weapon_r_equip > 0:
+        if get_type(item) == 'weapon' and self.weapon_l_equip * \
+                self.weapon_r_equip > 0:
             self.weapon_r_equip = len(self.inventory.weapons)
             self.inventory.add(item, count)
-            if self.inventory.weight > 4*self.SEACIL[0]:
+            if self.inventory.weight > 4 * self.SEACIL[0]:
                 self.overweight = True
 
-            self.skin.add_weapon(self.inventory\
+            self.skin.add_weapon(self.inventory \
                                  .get_weapon(self.weapon_r_equip), 'r')
             self.switch_weapon()
 
@@ -485,7 +488,7 @@ class character(cocos.layer.ScrollableLayer):
 # Класс NPC
 class NPC(character):
     def __init__(self, name, fraction):
-        info = open('stats/chars/'+name+'.txt', 'r')
+        info = open('stats/chars/' + name + '.txt', 'r')
         stats = list(map(float, info.readline().split()))
         info.close()
 
@@ -546,11 +549,11 @@ class hero(character):
         y -= mid_y
 
         if x:
-            angle = degrees(atan(y/x))
+            angle = degrees(atan(y / x))
         elif y > 0:
             angle = 90
         else:
-            angle = -90        
+            angle = -90
 
         if x < 0 and y < 0:
             angle -= 180
@@ -563,7 +566,6 @@ class hero(character):
         angle = -angle + 90
 
         if self.skin.rotation != angle:
-
             h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
 
             vector[0] = int(mouse_x - h_x)
@@ -595,8 +597,6 @@ class hero(character):
             self.lpressed = False
         if button == mouse.RIGHT:
             self.rpressed = False
-
-
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.R and self.lpressed:
@@ -656,7 +656,7 @@ class skin(cocos.sprite.Sprite):
         self.rweapon = None
         self.both = False
 
-#        self.static = stat
+        #        self.static = stat
         self.animation = cocos.sprite.Sprite(anim)
 
         self.seating = False
@@ -712,7 +712,7 @@ class skin(cocos.sprite.Sprite):
 
     def add_weapon(self, sprite, hand):
         if False:
-#        if weapon.weapons[name].two_handed:
+            #        if weapon.weapons[name].two_handed:
             if self.lhand:
                 self.remove("lhand")
             if self.rhand:
