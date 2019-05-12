@@ -213,8 +213,25 @@ class npc_mover(cocos.actions.Move):
         elif not (self.target.velocity[0] or self.target.velocity[1]):
             self.target.walk(False)
 
-        self.target.walk
+        dx = vel_x * dt
+        dy = vel_y * dt
+        new = self.target.cshape
+
+        new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y)
+        if self.target.collider.collision_manager.any_near(new, 0):
+            vel_x = 0
+            new.cshape.center.x -= dx
+
+        new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
+        if self.target.collider.collision_manager.any_near(new, 0):
+            vel_y = 0
+            new.cshape.center.y -= dy
+
         self.target.velocity = (vel_x, vel_y)
+        self.target.position = new.cshape.center
+        self.target.scroller.set_focus(*new.cshape.center)
+
+        self.target.scroller.set_focus(self.target.x, self.target.y)
 
     def update(self, x, y):
         self.x = x
