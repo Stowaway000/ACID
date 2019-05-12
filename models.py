@@ -8,6 +8,7 @@ from pyglet.window import key, mouse
 from cocos.actions import *
 from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
+from random import randint
 from physics import *
 
 # Параметры мыши
@@ -198,9 +199,26 @@ class hero_mover(cocos.actions.Move):
 
 
 class npc_mover(cocos.actions.Move):
+    def __init__(self):
+        super().__init__()
+        self.x = self.target.position[0]
+        self.y = self.target.position[1]
+
     def step(self, dt):
-        # TODO
-        pass
+        vel_x = (self.x / sqrt(self.x ** 2 + self.y ** 2)) * 50
+        vel_y = (self.y / sqrt(self.x ** 2 + self.y ** 2)) * 50
+
+        if self.target.velocity[0] or self.target.velocity[1]:
+            self.target.walk(True)
+        elif not (self.target.velocity[0] or self.target.velocity[1]):
+            self.target.walk(False)
+
+        self.target.walk
+        self.target.velocity = (vel_x, vel_y)
+
+    def update(self, x, y):
+        self.x = x
+        self.y = y
 
 
 # Получить тип какого-то предмета
@@ -495,17 +513,63 @@ class NPC(character):
         self.hp = stats[0]
         self.stamina = stats[1]
         self.sp_stamina = stats[2]
+        self.ai = AI()
 
-        super().__init__(name, fraction, stats[3:-1], npc_mover(), stats[-1])
+        super().__init__(name, fraction, stats[3:-1], self.ai.mover, stats[-1])
 
         self.angle_velocity = 0
 
-    # AI
+    # Создать труп и прочее
+    def die(self):
+        pass
+
+
+class AI:
+    def __init__(self, rad_patrol):
+        self.mover = npc_mover()
+        self.state = "patrol"
+        self.rad_patrol = rad_patrol
+
+    def change_state(self):
+        if self.state == "patrol":
+            self.state = "fight"
+        else:
+            self.state = "patrol"
+
+    def get_way(self, x, y):
+        self.mover.update(x, y)
+
+    def think(self):
+        if self.state == "patrol":
+            x, y = self.patrol.choose_point()
+            self.get_way(x, y)
+
+
+class patroling(AI):
+    def choose_point(self):
+        x = randint()
+
+    def trade(self):
+        pass
+
     def think(self):
         pass
 
-    # Создать труп и прочее
-    def die(self):
+
+class fight(AI):
+    def choose_enemy(self):
+        pass
+
+    def choose_cover(self):
+        pass
+
+    def danger(self):
+        pass
+
+    def attack(self):
+        pass
+
+    def think(self):
         pass
 
 
@@ -712,7 +776,7 @@ class skin(cocos.sprite.Sprite):
 
     def add_weapon(self, sprite, hand):
         if False:
-            #        if weapon.weapons[name].two_handed:
+            # if weapon.weapons[name].two_handed:
             if self.lhand:
                 self.remove("lhand")
             if self.rhand:
