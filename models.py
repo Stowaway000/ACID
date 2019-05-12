@@ -211,7 +211,7 @@ def get_type(item):
         return 'weapon'
     elif item in armor.armors:
         return 'armor'
-    elif item in usable_object.usable_objs:
+    elif item in usable_obj.usable_objs:
         return 'usable'
 
 
@@ -226,7 +226,7 @@ def get_global(item):
     elif tp == 'armor':
         return armor.armors[item]
     elif tp == 'usable':
-        return usable_object.usable_objs[item]
+        return usable_obj.usable_objs[item]
 
 
 # Получить вес какого-то предмета
@@ -346,7 +346,7 @@ class inventory():
     # Получить экземпляр используемого из инвентаря по номеру
     def get_usable(self, item):
         if item in self.usables:
-            return usable_object.objects[item]
+            return usable_obj.usable_objs[item]
         return None
 
 
@@ -385,7 +385,7 @@ class character(cocos.layer.ScrollableLayer):
         chars = []
 
         angle = radians(angle) / 2
-        vector = (look[0] * srqt(r), look[1] * srqt(r))
+        vector = (look[0] * sqrt(r), look[1] * sqrt(r))
         r_vector = (vector[0] * cos(angle) - vector[1] * sin(angle), \
                     vector[0] * sin(angle) + vector[1] * cos(angle))
         s = abs(vector[0] * r_vector[1] - vector[1] * r_vector[0]) / 2
@@ -404,7 +404,7 @@ class character(cocos.layer.ScrollableLayer):
     # Получить информацию о персонаже
     def get_info(self):
         # TODO
-        return (fraction, self.skin.position)
+        return (self.fraction, self.skin.position)
 
     # Увеличить характеристику
     def set(self, attr, add):
@@ -505,7 +505,7 @@ class NPC(character):
         pass
 
     # Создать труп и прочее
-    def die():
+    def die(self):
         pass
 
 
