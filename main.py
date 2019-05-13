@@ -59,7 +59,6 @@ def enter():
 
     weapon('rifle')
     main_hero.take_item('rifle', 1)
-    
     director.push(scene)
 
 

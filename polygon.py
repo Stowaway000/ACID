@@ -13,7 +13,6 @@ mouse_x = 10
 mouse_y = 10
 vector = [0, 0]
 
-
 class MapLayer(cocos.layer.ScrollableLayer):
     def __init__(self, name):
         super().__init__()

@@ -16,7 +16,6 @@ mouse_x = 10
 mouse_y = 10
 vector = [0, 0]
 
-
 class Item(cocos.sprite.Sprite):
     items = dict()
 
@@ -24,6 +23,7 @@ class Item(cocos.sprite.Sprite):
         if not (name in armor.armors or name in weapon.weapons\
                 or name in Item.items or name in usable_obj.usable_objs):
             Item.items[name] = self
+
         self.name = name
         self.item_sprite = Sprite("res/img/items/" + name + ".png")
         self.weight = weight
@@ -118,9 +118,9 @@ class weapon(Item):
                                item_height=self.height_anim,
                                item_width=self.width_anim)
         self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], 0.05, loop=False)
-        
-        def shoot(self, x, y):
-            pass
+
+    def shoot(self, x, y):
+        pass
 
 
 class weapon_handler(cocos.sprite.Sprite):
@@ -132,8 +132,6 @@ class weapon_handler(cocos.sprite.Sprite):
         self.item_sprite = weapon.weapons[weapon_name].item_sprite
 
         super().__init__(self.item_sprite.image)
-        
-        #self.add(self.item_sprite)
 
     def shoot_anim(self):
         self.image = self.weapon_anim
@@ -151,7 +149,7 @@ class weapon_handler(cocos.sprite.Sprite):
         else:
             self.cartridge += count_bullet
             return 0
-    
+
     def shoot(self):
         self.shoot_anim()
 
@@ -464,7 +462,7 @@ class character(cocos.layer.ScrollableLayer):
     # Положить вещь в инвентарь
     def take_item(self, item, count):
         if get_type(item) == 'weapon' and self.weapon_l_equip*\
-           self.weapon_r_equip > 0:
+            self.weapon_r_equip > 0:
             self.weapon_r_equip = len(self.inventory.weapons)
             self.inventory.add(item, count)
             if self.inventory.weight > 4*self.SEACIL[0]:
@@ -502,7 +500,7 @@ class NPC(character):
         pass
 
     # Создать труп и прочее
-    def die():
+    def die(self):
         pass
     
 
@@ -596,8 +594,6 @@ class hero(character):
         if button == mouse.RIGHT:
             self.rpressed = False
 
-
-    
     def on_key_press(self, symbol, modifiers):
         if symbol == key.R and self.lpressed:
             self.reload('r')
