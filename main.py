@@ -5,12 +5,14 @@ from cocos.scene import Scene
 from cocos.actions import RotateBy, Repeat
 from pyglet import font
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
-from polygon import *
-from models import *
 from physics import *
+from creature import *
+from npc import *
+from hero import *
+from map import *
 
 
-version = '0.002'  # Версия игры
+version = '0.03'  # Версия игры
 # Ширина и высота окна
 width = 1280
 height = 720
