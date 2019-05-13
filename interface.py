@@ -84,6 +84,8 @@ class visual_inventory(ColorLayer):
         self.pixel_rel = 1
 
         self.hero_ref = None
+        
+        self.selected = ''
 
     def update(self, pos, hero):
         self.mouse_pos = pos
@@ -115,8 +117,8 @@ class visual_inventory(ColorLayer):
             spr.position = (50, self.height/2-h*32)
 
             count = add_label(str(val), (80, self.height/2-h*32))
-            self.item_stack.add(spr)
-            self.item_stack.add(count)
+            self.item_stack.add(spr, 1, item.name)
+            self.item_stack.add(count, 1)
             
             h += 1
     
@@ -156,6 +158,23 @@ class visual_inventory(ColorLayer):
                 dy /= self.pixel_rel
 
                 self.move_view(dy)
+            elif 0 < x < 195:
+                y /= 2
+                y += self.viewpoint[1] - self.up + 32
+                names = self.item_stack.children_names
+                for key, val in names.items():
+                    if val.position[1] < y < val.position[1] + val.height and key != 'select':
+                        if self.selected:
+                            self.item_stack.remove('select')
+                            
+                        selection = ColorLayer(100, 50, 0, 140)
+                        selection.width = 100
+                        selection.height = 32
+                        selection.position = (val.position[0]-50, val.position[1]-16)
+                        self.item_stack.add(selection, z=0, name='select')
+                        
+                        self.selected = key
+                        break
 
 
 class stat_interface(Layer):
