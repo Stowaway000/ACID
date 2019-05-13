@@ -7,7 +7,7 @@ from pyglet.window import key, mouse
 
 from cocos.actions import *
 from cocos import mapcolliders
-from math import sqrt, sin, cos, radians, atan, degrees
+from math import sqrt, sin, cos, radians, atan, degrees, hypot
 from random import randint
 from physics import *
 
@@ -205,8 +205,8 @@ class npc_mover(cocos.actions.Move):
         self.y = self.target.position[1]
 
     def step(self, dt):
-        vel_x = (self.x / sqrt(self.x ** 2 + self.y ** 2)) * 50
-        vel_y = (self.y / sqrt(self.x ** 2 + self.y ** 2)) * 50
+        vel_x = (self.x / hypot(self.x, self.y)) * 50
+        vel_y = (self.y / hypot(self.x, self.y)) * 50
 
         if self.target.velocity[0] or self.target.velocity[1]:
             self.target.walk(True)
@@ -560,11 +560,13 @@ class AI:
         if self.state == "patrol":
             x, y = self.patrol.choose_point()
             self.get_way(x, y)
+        else:
+            pass
 
 
 class patroling(AI):
     def choose_point(self):
-        x = randint()
+        pass
 
     def trade(self):
         pass
