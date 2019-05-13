@@ -725,7 +725,8 @@ class skin(cocos.sprite.Sprite):
 
     def show_weapon(self):
         if self.both:
-            self.add(self.rweapon, name="rweapon", z=0)
+            self.add(self.rhand, name="rhand", z=0)
+            self.add(self.rweapon, name="both", z=2)
         else:
             if self.lweapon:
                 self.add(self.lhand, name="lhand", z=0)
@@ -736,6 +737,7 @@ class skin(cocos.sprite.Sprite):
 
     def hide_weapon(self):
         if self.both:
+            self.remove("rhand")
             self.remove("both")
         else:
             if self.lweapon:
