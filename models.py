@@ -100,7 +100,7 @@ class weapon(Item):
         self.max_cartridge = int(stats[2])  # max_cartridge - размер обоймы
         self.ammo_type = stats[3] # ammo_type - тип патронов
         self.shoot_type = stats[4] # shoot_type - тип стрельбы - auto/half auto
-        self.two_handed = bool(stats[5]) # two_handed - флаг двуручного оружия
+        self.two_handed = bool(int(stats[5])) # two_handed - флаг двуручного оружия
         # (1 - двуручное, 0 - одноручное)
         
         if self.shoot_type == "auto":
@@ -646,7 +646,7 @@ class skin(cocos.sprite.Sprite):
         self.rhand.position = 10, 7
 
         self.add(self.body, name="body", z=1)
-        self.add(self.head, name="head", z=2)
+        self.add(self.head, name="head", z=3)
 
         self.armor = None
         self.lweapon = None
@@ -692,16 +692,22 @@ class skin(cocos.sprite.Sprite):
                 self.remove("rweapon")
             self.lweapon = False
             self.rweapon = handler
-            self.rweapon.position = 10, 10
+            self.rweapon.position = 10, 15
+            self.body.rotation = 20
+            self.rhand.position = 10, 4
             self.both = True
         else:
             self.both = False
             if hand == 'l':
                 self.lweapon = handler
-                self.lweapon.position = -10, 10
+                self.lweapon.position = -10, 20
+                self.body.rotation = 0
+                self.rhand.position = 10, 7
             if hand == 'r':
                 self.rweapon = handler
-                self.rweapon.position = 10, 10
+                self.rweapon.position = 10, 20
+                self.body.rotation = 0
+                self.rhand.position = 10, 7
 
     def remove_weapon(self, hand):
         if hand == "l":
@@ -727,6 +733,8 @@ class skin(cocos.sprite.Sprite):
         if self.both:
             self.add(self.rhand, name="rhand", z=0)
             self.add(self.rweapon, name="both", z=2)
+            self.body.rotation = 20
+            self.rhand.position = 10, 4
         else:
             if self.lweapon:
                 self.add(self.lhand, name="lhand", z=0)
@@ -736,6 +744,8 @@ class skin(cocos.sprite.Sprite):
                 self.add(self.rweapon, name="rweapon", z=2)
 
     def hide_weapon(self):
+        self.body.rotation = 0
+        self.rhand.position = 10, 7
         if self.both:
             self.remove("rhand")
             self.remove("both")
