@@ -242,15 +242,11 @@ def get_global(item):
 
 # Получить вес какого-то предмета
 def get_weight(item):
-    tp = get_type(item)
-
     return get_global(item).weight
 
 
 # Получить цену какого-то предмета
 def get_cost(item):
-    tp = get_type(item)
-    
     return get_global(item).cost
 
 
@@ -293,16 +289,20 @@ class inventory():
     # Забрать count предметов из инвентаря
     def take(self, item, count):
         n = self.count(item)
-        self.weight -= get_weight(item) * n
-        if n < count:
+        if count == 'all' or n < count:
             count = n
+        self.weight -= get_weight(item) * count
 
         tp = get_type(item)
         if tp == 'item':
             self.items[item] -= n
+            if not self.items[item]:
+                self.items.pop(item)
 
         elif tp == 'usable':
             self.usables[item] -= n
+            if not self.usables[item]:
+                self.usables.pop(item)
         
         elif tp == 'weapon':
             get = 0
@@ -491,8 +491,8 @@ class character(cocos.layer.ScrollableLayer):
             self.overweight = True
     
     # Выбросить педмет из инвентаря
-    def drop_item(self):
-        pass
+    def drop_item(self, item, count='all'):
+        self.inventory.take(item, count)
 
     # Выложить предмет в ящик
     def store_item(self):

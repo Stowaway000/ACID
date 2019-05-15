@@ -25,6 +25,19 @@ def add_text(txt, point, anchor='center', size=14, padding=10):
                      multiline=True, width=200-padding*2)
 
 
+class Button(ColorLayer):
+    def __init__(self, txt, x, y, w, h):
+        super().__init__(100, 50, 0, 255)
+        self.position = (x, y)
+        self.width = w
+        self.height = h
+
+        self.label = add_label(txt, (w/2, h/2))
+        self.add(self.label)
+
+        self.rect = cocos.rect.Rect(x, y, w, h)
+
+
 class game_menu(Layer):
     is_event_handler = True
     
@@ -68,7 +81,7 @@ class visual_inventory(ColorLayer):
         self.width = int(2*w/3)
         self.height = int(2*h/3)
 
-        self.on_one = h/96
+        self.on_one = self.height/64
 
         self.item_window = ScrollingManager(cocos.rect.Rect(w/6, h/6, 200, int(2*h/3)))
         self.item_window.position = (w/6, h/6)
@@ -85,47 +98,69 @@ class visual_inventory(ColorLayer):
         self.down = 0
 
         self.item_window.add(self.item_stack)
-        self.add(self.scrollbar)
+        self.add(self.scrollbar, name='sb')
         self.add(self.item_window)
 
         self.pixel_rel = 1
 
         self.hero_ref = hero
+        '''
         portr = hero.photo
         portr.scale = 1/3
         portr.position = (self.width/2, self.height - portr.height)
-        self.add(portr)
+        self.add(portr)'''
+
+        self.buttons = []
+        self.buttons.append(Button('Drop', 230, self.height-200, 100, 30))
+
+        self.items = []
         
         self.selected = ''
 
     def update(self, pos):
         self.mouse_pos = pos
         invent = self.hero_ref.inventory
-        
-        h = 0
 
         total = len(invent.items) + len(invent.weapons) + len(invent.armors)
+        
+        self.remove('sb')
         self.scrollbar.height = int(self.height*min(self.on_one/total, 1))
         self.scrollbar.position = (200, self.height-self.scrollbar.height)
+        self.add(self.scrollbar, name='sb')
 
         self.pixel_rel = self.scrollbar.height / self.height
 
         self.down = self.up - 32*(total-self.on_one)
+        if self.down > self.up:
+            self.down = self.up
 
         self.viewpoint = (self.viewpoint[0], self.up)
         self.item_window.set_focus(*self.viewpoint)
+
+        for i in self.items:
+            self.item_stack.remove(i)
+        self.items.clear()
         
+        h = 0
         for key, val in invent.items.items():
             item = invent.get(key)
             spr = item.item_inv_sprite
             spr.position = (50, self.height/2-h*32)
 
-            count = add_label(str(val), (90, self.height/2-h*32))
+            count = add_label(str(val), (40, 0))
             count.scale = 0.5
+            spr.add(count, 1)
             self.item_stack.add(spr, 1, item.name)
-            self.item_stack.add(count, 1)
+            self.items.append(item.name)
             
             h += 1
+
+        if self.selected:
+            for i in self.buttons:
+                self.remove(i)
+            self.selected = ''
+            self.item_stack.remove('select')
+            self.remove('naming')
     
     def on_exit(self):
         director.window.set_mouse_position(*self.mouse_pos)
@@ -134,7 +169,7 @@ class visual_inventory(ColorLayer):
     def move_view(self, dy):
         if self.viewpoint[1]+dy/2 > self.up:
             dy = 2*(self.up - self.viewpoint[1])
-        if self.viewpoint[1]+dy/2 < self.down:
+        elif self.viewpoint[1]+dy/2 < self.down:
             dy = 2*(self.down-self.viewpoint[1])
 
         self.scrollbar.position = (200, self.scrollbar.position[1]\
@@ -144,7 +179,7 @@ class visual_inventory(ColorLayer):
         self.item_window.set_focus(*self.viewpoint)
     
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-        self.on_mouse_press(x, y, buttons, modifiers)
+        #self.on_mouse_press(x, y, buttons, modifiers)
         
         x -= self.position[0]
         y -= self.position[1]
@@ -152,6 +187,28 @@ class visual_inventory(ColorLayer):
         if 195 < x < 220 and 0 < y < self.height:
             self.move_view(dy)
 
+    def on_item_click(self, key, val):
+        if self.selected:
+            self.item_stack.remove('select')
+            self.remove('naming')
+        else:
+            for i in self.buttons:
+                self.add(i)
+                            
+        selection = ColorLayer(100, 50, 0, 140)
+        selection.width = 100
+        selection.height = 32
+        selection.position = (val.position[0]-50, val.position[1]-16)
+        self.item_stack.add(selection, z=0, name='select')
+
+        text = '<b>' + key.capitalize() + '</b><br>' + \
+                self.hero_ref.inventory.get(key).get_info()
+        naming = add_text(text, (230, self.height)\
+                          , 'left')
+        self.add(naming, name='naming')
+
+        self.selected = key
+    
     def on_mouse_press(self, x, y, button, modifiers):
         x -= self.position[0]
         y -= self.position[1]
@@ -169,24 +226,12 @@ class visual_inventory(ColorLayer):
                 names = self.item_stack.children_names
                 for key, val in names.items():
                     if val.position[1] < y < val.position[1] + val.height and key != 'select':
-                        if self.selected:
-                            self.item_stack.remove('select')
-                            self.remove('naming')
-                            
-                        selection = ColorLayer(100, 50, 0, 140)
-                        selection.width = 100
-                        selection.height = 32
-                        selection.position = (val.position[0]-50, val.position[1]-16)
-                        self.item_stack.add(selection, z=0, name='select')
-
-                        text = '<b>' + key.capitalize() + '</b><br>' + \
-                               self.hero_ref.inventory.get(key).get_info()
-                        naming = add_text(text, (230, self.height)\
-                                          , 'left')
-                        self.add(naming, name='naming')
-
-                        self.selected = key
+                        self.on_item_click(key, val)
                         break
+            else:
+                if self.buttons[0].rect.contains(x, y):
+                    self.hero_ref.drop_item(self.selected)
+                    self.update(self.mouse_pos)
 
 
 class stat_interface(Layer):
