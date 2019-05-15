@@ -1,13 +1,16 @@
 from cocos.scene import Scene
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
-from polygon import *
-from models import hero, Item
+from hero import hero
+from item import Item, Weapon
 from physics import *
 from interface import interface
+from map import *
 from menu import set_menu_style, previous, quit_game
 
 
 version = '0.006'  # Версия игры
+
+
 # Ширина и высота окна
 width = 1280
 height = 720
@@ -67,6 +70,7 @@ def enter():
     main_hero.take_damage(20, 1)
     main_hero.interface.quest_done('Родиться')
     main_hero.interface.quest_done('Умереть')
+    
     Item('apple', 1, 1)
     Item('bottle', 1, 1)
     Item('beer', 1, 1)
@@ -76,6 +80,10 @@ def enter():
     Item('whale', 1, 1)
     Item('salad', 1, 1)
     Item('metal', 1, 1)
+    Weapon('rifle')
+    
+    main_hero.take_item('rifle', 1)
+    print(main_hero.inventory.items)
     main_hero.take_item('apple', 2)
     main_hero.take_item('bottle', 1)
     main_hero.take_item('beer', 1)

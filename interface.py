@@ -171,8 +171,8 @@ class visual_inventory(ColorLayer):
             spr = i.item_inv_sprite
             spr.position = (50, self.height/2-h*32)
 
-            self.item_stack.add(spr, 1, item.name+str(h))
-            self.items.append(item.name+str(h))
+            self.item_stack.add(spr, 1, i.weapon_name+str(h))
+            self.items.append(i.weapon_name+str(h))
             
             h += 1
     
