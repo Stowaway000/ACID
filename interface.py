@@ -1,7 +1,7 @@
 import cocos
 from cocos.director import director
 from cocos.sprite import Sprite
-from cocos.text import Label
+from cocos.text import Label, HTMLLabel
 from cocos.layer import Layer, ColorLayer, MultiplexLayer, ScrollingManager, ScrollableLayer
 from cocos.scenes import pause
 from cocos.scene import Scene
@@ -12,10 +12,17 @@ from pyglet.window import key, mouse
 from menu import set_menu_style, go_back, quit_game
 
 
-def add_label(txt, point, anchor='center'):
-    return Label(txt, point, font_name='Calibri',\
-                 anchor_x=anchor,\
-                 anchor_y='center')
+def add_label(txt, point, anchor='center', size=14):
+    return Label(txt, point, font_name='Calibri', font_size=size,\
+                 anchor_x=anchor, anchor_y='center')
+
+
+def add_text(txt, point, anchor='center', size=14, padding=10):
+    point = (point[0]+padding, point[1]-padding)
+    txt = '<font face="Calibri" size="' + str(size) + '" color="white">'\
+          + txt + '</font>'
+    return HTMLLabel(txt, point, anchor_x=anchor, anchor_y='top',\
+                     multiline=True, width=200-padding*2)
 
 
 class game_menu(Layer):
@@ -52,7 +59,7 @@ class game_menu(Layer):
 class visual_inventory(ColorLayer):
     is_event_handler = True
     
-    def __init__(self):
+    def __init__(self, hero):
         super().__init__(31, 38, 0, 255)
 
         w = director.window.width
@@ -83,20 +90,17 @@ class visual_inventory(ColorLayer):
 
         self.pixel_rel = 1
 
-        self.hero_ref = None
+        self.hero_ref = hero
+        portr = hero.photo
+        portr.scale = 1/3
+        portr.position = (self.width/2, self.height - portr.height)
+        self.add(portr)
         
         self.selected = ''
 
-    def update(self, pos, hero):
+    def update(self, pos):
         self.mouse_pos = pos
-        invent = hero.inventory
-
-        if not self.hero_ref:
-            portr = hero.photo
-            portr.scale = 1/3
-            portr.position = (self.width/2, self.height - portr.height)
-            self.add(portr)
-            self.hero_ref = hero
+        invent = self.hero_ref.inventory
         
         h = 0
 
@@ -116,7 +120,8 @@ class visual_inventory(ColorLayer):
             spr = item.item_inv_sprite
             spr.position = (50, self.height/2-h*32)
 
-            count = add_label(str(val), (80, self.height/2-h*32))
+            count = add_label(str(val), (90, self.height/2-h*32))
+            count.scale = 0.5
             self.item_stack.add(spr, 1, item.name)
             self.item_stack.add(count, 1)
             
@@ -158,7 +163,7 @@ class visual_inventory(ColorLayer):
                 dy /= self.pixel_rel
 
                 self.move_view(dy)
-            elif 0 < x < 195:
+            elif 0 < x < 195 and 0 < y < self.height:
                 y /= 2
                 y += self.viewpoint[1] - self.up + 32
                 names = self.item_stack.children_names
@@ -166,13 +171,20 @@ class visual_inventory(ColorLayer):
                     if val.position[1] < y < val.position[1] + val.height and key != 'select':
                         if self.selected:
                             self.item_stack.remove('select')
+                            self.remove('naming')
                             
                         selection = ColorLayer(100, 50, 0, 140)
                         selection.width = 100
                         selection.height = 32
                         selection.position = (val.position[0]-50, val.position[1]-16)
                         self.item_stack.add(selection, z=0, name='select')
-                        
+
+                        text = '<b>' + key.capitalize() + '</b><br>' + \
+                               self.hero_ref.inventory.get(key).get_info()
+                        naming = add_text(text, (230, self.height)\
+                                          , 'left')
+                        self.add(naming, name='naming')
+
                         self.selected = key
                         break
 
@@ -210,7 +222,7 @@ class interface(MultiplexLayer):
     
     def __init__(self, stats, host):
         self.stats = stat_interface(stats)
-        self.invent = visual_inventory()
+        self.invent = visual_inventory(host)
         super().__init__(self.stats, self.invent)
 
         self.mouse_pos = (0, 0)
@@ -228,11 +240,12 @@ class interface(MultiplexLayer):
         if symbol == key.Q:
             if self.enabled_layer != 1:
                 self.host.lurking = True
-                self.invent.update(self.mouse_pos, self.host)
+                self.invent.update(self.mouse_pos)
                 self.switch_to(1)
             else:
                 self.host.lurking = False
                 self.switch_to(0)
+        
         if symbol == key.ESCAPE:
             pause_sc = pause.get_pause_scene()
             

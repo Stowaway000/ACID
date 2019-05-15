@@ -28,6 +28,13 @@ class Item(cocos.sprite.Sprite):
         self.item_inv_sprite = Sprite("res/img/items/" + name + "_inv.png")
         self.weight = weight
         self.cost = cost
+        self.description = "Well... I don't know"
+
+    def get_info(self):
+        info = 'Weight: ' + str(self.weight) + '<br>'
+        info += 'Cost: ' + str(self.cost) + '<br>'
+        info += 'Description:<br>' + self.description
+        return info
 
 
 class UsableObj(Item):
