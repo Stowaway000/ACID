@@ -142,6 +142,7 @@ class WeaponHandler(cocos.sprite.Sprite):
         self.weapon_name = weapon_name
         self.weapon_anim = Weapon.weapons[weapon_name].weapon_anim
         self.item_sprite = Weapon.weapons[weapon_name].item_sprite
+        self.item_inv_sprite = Weapon.weapons[weapon_name].item_inv_sprite
         self.add(self.item_sprite)
 
     def shoot_anim(self):

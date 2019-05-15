@@ -117,7 +117,7 @@ class visual_inventory(ColorLayer):
         
         self.selected = ''
 
-    def update(self, pos):
+    def refresh(self, pos):
         self.mouse_pos = pos
         invent = self.hero_ref.inventory
 
@@ -140,6 +140,18 @@ class visual_inventory(ColorLayer):
         for i in self.items:
             self.item_stack.remove(i)
         self.items.clear()
+
+        if self.selected:
+            for i in self.buttons:
+                self.remove(i)
+            self.selected = ''
+            self.item_stack.remove('select')
+            self.remove('naming')
+    
+    def update(self, pos):
+        self.refresh(pos)
+
+        invent = self.hero_ref.inventory
         
         h = 0
         for key, val in invent.items.items():
@@ -155,12 +167,14 @@ class visual_inventory(ColorLayer):
             
             h += 1
 
-        if self.selected:
-            for i in self.buttons:
-                self.remove(i)
-            self.selected = ''
-            self.item_stack.remove('select')
-            self.remove('naming')
+        for i in invent.weapons:
+            spr = i.item_inv_sprite
+            spr.position = (50, self.height/2-h*32)
+
+            self.item_stack.add(spr, 1, item.name+str(h))
+            self.items.append(item.name+str(h))
+            
+            h += 1
     
     def on_exit(self):
         director.window.set_mouse_position(*self.mouse_pos)
@@ -179,8 +193,6 @@ class visual_inventory(ColorLayer):
         self.item_window.set_focus(*self.viewpoint)
     
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-        #self.on_mouse_press(x, y, buttons, modifiers)
-        
         x -= self.position[0]
         y -= self.position[1]
 
