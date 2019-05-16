@@ -31,8 +31,6 @@ class character(cocos.layer.ScrollableLayer):
 
         self.weapon_left = -1
         self.weapon_right = -1
-        self.weapon_l_equip = -1
-        self.weapon_r_equip = -1
 
         self.armor = -1
 
@@ -93,13 +91,9 @@ class character(cocos.layer.ScrollableLayer):
 
     # Достать\спрятать оружие
     def switch_weapon(self):
-        if self.weapon_left == -1 and self.weapon_right == -1:
-            self.weapon_left = self.weapon_l_equip
-            self.weapon_right = self.weapon_r_equip
+        if self.skin.hidden:
             self.skin.show_weapon()
         else:
-            self.weapon_left = -1
-            self.weapon_right = -1
             self.skin.hide_weapon()
 
     # Атаковать оружием
@@ -132,20 +126,18 @@ class character(cocos.layer.ScrollableLayer):
     def equip_weapon(self, index, hand):
         wp = self.inventory.get_weapon(index)
         if hand == 'r':
-            self.weapon_r_equip = index
+            self.weapon_right = index
             self.skin.add_weapon(wp.weapon_name, wp, 'r')
         else:
-            self.weapon_l_equip = index
+            self.weapon_left = index
             self.skin.add_weapon(wp.weapon_name, wp, 'l')
 
     def unequip_weapon(self, index):
-        if index == self.weapon_l_equip:
-            self.weapon_l_equip = -1
+        if index == self.weapon_left:
             self.weapon_left = -1
             self.skin.remove_weapon('l')
         
-        if index == self.weapon_r_equip:
-            self.weapon_r_equip = -1
+        if index == self.weapon_right:
             self.weapon_right = -1
             self.skin.remove_weapon('r')
     
@@ -155,10 +147,11 @@ class character(cocos.layer.ScrollableLayer):
         if self.inventory.weight > 4 * self.SEACIL[0]:
             self.overweight = True
         
-        if get_type(item) == 'weapon' and self.weapon_l_equip * \
-                self.weapon_r_equip > 0:
+        if get_type(item) == 'weapon' and self.weapon_left == -1 and\
+                self.weapon_right == -1:
             self.equip_weapon(len(self.inventory.weapons) - 1, 'r')
-            self.switch_weapon()
+            if self.skin.hidden:
+                self.switch_weapon()
     
     # Выбросить педмет из инвентаря
     def drop_item(self, item, ind=0, count='all'):
@@ -172,6 +165,7 @@ class character(cocos.layer.ScrollableLayer):
     # Выложить предмет в ящик
     def store_item(self):
         pass
+
 
 class skin(cocos.sprite.Sprite):
     def __init__(self, name, mover, pos):

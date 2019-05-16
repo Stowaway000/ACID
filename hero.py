@@ -115,11 +115,11 @@ class hero(character):
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if not self.lurking:
             self.on_mouse_motion(x, y, dx, dy)
-            if buttons & mouse.LEFT:
+            if buttons & mouse.LEFT and not self.skin.hidden:
                 self.attack('r')
-            elif buttons & mouse.RIGHT:
+            elif buttons & mouse.RIGHT and not self.skin.hidden:
                 self.attack('l')
-            elif buttons & mouse.LEFT and buttons & mouse.RIGHT:
+            elif buttons & mouse.LEFT and buttons & mouse.RIGHT and not self.skin.hidden:
                 self.attack('r')
                 self.attack('l')
 
@@ -137,13 +137,13 @@ class hero(character):
     
     def on_key_press(self, symbol, modifiers):
         if not self.lurking:
-            if symbol == key.R and self.lpressed:
+            if symbol == key.R and self.lpressed and not self.skin.hidden:
                 self.reload('r')
-            elif symbol == key.R and self.rpressed:
+            elif symbol == key.R and self.rpressed and not self.skin.hidden:
                 self.reload('l')
             elif symbol == key.R and modifiers & key.MOD_SHIFT:
                 self.switch_weapon()
-            elif symbol == key.R:
+            elif symbol == key.R and not self.skin.hidden:
                 self.reload('r')
                 self.reload('l')
             

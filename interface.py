@@ -127,9 +127,9 @@ class visual_inventory(ColorLayer):
         invent = self.hero_ref.inventory
 
         total = len(invent.items) + len(invent.weapons) + len(invent.armors)
-        if self.hero_ref.weapon_l_equip != -1:
+        if self.hero_ref.weapon_left != -1:
             total -= 1
-        if self.hero_ref.weapon_r_equip != -1:
+        if self.hero_ref.weapon_right != -1:
             total -= 1
         
         self.remove('sb')
@@ -183,18 +183,18 @@ class visual_inventory(ColorLayer):
         wps = invent.weapons
         for i in range(len(wps)):
             spr = wps[i].item_inv_sprite
-            if i != self.hero_ref.weapon_l_equip and i != self.hero_ref.\
-               weapon_r_equip:
+            if i != self.hero_ref.weapon_left and i != self.hero_ref.\
+               weapon_right:
                 spr.position = (50, self.height/2-h*32)
 
                 self.item_stack.add(spr, 1, wps[i].weapon_name+' '+str(i))
                 self.items.append(wps[i].weapon_name+' '+str(i))
                 
                 h += 1
-            elif i == self.hero_ref.weapon_l_equip:
+            elif i == self.hero_ref.weapon_left:
                 spr.position = (530, self.height-264)
                 self.add(spr, 1, 'w_left')
-            elif i == self.hero_ref.weapon_r_equip:
+            elif i == self.hero_ref.weapon_right:
                 spr.position = (530, self.height-200)
                 self.add(spr, 1, 'w_right')
     
@@ -228,8 +228,8 @@ class visual_inventory(ColorLayer):
             tp = get_type(key.split()[0])
             if tp == 'weapon':
                 index = int(index)
-                if index != self.hero_ref.weapon_l_equip and\
-                   index != self.hero_ref.weapon_r_equip:
+                if index != self.hero_ref.weapon_left and\
+                   index != self.hero_ref.weapon_right:
                     st += [1]
                 else:
                     st += [3]
@@ -315,15 +315,15 @@ class visual_inventory(ColorLayer):
                 if 'w_left' in cld:
                     if cld['w_left'].get_rect().contains(x, y):
                         wp = self.hero_ref.inventory.get_weapon\
-                             (self.hero_ref.weapon_l_equip)
+                             (self.hero_ref.weapon_left)
                         self.on_item_click(wp.weapon_name, cld['w_left'],\
-                                           self.hero_ref.weapon_l_equip)
+                                           self.hero_ref.weapon_left)
                 if 'w_right' in cld:
                     if cld['w_right'].get_rect().contains(x, y):
                         wp = self.hero_ref.inventory.get_weapon\
-                             (self.hero_ref.weapon_r_equip)
+                             (self.hero_ref.weapon_right)
                         self.on_item_click(wp.weapon_name, cld['w_right'],\
-                                           self.hero_ref.weapon_r_equip)
+                                           self.hero_ref.weapon_right)
 
 
 class stat_interface(Layer):

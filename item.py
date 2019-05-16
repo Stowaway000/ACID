@@ -141,7 +141,7 @@ class WeaponHandler(cocos.sprite.Sprite):
     def shoot_anim(self):
         self.image = self.weapon_anim
 
-    def get_max_cartrige(self):
+    def get_max_cartridge(self):
         return Weapon.weapons[self.weapon_name].max_cartridge, \
                Weapon.weapons[self.weapon_name].ammo_type
 
