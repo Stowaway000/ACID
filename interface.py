@@ -113,8 +113,12 @@ class visual_inventory(ColorLayer):
 
         self.buttons = []
         self.buttons.append(Button('Drop', 230, self.height-200, 100, 30))
+        self.buttons.append(Button('Equip Right', 230, self.height-250, 100, 30))
+        self.buttons.append(Button('Equip Left', 230, self.height-280, 100, 30))
+        self.buttons.append(Button('Unequip', 230, self.height-250, 100, 30))
 
         self.items = []
+        self.active_btn = []
         
         self.selected = ''
 
@@ -147,9 +151,7 @@ class visual_inventory(ColorLayer):
         self.items.clear()
 
         if self.selected:
-            for i in self.buttons:
-                self.remove(i)
-                i.visible = False
+            self.btn_refresh('')
             self.selected = ''
             self.item_stack.remove('select')
             self.remove('naming')
@@ -190,11 +192,9 @@ class visual_inventory(ColorLayer):
                 
                 h += 1
             elif i == self.hero_ref.weapon_l_equip:
-                spr.scale = 2
                 spr.position = (530, self.height-264)
                 self.add(spr, 1, 'w_left')
             elif i == self.hero_ref.weapon_r_equip:
-                spr.scale = 2
                 spr.position = (530, self.height-200)
                 self.add(spr, 1, 'w_right')
     
@@ -221,14 +221,40 @@ class visual_inventory(ColorLayer):
         if 195 < x < 220 and 0 < y < self.height:
             self.move_view(dy)
 
+    def btn_set(self, key, index=''):
+        st = []
+        if key:
+            st += [0]
+            tp = get_type(key.split()[0])
+            if tp == 'weapon':
+                index = int(index)
+                if index != self.hero_ref.weapon_l_equip and\
+                   index != self.hero_ref.weapon_r_equip:
+                    st += [1]
+                else:
+                    st += [3]
+
+        return st
+
+    def btn_refresh(self, key, index=''):
+        need = self.btn_set(key, index)
+        
+        for i in self.active_btn:
+            self.remove('btn'+str(i))
+            self.buttons[i].visible = False
+
+        for i in need:
+            self.add(self.buttons[i], name='btn'+str(i))
+            self.buttons[i].visible = True
+
+        self.active_btn = need
+
     def on_item_click(self, key, val, index=''):
         if self.selected:
             self.item_stack.remove('select')
             self.remove('naming')
-        else:
-            for i in self.buttons:
-                self.add(i)
-                i.visible = True
+        
+        self.btn_refresh(key, index)
                             
         selection = ColorLayer(100, 50, 0, 140)
         selection.width = 100
@@ -245,6 +271,23 @@ class visual_inventory(ColorLayer):
         self.selected = [key]
         if index != 'i':
             self.selected.append(int(index))
+
+    def handle_btns(self, x, y):
+        if self.buttons[0].click(x, y):
+            self.hero_ref.drop_item(*self.selected)
+            self.update(self.mouse_pos)
+        
+        if self.buttons[1].click(x, y):
+            self.hero_ref.equip_weapon(self.selected[1], 'r')
+            self.update(self.mouse_pos)
+
+        if self.buttons[2].click(x, y):
+            self.hero_ref.equip_weapon(self.selected[1], 'l')
+            self.update(self.mouse_pos)
+        
+        if self.buttons[3].click(x, y):
+            self.hero_ref.unequip_weapon(self.selected[1])
+            self.update(self.mouse_pos)
     
     def on_mouse_press(self, x, y, button, modifiers):
         x -= self.position[0]
@@ -266,9 +309,7 @@ class visual_inventory(ColorLayer):
                         self.on_item_click(key.split()[0], val, key.split()[1])
                         break
             else:
-                if self.buttons[0].click(x, y):
-                    self.hero_ref.drop_item(*self.selected)
-                    self.update(self.mouse_pos)
+                self.handle_btns(x, y)
                 
                 cld = self.children_names
                 if 'w_left' in cld:

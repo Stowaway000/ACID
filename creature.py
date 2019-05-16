@@ -128,6 +128,26 @@ class character(cocos.layer.ScrollableLayer):
     def use_item(self, item):
         self.inventory.get_usable(item).use(self)
         self.inventory.take(item, 1)
+
+    def equip_weapon(self, index, hand):
+        wp = self.inventory.get_weapon(index)
+        if hand == 'r':
+            self.weapon_r_equip = index
+            self.skin.add_weapon(wp.weapon_name, wp, 'r')
+        else:
+            self.weapon_l_equip = index
+            self.skin.add_weapon(wp.weapon_name, wp, 'l')
+
+    def unequip_weapon(self, index):
+        if index == self.weapon_l_equip:
+            self.weapon_l_equip = -1
+            self.weapon_left = -1
+            self.skin.remove_weapon('l')
+        
+        if index == self.weapon_r_equip:
+            self.weapon_r_equip = -1
+            self.weapon_right = -1
+            self.skin.remove_weapon('r')
     
     # Положить вещь в инвентарь
     def take_item(self, item, count):
@@ -137,9 +157,7 @@ class character(cocos.layer.ScrollableLayer):
         
         if get_type(item) == 'weapon' and self.weapon_l_equip * \
                 self.weapon_r_equip > 0:
-            self.weapon_r_equip = len(self.inventory.weapons) - 1
-
-            self.skin.add_weapon(item, self.inventory.get_weapon(self.weapon_r_equip), 'r')
+            self.equip_weapon(len(self.inventory.weapons) - 1, 'r')
             self.switch_weapon()
     
     # Выбросить педмет из инвентаря
@@ -149,14 +167,7 @@ class character(cocos.layer.ScrollableLayer):
             self.inventory.take(item, count)
         elif tp == 'weapon':
             self.inventory.take(item, index=ind)
-            if ind == self.weapon_l_equip:
-                self.weapon_l_equip = -1
-                self.weapon_left = -1
-                self.skin.remove_weapon('l')
-            if ind == self.weapon_r_equip:
-                self.weapon_r_equip = -1
-                self.weapon_right = -1
-                self.skin.remove_weapon('r')
+            self.unequip_weapon(ind)
 
     # Выложить предмет в ящик
     def store_item(self):
@@ -199,6 +210,8 @@ class skin(cocos.sprite.Sprite):
         self.seating = False
         self.walking = False
 
+        self.hidden = True
+
         self.position = pos
         self.velocity = (0, 0)
 
@@ -227,13 +240,9 @@ class skin(cocos.sprite.Sprite):
 
     def add_weapon(self, name, handler, hand):
         if Weapon.weapons[name].two_handed:
-            if self.lweapon:
-                self.remove("lhand")
-                self.remove("lweapon")
-            if self.rweapon:
-                self.remove("rhand")
-                self.remove("rweapon")
-            self.lweapon = False
+            self.remove_weapon('l')
+            self.remove_weapon('r')
+            
             self.rweapon = handler
             self.rweapon.position = 10, 15
             self.body.rotation = 20
@@ -242,30 +251,42 @@ class skin(cocos.sprite.Sprite):
         else:
             self.both = False
             if hand == 'l':
+                self.remove_weapon('l')
+                
                 self.lweapon = handler
                 self.lweapon.position = -10, 20
                 self.body.rotation = 0
                 self.rhand.position = 10, 7
             if hand == 'r':
+                self.remove_weapon('r')
+                
                 self.rweapon = handler
                 self.rweapon.position = 10, 20
                 self.body.rotation = 0
                 self.rhand.position = 10, 7
 
+        if not self.hidden:
+            self.show_weapon()
+
     def remove_weapon(self, hand):
         if hand == "l":
             self.lweapon = None
-            self.remove("lhand")
-            self.remove("lweapon")
+            if not self.hidden:
+                self.remove("lhand")
+                if not self.both:
+                    self.remove("lweapon")
         else:
             self.rweapon = None
-            self.remove("rhand")
+            if not self.hidden:
+                self.remove("rhand")
             
             if self.both:
-                self.remove("both")
+                if not self.hidden:
+                    self.remove("both")
                 self.both = False
             else:
-                self.remove("rweapon")
+                if not self.hidden:
+                    self.remove("rweapon")
 
     def add_armor(self, sprite):
         self.armor = sprite
@@ -278,7 +299,10 @@ class skin(cocos.sprite.Sprite):
         self.add(self.body, name="body", z=1)
 
     def show_weapon(self):
+        self.hidden = False
+        
         if self.both:
+            self.add(self.lhand, name="lhand", z=0)
             self.add(self.rhand, name="rhand", z=0)
             self.add(self.rweapon, name="both", z=2)
             self.body.rotation = 20
@@ -292,9 +316,12 @@ class skin(cocos.sprite.Sprite):
                 self.add(self.rweapon, name="rweapon", z=2)
 
     def hide_weapon(self):
+        self.hidden = True
+        
         self.body.rotation = 0
         self.rhand.position = 10, 7
         if self.both:
+            self.remove("lhand")
             self.remove("rhand")
             self.remove("both")
         else:
