@@ -152,11 +152,11 @@ class character(cocos.layer.ScrollableLayer):
             if ind == self.weapon_l_equip:
                 self.weapon_l_equip = -1
                 self.weapon_left = -1
-                #self.skin.remove_weapon('l')
+                self.skin.remove_weapon('l')
             if ind == self.weapon_r_equip:
                 self.weapon_r_equip = -1
                 self.weapon_right = -1
-                #self.skin.remove_weapon('r')
+                self.skin.remove_weapon('r')
 
     # Выложить предмет в ящик
     def store_item(self):
@@ -260,7 +260,12 @@ class skin(cocos.sprite.Sprite):
         else:
             self.rweapon = None
             self.remove("rhand")
-            self.remove("rweapon")
+            
+            if self.both:
+                self.remove("both")
+                self.both = False
+            else:
+                self.remove("rweapon")
 
     def add_armor(self, sprite):
         self.armor = sprite
