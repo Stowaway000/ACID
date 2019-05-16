@@ -241,7 +241,11 @@ class skin(cocos.sprite.Sprite):
                 self.rhand.position = 10, 7
 
     def remove_weapon(self, hand):
-        if hand == "l":
+        if hand == "both":
+            self.rweapon = None
+            self.remove("rhand")
+            self.remove("both")
+        elif hand == "l":
             self.lweapon = None
             self.remove("lhand")
             self.remove("lweapon")
