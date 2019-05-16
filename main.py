@@ -81,9 +81,10 @@ def enter():
     Item('salad', 1, 1)
     Item('metal', 1, 1)
     Weapon('rifle')
+    Weapon('shotgun')
     
     main_hero.take_item('rifle', 1)
-    print(main_hero.inventory.items)
+    main_hero.take_item('shotgun', 1)
     main_hero.take_item('apple', 2)
     main_hero.take_item('bottle', 1)
     main_hero.take_item('beer', 1)

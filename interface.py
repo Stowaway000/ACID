@@ -10,6 +10,7 @@ from cocos.actions import FadeIn, FadeOut, MoveBy, RotateBy, CallFunc
 import pyglet
 from pyglet.window import key, mouse
 from menu import set_menu_style, go_back, quit_game
+from item import get_global, get_type
 
 
 def add_label(txt, point, anchor='center', size=14):
@@ -36,6 +37,11 @@ class Button(ColorLayer):
         self.add(self.label)
 
         self.rect = cocos.rect.Rect(x, y, w, h)
+
+        self.visible = False
+
+    def click(self, x, y):
+        return self.rect.contains(x, y) and self.visible
 
 
 class game_menu(Layer):
@@ -104,11 +110,6 @@ class visual_inventory(ColorLayer):
         self.pixel_rel = 1
 
         self.hero_ref = hero
-        '''
-        portr = hero.photo
-        portr.scale = 1/3
-        portr.position = (self.width/2, self.height - portr.height)
-        self.add(portr)'''
 
         self.buttons = []
         self.buttons.append(Button('Drop', 230, self.height-200, 100, 30))
@@ -122,6 +123,10 @@ class visual_inventory(ColorLayer):
         invent = self.hero_ref.inventory
 
         total = len(invent.items) + len(invent.weapons) + len(invent.armors)
+        if self.hero_ref.weapon_l_equip != -1:
+            total -= 1
+        if self.hero_ref.weapon_r_equip != -1:
+            total -= 1
         
         self.remove('sb')
         self.scrollbar.height = int(self.height*min(self.on_one/total, 1))
@@ -144,9 +149,15 @@ class visual_inventory(ColorLayer):
         if self.selected:
             for i in self.buttons:
                 self.remove(i)
+                i.visible = False
             self.selected = ''
             self.item_stack.remove('select')
             self.remove('naming')
+
+        if 'w_right' in self.children_names:
+            self.remove('w_right')
+        if 'w_left' in self.children_names:
+            self.remove('w_left')
     
     def update(self, pos):
         self.refresh(pos)
@@ -162,19 +173,30 @@ class visual_inventory(ColorLayer):
             count = add_label(str(val), (40, 0))
             count.scale = 0.5
             spr.add(count, 1)
-            self.item_stack.add(spr, 1, item.name)
-            self.items.append(item.name)
+            self.item_stack.add(spr, 1, item.name+' i')
+            self.items.append(item.name+' i')
             
             h += 1
 
-        for i in invent.weapons:
-            spr = i.item_inv_sprite
-            spr.position = (50, self.height/2-h*32)
+        wps = invent.weapons
+        for i in range(len(wps)):
+            spr = wps[i].item_inv_sprite
+            if i != self.hero_ref.weapon_l_equip and i != self.hero_ref.\
+               weapon_r_equip:
+                spr.position = (50, self.height/2-h*32)
 
-            self.item_stack.add(spr, 1, i.weapon_name+str(h))
-            self.items.append(i.weapon_name+str(h))
-            
-            h += 1
+                self.item_stack.add(spr, 1, wps[i].weapon_name+' '+str(i))
+                self.items.append(wps[i].weapon_name+' '+str(i))
+                
+                h += 1
+            elif i == self.hero_ref.weapon_l_equip:
+                spr.scale = 2
+                spr.position = (530, self.height-264)
+                self.add(spr, 1, 'w_left')
+            elif i == self.hero_ref.weapon_r_equip:
+                spr.scale = 2
+                spr.position = (530, self.height-200)
+                self.add(spr, 1, 'w_right')
     
     def on_exit(self):
         director.window.set_mouse_position(*self.mouse_pos)
@@ -199,13 +221,14 @@ class visual_inventory(ColorLayer):
         if 195 < x < 220 and 0 < y < self.height:
             self.move_view(dy)
 
-    def on_item_click(self, key, val):
+    def on_item_click(self, key, val, index=''):
         if self.selected:
             self.item_stack.remove('select')
             self.remove('naming')
         else:
             for i in self.buttons:
                 self.add(i)
+                i.visible = True
                             
         selection = ColorLayer(100, 50, 0, 140)
         selection.width = 100
@@ -213,13 +236,15 @@ class visual_inventory(ColorLayer):
         selection.position = (val.position[0]-50, val.position[1]-16)
         self.item_stack.add(selection, z=0, name='select')
 
-        text = '<b>' + key.capitalize() + '</b><br>' + \
-                self.hero_ref.inventory.get(key).get_info()
+        text = '<b>' + key.capitalize() + '</b><br>' + get_global(key)\
+               .get_info()
         naming = add_text(text, (230, self.height)\
                           , 'left')
         self.add(naming, name='naming')
 
-        self.selected = key
+        self.selected = [key]
+        if index != 'i':
+            self.selected.append(int(index))
     
     def on_mouse_press(self, x, y, button, modifiers):
         x -= self.position[0]
@@ -238,12 +263,26 @@ class visual_inventory(ColorLayer):
                 names = self.item_stack.children_names
                 for key, val in names.items():
                     if val.position[1] < y < val.position[1] + val.height and key != 'select':
-                        self.on_item_click(key, val)
+                        self.on_item_click(key.split()[0], val, key.split()[1])
                         break
             else:
-                if self.buttons[0].rect.contains(x, y):
-                    self.hero_ref.drop_item(self.selected)
+                if self.buttons[0].click(x, y):
+                    self.hero_ref.drop_item(*self.selected)
                     self.update(self.mouse_pos)
+                
+                cld = self.children_names
+                if 'w_left' in cld:
+                    if cld['w_left'].get_rect().contains(x, y):
+                        wp = self.hero_ref.inventory.get_weapon\
+                             (self.hero_ref.weapon_l_equip)
+                        self.on_item_click(wp.weapon_name, cld['w_left'],\
+                                           self.hero_ref.weapon_l_equip)
+                if 'w_right' in cld:
+                    if cld['w_right'].get_rect().contains(x, y):
+                        wp = self.hero_ref.inventory.get_weapon\
+                             (self.hero_ref.weapon_r_equip)
+                        self.on_item_click(wp.weapon_name, cld['w_right'],\
+                                           self.hero_ref.weapon_r_equip)
 
 
 class stat_interface(Layer):

@@ -164,38 +164,41 @@ class hero(character):
 
 class hero_mover(cocos.actions.Move):
     def step(self, dt):
-        keyboard = self.target.keyboard
-        vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
-        vel_y = (keyboard[key.W] - keyboard[key.S]) * 50
+        if not self.target.parent.lurking:
+            keyboard = self.target.keyboard
+            vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
+            vel_y = (keyboard[key.W] - keyboard[key.S]) * 50
 
-        if self.target.velocity[0] or self.target.velocity[1]:
-            self.target.walker(True)
-        elif not (self.target.velocity[0] or self.target.velocity[1]):
+            if self.target.velocity[0] or self.target.velocity[1]:
+                self.target.walker(True)
+            elif not (self.target.velocity[0] or self.target.velocity[1]):
+                self.target.walker(False)
+
+            dx = vel_x * dt
+            dy = vel_y * dt
+            new = self.target.cshape
+
+            new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y)
+            if self.target.collider.collision_manager.any_near(new, 0):
+                vel_x = 0
+                new.cshape.center.x -= dx
+
+            new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
+            if self.target.collider.collision_manager.any_near(new, 0):
+                vel_y = 0
+                new.cshape.center.y -= dy
+
+            self.target.velocity = (vel_x, vel_y)
+            self.target.position = new.cshape.center
+            self.target.scroller.set_focus(*new.cshape.center)
+
+            self.target.scroller.set_focus(self.target.x, self.target.y)
+
+            global mouse_x, mouse_y
+            if self.target.velocity[0] or self.target.velocity[1]:
+                mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)
+                mouse_x += vector[0]
+                mouse_y += vector[1]
+                director.window.set_mouse_position(mouse_x, mouse_y)
+        else:
             self.target.walker(False)
-
-        dx = vel_x * dt
-        dy = vel_y * dt
-        new = self.target.cshape
-
-        new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y)
-        if self.target.collider.collision_manager.any_near(new, 0):
-            vel_x = 0
-            new.cshape.center.x -= dx
-
-        new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
-        if self.target.collider.collision_manager.any_near(new, 0):
-            vel_y = 0
-            new.cshape.center.y -= dy
-
-        self.target.velocity = (vel_x, vel_y)
-        self.target.position = new.cshape.center
-        self.target.scroller.set_focus(*new.cshape.center)
-
-        self.target.scroller.set_focus(self.target.x, self.target.y)
-
-        global mouse_x, mouse_y
-        if self.target.velocity[0] or self.target.velocity[1]:
-            mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)
-            mouse_x += vector[0]
-            mouse_y += vector[1]
-            director.window.set_mouse_position(mouse_x, mouse_y)

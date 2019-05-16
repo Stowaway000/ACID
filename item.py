@@ -196,7 +196,7 @@ class inventory():
         return None
 
     # Забрать count предметов из инвентаря
-    def take(self, item, count):
+    def take(self, item, count=-1, index=0):
         n = self.count(item)
         if count == 'all' or n < count:
             count = n
@@ -214,14 +214,18 @@ class inventory():
                 self.usables.pop(item)
         
         elif tp == 'weapon':
-            get = 0
-            i = 0
-            while get < count:
-                if self.weapons[i].name == item:
-                    self.weapons.pop(i)
-                    i -= 1
-                    get += 1
-                i += 1
+            if count != -1:
+                get = 0
+                i = 0
+                while get < count:
+                    if self.weapons[i].weapon_name == item:
+                        self.weapons.pop(i)
+                        i -= 1
+                        get += 1
+                    i += 1
+            elif self.weapons[index].weapon_name == item:
+                self.weapons.pop(index)
+                
         
         elif tp == 'armor':
             get = 0
@@ -245,7 +249,7 @@ class inventory():
         elif tp == 'weapon':
             n = 0
             for i in self.weapons:
-                if i.name == item:
+                if i.weapon_name == item:
                     n += 1
             return n
         elif tp == 'armor':

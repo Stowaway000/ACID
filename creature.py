@@ -141,12 +141,22 @@ class character(cocos.layer.ScrollableLayer):
 
             self.skin.add_weapon(item, self.inventory.get_weapon(self.weapon_r_equip), 'r')
             self.switch_weapon()
-        
-
     
     # Выбросить педмет из инвентаря
-    def drop_item(self, item, count='all'):
-        self.inventory.take(item, count)
+    def drop_item(self, item, ind=0, count='all'):
+        tp = get_type(item)
+        if tp == 'item':
+            self.inventory.take(item, count)
+        elif tp == 'weapon':
+            self.inventory.take(item, index=ind)
+            if ind == self.weapon_l_equip:
+                self.weapon_l_equip = -1
+                self.weapon_left = -1
+                #self.skin.remove_weapon('l')
+            if ind == self.weapon_r_equip:
+                self.weapon_r_equip = -1
+                self.weapon_right = -1
+                #self.skin.remove_weapon('r')
 
     # Выложить предмет в ящик
     def store_item(self):
