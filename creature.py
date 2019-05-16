@@ -240,8 +240,10 @@ class skin(cocos.sprite.Sprite):
 
     def add_weapon(self, name, handler, hand):
         if Weapon.weapons[name].two_handed:
-            self.remove_weapon('l')
-            self.remove_weapon('r')
+            if self.lweapon:
+                self.remove_weapon('l')
+            if self.rweapon:
+                self.remove_weapon('r')
             
             self.rweapon = handler
             self.rweapon.position = 10, 15
@@ -276,16 +278,14 @@ class skin(cocos.sprite.Sprite):
                 if not self.both:
                     self.remove("lweapon")
         else:
-            self.rweapon = None
             if not self.hidden:
+                self.rweapon = None
                 self.remove("rhand")
-            
-            if self.both:
-                if not self.hidden:
+                if self.both:
+                    self.remove("lhand")
                     self.remove("both")
-                self.both = False
-            else:
-                if not self.hidden:
+                    self.both = False
+                else:
                     self.remove("rweapon")
 
     def add_armor(self, sprite):
