@@ -38,6 +38,7 @@ def load_map(name, hero):
     scroller.add(map_layer.layer_floor, -1)
     scroller.add(map_layer.layer_vertical, 1)
     scroller.add(map_layer.layer_objects, 1)
+    scroller.add(map_layer.layer_decoration, 0)
     scroller.add(map_layer.layer_above, 2)
 
     return scroller
@@ -52,9 +53,9 @@ def enter():
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
     director.window.set_mouse_cursor(cursor)
     
-    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (100, 80))
+    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (520, 80))
     
-    scroller = load_map("map_test", main_hero)
+    scroller = load_map("map_block", main_hero)
     main_hero.set_scroller(scroller)
     
     scene = cocos.scene.Scene(scroller)

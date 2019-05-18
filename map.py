@@ -17,5 +17,6 @@ class MapLayer(cocos.layer.ScrollableLayer):
         self.layer_vertical = level["wall"]
         self.layer_above = level["up"]
         self.layer_objects = level["obj"]
+        self.layer_decoration = level["decorations"]
         self.layer_collision = level["collision"]
         self.layer_collision.objects += self.layer_objects.objects
