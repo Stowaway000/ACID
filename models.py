@@ -562,8 +562,9 @@ class AI:
 
     def think(self):
         if self.state == "patrol":
-            x, y = self.patrol.choose_point()
-            self.get_way(x, y)
+            pass
+            # x, y = ...
+            # self.get_way(x, y)
         else:
             pass
 
