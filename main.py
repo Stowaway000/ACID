@@ -5,7 +5,7 @@ from cocos.scene import Scene
 from cocos.actions import RotateBy, Repeat
 from pyglet import font
 import cocos.audio.pygame.mixer as mixer
-from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
+from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER, MultipleMenuItem
 from physics import *
 from creature import *
 from npc import *
@@ -96,6 +96,41 @@ def about_game():
     director.push(about)
 
 
+def on_volume(args):
+    print(args)
+
+
+def settings():
+    about = Scene()
+
+    bg = cocos.layer.ColorLayer(255, 255, 255, 255)
+
+    back = cocos.menu.Menu()
+    set_menu_style(back, 28)
+    item = [cocos.menu.MenuItem('Назад', previous)]
+    back.menu_valign = TOP
+    back.menu_halign = LEFT
+    back.menu_hmargin = 10
+    back.create_menu(item)
+
+    sound = cocos.menu.Menu()
+    set_menu_style(sound)
+    items = []
+    volumes = ['Mute','10','20','30','40','50','60','70','80','90','100']
+    items.append(MultipleMenuItem('Game volume: ', on_volume,\
+                                   volumes, 8))
+    items.append(MultipleMenuItem('Music volume: ', on_volume,\
+                                   volumes, 8))
+    sound.create_menu(items)
+
+    bg.add(sound)
+    bg.add(back)
+
+    about.add(bg)
+
+    director.push(about)
+
+
 # Создание фона для главного меню
 def create_bg():
     bg = cocos.layer.Layer()
@@ -134,7 +169,7 @@ def create_menu():
     items = list()
     items.append(cocos.menu.MenuItem("Новая игра", enter))
     items.append(cocos.menu.MenuItem("Загрузить игру", enter))
-    items.append(cocos.menu.MenuItem("Настройки", enter))
+    items.append(cocos.menu.MenuItem("Настройки", settings))
     items.append(cocos.menu.MenuItem("Об игре", about_game))
     items.append(cocos.menu.MenuItem("Выйти", quit_game))
 
