@@ -205,8 +205,12 @@ class npc_mover(cocos.actions.Move):
         self.y = self.target.position[1]
 
     def step(self, dt):
-        vel_x = (self.x / hypot(self.x, self.y)) * 50
-        vel_y = (self.y / hypot(self.x, self.y)) * 50
+        if self.target.position[0] != self.x and self.target.position[1] != self.y:
+            vel_x = (self.x / hypot(self.x, self.y)) * 50
+            vel_y = (self.y / hypot(self.x, self.y)) * 50
+        else:
+            vel_x = 0
+            vel_y = 0
 
         if self.target.velocity[0] or self.target.velocity[1]:
             self.target.walk(True)
