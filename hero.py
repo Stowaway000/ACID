@@ -160,6 +160,11 @@ class hero_mover(cocos.actions.Move):
 
         self.target.scroller.set_focus(self.target.x, self.target.y)
 
+        if self.target.pause_counter == 0:
+            if self.target.velocity[0] or self.target.velocity[1] and not self.target.seating:
+                self.target.step_sound.play()
+        self.target.pause_counter = (self.target.pause_counter + 1) % 20
+
         global mouse_x, mouse_y
         if self.target.velocity[0] or self.target.velocity[1]:
             mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)

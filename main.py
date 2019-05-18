@@ -4,6 +4,7 @@ from cocos.director import director
 from cocos.scene import Scene
 from cocos.actions import RotateBy, Repeat
 from pyglet import font
+import cocos.audio.pygame.mixer as mixer
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from physics import *
 from creature import *
@@ -62,6 +63,7 @@ def enter():
     weapon('rifle')
     main_hero.take_item('rifle', 1)
     director.push(scene)
+    main_theme.stop()
 
 
 def quit_game():
@@ -145,7 +147,10 @@ def create_menu():
 if __name__ == '__main__':
     director.init(width=width, height=height, caption='Game')
     director.window.pop_handlers()
-    
+
+    my_mixer = mixer.init()
+    main_theme = mixer.Sound("res/sound/main.wav")
+    main_theme.play(-1)
     mainMenu = create_menu()
 
     director.run(mainMenu)
