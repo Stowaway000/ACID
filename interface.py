@@ -114,11 +114,21 @@ class visual_inventory(ColorLayer):
         self.buttons = []
         self.buttons.append(Button('Drop', 230, self.height-200, 100, 30))
         self.buttons.append(Button('Equip Right', 230, self.height-250, 100, 30))
-        self.buttons.append(Button('Equip Left', 230, self.height-280, 100, 30))
+        self.buttons.append(Button('Equip Left', 230, self.height-300, 100, 30))
         self.buttons.append(Button('Unequip', 230, self.height-250, 100, 30))
 
         self.items = []
         self.active_btn = []
+
+        self.weapon_place = ColorLayer(255, 200, 100, 255, 100, 79)
+        self.weapon_place.scale = 2
+        self.weapon_place.anchor = (0, 0)
+        self.weapon_place.position = (520, self.height-200)
+        self.add(self.weapon_place, name='active')
+
+        self.add(add_label('Right hand', (530, self.height-50), 'left'), 1)
+        self.add(add_label('Left hand', (530, self.height-128), 'left'), 1,\
+                 'lbl_left')
         
         self.selected = ''
 
@@ -156,10 +166,18 @@ class visual_inventory(ColorLayer):
             self.item_stack.remove('select')
             self.remove('naming')
 
-        if 'w_right' in self.children_names:
-            self.remove('w_right')
-        if 'w_left' in self.children_names:
-            self.remove('w_left')
+        if 'w_right' in self.weapon_place.children_names:
+            self.weapon_place.remove('w_right')
+        if 'w_left' in self.weapon_place.children_names:
+            self.weapon_place.remove('w_left')
+
+        self.remove('active')
+        if self.weapon_place.height < 79:
+             self.add(add_label('Left hand', (530, self.height-128), 'left'), 1,\
+                 'lbl_left')
+        self.weapon_place.height = 79
+        self.weapon_place.position = (520, self.height-200)
+        self.add(self.weapon_place, name='active')
     
     def update(self, pos):
         self.refresh(pos)
@@ -192,11 +210,19 @@ class visual_inventory(ColorLayer):
                 
                 h += 1
             elif i == self.hero_ref.weapon_left:
-                spr.position = (530, self.height-264)
-                self.add(spr, 1, 'w_left')
+                spr.position = (50, 16)
+                self.weapon_place.add(spr, 1, 'w_left')
             elif i == self.hero_ref.weapon_right:
-                spr.position = (530, self.height-200)
-                self.add(spr, 1, 'w_right')
+                spr.position = (50, 55)
+                if get_global(wps[i].weapon_name).two_handed:
+                    self.remove('active')
+                    self.weapon_place.height = 39
+                    self.weapon_place.position = (520, self.height-121)
+                    self.add(self.weapon_place, name='active')
+                    self.remove('lbl_left')
+                    
+                    spr.position = (50, 16)
+                self.weapon_place.add(spr, 1, 'w_right')
     
     def on_exit(self):
         director.window.set_mouse_position(*self.mouse_pos)
@@ -224,15 +250,17 @@ class visual_inventory(ColorLayer):
     def btn_set(self, key, index=''):
         st = []
         if key:
-            st += [0]
+            st.append(0)
             tp = get_type(key.split()[0])
             if tp == 'weapon':
                 index = int(index)
                 if index != self.hero_ref.weapon_left and\
                    index != self.hero_ref.weapon_right:
-                    st += [1]
+                    st.append(1)
+                    if not get_global(key.split()[0]).two_handed:
+                        st.append(2)
                 else:
-                    st += [3]
+                    st.append(3)
 
         return st
 
@@ -311,15 +339,15 @@ class visual_inventory(ColorLayer):
             else:
                 self.handle_btns(x, y)
                 
-                cld = self.children_names
+                cld = self.weapon_place.children_names
                 if 'w_left' in cld:
-                    if cld['w_left'].get_rect().contains(x, y):
+                    if 520 < x < 720 and self.height-200 < y < self.height-136:
                         wp = self.hero_ref.inventory.get_weapon\
                              (self.hero_ref.weapon_left)
                         self.on_item_click(wp.weapon_name, cld['w_left'],\
                                            self.hero_ref.weapon_left)
                 if 'w_right' in cld:
-                    if cld['w_right'].get_rect().contains(x, y):
+                    if 520 < x < 720 and self.height-121 < y < self.height-57:
                         wp = self.hero_ref.inventory.get_weapon\
                              (self.hero_ref.weapon_right)
                         self.on_item_click(wp.weapon_name, cld['w_right'],\

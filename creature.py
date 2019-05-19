@@ -266,21 +266,23 @@ class skin(cocos.sprite.Sprite):
 
     def remove_weapon(self, hand):
         if hand == "l":
-            self.lweapon = None
-            if not self.hidden:
-                self.remove("lhand")
-                if not self.both:
-                    self.remove("lweapon")
-        else:
-            if not self.hidden:
-                self.rweapon = None
-                self.remove("rhand")
-                if self.both:
+            if self.lweapon:
+                self.lweapon = None
+                if not self.hidden:
                     self.remove("lhand")
-                    self.remove("both")
-                    self.both = False
-                else:
-                    self.remove("rweapon")
+                    if not self.both:
+                        self.remove("lweapon")
+        else:
+            if self.rweapon:
+                self.rweapon = None
+                if not self.hidden:
+                    self.remove("rhand")
+                    if self.both:
+                        self.remove("lhand")
+                        self.remove("both")
+                        self.both = False
+                    else:
+                        self.remove("rweapon")
 
     def add_armor(self, sprite):
         self.armor = sprite
@@ -303,11 +305,13 @@ class skin(cocos.sprite.Sprite):
             self.rhand.position = 10, 4
         else:
             if self.lweapon:
-                self.add(self.lhand, name="lhand", z=0)
-                self.add(self.lweapon, name="lweapon", z=2)
+                if 'lhand' not in self.children_names:
+                    self.add(self.lhand, name="lhand", z=0)
+                    self.add(self.lweapon, name="lweapon", z=2)
             if self.rweapon:
-                self.add(self.rhand, name="rhand", z=0)
-                self.add(self.rweapon, name="rweapon", z=2)
+                if 'rhand' not in self.children_names:
+                    self.add(self.rhand, name="rhand", z=0)
+                    self.add(self.rweapon, name="rweapon", z=2)
 
     def hide_weapon(self):
         self.hidden = True

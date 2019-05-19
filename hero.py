@@ -120,12 +120,14 @@ class hero(character):
             elif buttons & mouse.RIGHT and not self.skin.hidden:
                 self.attack('l')
             elif buttons & mouse.LEFT and buttons & mouse.RIGHT and not self.skin.hidden:
+                print(12)
                 self.attack('r')
                 self.attack('l')
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = True
+            self.attack('r')
         if button == mouse.RIGHT:
             self.rpressed = True
 
