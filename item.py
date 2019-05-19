@@ -90,12 +90,14 @@ class weapon(Item):
         if not weapon_name in weapon.weapons:
             weapon.weapons[weapon_name] = self
         file = open("res/stats/weapon/" + weapon_name + ".txt")
-        stats = file.readline().split()
+        stats = ' '.join(file.readlines()).split()
         file.close()
 
         super().__init__(weapon_name, float(stats[6]), float(stats[7]))
         self.weapon_name = weapon_name  # weapon_name - имя оружия
         anim_name = "res/img/items/" + weapon_name + "_anim.png"
+        anim_in_name = "res/img/items/" + weapon_name + "_anim_in.png"
+        anim_end_name = "res/img/items/" + weapon_name + "_anim_end.png"
         self.damage = float(stats[0])  # damage - урон
         self.breachness = float(stats[1])  # breachness - пробивная способность
         self.max_cartridge = int(stats[2])  # max_cartridge - размер обоймы
@@ -111,33 +113,86 @@ class weapon(Item):
         self.width_anim = int(stats[9])  # width_anim - ширина спрайта в анимации"
         self.height_anim = int(stats[8])  # height_anim - высота спрайта в анимации
 
-        # self.item_sprite.position = 400, 400
-
         shoot_img = load(anim_name)
         shoot_grid = ImageGrid(shoot_img, 1,
                                self.count_anim,
                                item_height=self.height_anim,
                                item_width=self.width_anim)
-        self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], 0.05, loop=False)
+        self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], 60/self.firerate, loop=False)
+
+        shoot_in_img = load(anim_in_name)
+        shoot_grid = ImageGrid(shoot_in_img, 1,
+                               int(stats[12]),
+                               item_height=int(stats[14]),
+                               item_width=int(stats[13]))
+        self.weapon_in_anim = Animation.from_image_sequence(shoot_grid[:], 60/self.firerate, loop=True)
+
+        shoot_end_img = load(anim_end_name)
+        shoot_grid = ImageGrid(shoot_end_img, 1,
+                               int(stats[15]),
+                               item_height=int(stats[17]),
+                               item_width=int(stats[16]))
+        self.weapon_end_anim = Animation.from_image_sequence(shoot_grid[:], 60/self.firerate, loop=False)
 
     def shoot(self, x, y):
         pass
 
 
+class shooter(cocos.actions.Move):
+    def step(self, dt):
+        self.target.shoot_time += dt
+        if not self.target.shoot_check():
+            if self.target.shot_len <= self.target.shoot_time:
+                self.target.shoot_time -= self.target.shot_len
+                self.target.shot()
+                
+                if not self.target.flag_shooting:
+                    self.target.shoot_in()
+
+
 class weapon_handler(cocos.sprite.Sprite):
     def __init__(self, weapon_name):
-        self.cartridge = 0
+        self.cartridge = 20
         self.flag_shoot = False
+        self.flag_shooting = False
+        self.shoot_time = 0
+
+        self.weapon_ref = get_global(weapon_name)
         self.weapon_name = weapon_name
-        self.weapon_anim = weapon.weapons[weapon_name].weapon_anim
-        self.item_sprite = weapon.weapons[weapon_name].item_sprite
+        self.weapon_anim = self.weapon_ref.weapon_anim
+        self.weapon_in_anim = self.weapon_ref.weapon_in_anim
+        self.weapon_end_anim = self.weapon_ref.weapon_end_anim
+        self.item_sprite = self.weapon_ref.item_sprite
+
+        self.shot_len = 60/self.weapon_ref.firerate
 
         super().__init__(self.item_sprite.image)
 
+    def shot(self):
+        if self.cartridge == 0:
+            self.flag_shoot = False
+        else:
+            self.cartridge -= 1
+    
     def shoot_anim(self):
         self.image = self.weapon_anim
 
-    def get_max_cartrige(self):
+    def shoot_in(self):
+        self.flag_shooting = True
+        self.image = self.weapon_in_anim
+
+    def shoot_check(self):
+        if not self.parent.parent.lpressed or not self.flag_shoot:
+            if self.flag_shooting:
+                self.image = self.weapon_end_anim
+            self.flag_shoot = False
+            self.flag_shooting = False
+            self.shoot_time = 0
+            self.stop()
+            return True
+        return False
+
+    def get_max_cartridge(self):
         return weapon.weapons[self.weapon_name].max_cartridge, \
                weapon.weapons[self.weapon_name].ammo_type
 
@@ -152,7 +207,10 @@ class weapon_handler(cocos.sprite.Sprite):
             return 0
 
     def shoot(self):
-        self.shoot_anim()
+        if not self.flag_shoot and self.cartridge:
+            self.do(shooter())
+            self.flag_shoot = True
+            self.shoot_anim()
 
 
 # Класс инвентаря

@@ -98,12 +98,11 @@ def about_game():
 
 def volume_sounds(arg):
     sound_ch.set_volume(arg/10)
-    print(sound_ch.get_volume(), music_ch.get_volume())
 
 
 def volume_music(arg):
     music_ch.set_volume(arg/10)
-    print(sound_ch.get_volume(), music_ch.get_volume())
+
 
 def settings():
     about = Scene()
@@ -123,9 +122,9 @@ def settings():
     items = []
     volumes = ['Mute','10','20','30','40','50','60','70','80','90','100']
     items.append(MultipleMenuItem('Sounds volume: ', volume_sounds,\
-                                   volumes, 10))
+                                   volumes, 1))
     items.append(MultipleMenuItem('Music volume: ', volume_music,\
-                                   volumes, 10))
+                                   volumes, 1))
     sound.create_menu(items)
 
     bg.add(sound)
