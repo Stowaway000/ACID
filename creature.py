@@ -127,11 +127,19 @@ class character(cocos.layer.ScrollableLayer):
         wp = self.inventory.get_weapon(index)
         if hand == 'r':
             self.weapon_right = index
+            
+            if get_global(wp.weapon_name).two_handed:
+                self.unequip_weapon(self.weapon_left)
+                
             self.skin.add_weapon(wp.weapon_name, wp, 'r')
         else:
+            right = self.inventory.get_weapon(self.weapon_right)
+            if get_global(right.weapon_name).two_handed:
+                self.unequip_weapon(self.weapon_right)
+
             self.weapon_left = index
             self.skin.add_weapon(wp.weapon_name, wp, 'l')
-
+            
     def unequip_weapon(self, index):
         if index == self.weapon_left:
             self.weapon_left = -1
@@ -245,7 +253,6 @@ class skin(cocos.sprite.Sprite):
             self.rhand.position = 10, 4
             self.both = True
         else:
-            self.both = False
             if hand == 'l':
                 self.remove_weapon('l')
                 
@@ -260,6 +267,7 @@ class skin(cocos.sprite.Sprite):
                 self.rweapon.position = 10, 20
                 self.body.rotation = 0
                 self.rhand.position = 10, 7
+            self.both = False
 
         if not self.hidden:
             self.show_weapon()
