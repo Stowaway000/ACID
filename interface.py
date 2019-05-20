@@ -28,7 +28,7 @@ def add_text(txt, point, anchor='center', size=14, padding=10):
 
 class Button(ColorLayer):
     def __init__(self, txt, x, y, w, h):
-        super().__init__(100, 50, 0, 255)
+        super().__init__(120, 20, 8, 180)
         self.position = (x, y)
         self.width = w
         self.height = h
@@ -79,7 +79,7 @@ class visual_inventory(ColorLayer):
     is_event_handler = True
     
     def __init__(self, hero):
-        super().__init__(31, 38, 0, 255)
+        super().__init__(31, 38, 0, 200)
 
         w = director.window.width
         h = director.window.height
@@ -97,8 +97,7 @@ class visual_inventory(ColorLayer):
 
         self.viewpoint = (w/6+50, h/6+self.height/4+16)
 
-        self.scrollbar = ColorLayer(255, 200, 100, 255)
-        self.scrollbar.width = 15
+        self.scrollbar = ColorLayer(120, 20, 8, 200, 15)
         
         self.up = h/6+self.height/4+16
         self.down = 0
@@ -120,7 +119,7 @@ class visual_inventory(ColorLayer):
         self.items = []
         self.active_btn = []
 
-        self.weapon_place = ColorLayer(255, 200, 100, 255, 100, 79)
+        self.weapon_place = ColorLayer(31, 38, 0, 200, 100, 79)
         self.weapon_place.scale = 2
         self.weapon_place.anchor = (0, 0)
         self.weapon_place.position = (520, self.height-200)
@@ -284,7 +283,7 @@ class visual_inventory(ColorLayer):
         
         self.btn_refresh(key, index)
                             
-        selection = ColorLayer(100, 50, 0, 140)
+        selection = ColorLayer(120, 20, 8, 140)
         selection.width = 100
         selection.height = 32
         selection.position = (val.position[0]-50, val.position[1]-16)
