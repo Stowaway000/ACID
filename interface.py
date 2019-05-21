@@ -222,8 +222,7 @@ class BasicVisualInventory(ColorLayer):
         y -= self.position[1]
         
         if button == mouse.LEFT:
-            if 195 < x < 220 and (self.scrollbar.position[1] > y or\
-               y > self.scrollbar.position[1]+self.scrollbar.height):
+            if 195 < x < 220:
                 dy = y - self.scrollbar.position[1] - self.scrollbar.height/2
                 dy /= self.pixel_rel
 
@@ -268,6 +267,9 @@ class visual_inventory(BasicVisualInventory):
                  'lbl_left')
 
     def refresh(self, pos):
+        if self.selected:
+            self.btn_refresh('')
+        
         super().refresh(pos)
 
         if 'w_right' in self.weapon_place.children_names:
@@ -282,9 +284,6 @@ class visual_inventory(BasicVisualInventory):
         self.weapon_place.height = 79
         self.weapon_place.position = (520, self.height-200)
         self.add(self.weapon_place, name='active')
-
-        if self.selected:
-            self.btn_refresh('')
     
     def update(self, pos):
         super().update(pos)
