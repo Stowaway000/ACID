@@ -40,6 +40,11 @@ class NPC(character):
 
 
 class npc_mover(cocos.actions.Move):
+    def __init__(self):
+        super().__init__()
+        self.x = self.target.position[0]
+        self.y = self.target.position[1]
+
     def step(self, dt):
         #TODO
         pass
