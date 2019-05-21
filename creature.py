@@ -151,7 +151,7 @@ class character(cocos.layer.ScrollableLayer):
 
     def equip_armor(self, index):
         self.armor = index
-        self.skin.add_armor(self.inventory.get_armor(index).item_sprite)
+        self.skin.add_armor(self.inventory.get_armor(index))
 
     def unequip_armor(self):
         self.armor = -1

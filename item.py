@@ -62,6 +62,11 @@ class Armor(Item):
         file = open("res/stats/armor/" + armor_name + ".txt")
         stats = list(map(int, file.readline().split()))
         file.close()
+
+        w_img = pyglet.image.load("res/img/items/" + armor_name + "_walk.png")
+        walk_grid = ImageGrid(w_img, 1, 9, item_width=29, item_height=14)
+        self.walk_sprite = Sprite(Animation.from_image_sequence\
+                                  (walk_grid[:], 0.05, loop=True))
         
         self.armor_name = armor_name
         super().__init__(armor_name, stats[2], stats[3])
@@ -69,13 +74,16 @@ class Armor(Item):
         self.def_firearm = stats[1]  # def_firearm - защита от огнестрельного оружия
 
 
-class ArmorHandler():
+class ArmorHandler(Sprite):
     def __init__(self, armor_name):
         self.armor_name = armor_name
         self.item_sprite = Armor.armors[armor_name].item_sprite
         self.item_inv_sprite = Armor.armors[armor_name].item_inv_sprite
+        self.walk_sprite = Armor.armors[armor_name].walk_sprite
         self.ac = Armor.armors[armor_name].max_ac
         self.def_firearm = Armor.armors[armor_name].def_firearm
+
+        super().__init__(self.item_sprite.image)
 
     def statusAC(self, dmg=1, k=1):
         # dmg - кол-во урона
