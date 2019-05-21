@@ -52,3 +52,8 @@ class npc_mover(cocos.actions.Move):
         else:
             vel_x = 0
             vel_y = 0
+
+        if self.target.velocity[0] or self.target.velocity[1]:
+            self.target.walk(True)
+        elif not (self.target.velocity[0] or self.target.velocity[1]):
+            self.target.walk(False)
