@@ -78,27 +78,27 @@ class game_menu(Layer):
 class BasicVisualInventory(ColorLayer):
     is_event_handler = True
 
-    def __init__(self, hero):
+    def __init__(self, hero, pos):
         w = director.window.width
         h = director.window.height
         
         super().__init__(31, 38, 0, 200, 450, int(2*h/3))
 
-        self.position = (w/6, h/6)
+        self.position = pos
 
         self.on_one = self.height/64
 
-        self.item_window = ScrollingManager(cocos.rect.Rect(w/6, h/6, 200, int(2*h/3)))
-        self.item_window.position = (w/6, h/6)
+        self.item_window = ScrollingManager(cocos.rect.Rect(*pos, 200, int(2*h/3)))
+        self.item_window.position = pos
         self.item_window.scale = 2
         
         self.item_stack = ScrollableLayer()
 
-        self.viewpoint = (w/6+50, h/6+self.height/4+16)
+        self.viewpoint = (pos[0]+50, pos[1]+self.height/4+16)
 
         self.scrollbar = ColorLayer(120, 20, 8, 200, 15)
         
-        self.up = h/6+self.height/4+16
+        self.up = pos[1]+self.height/4+16
         self.down = 0
 
         self.item_window.add(self.item_stack)
@@ -142,7 +142,6 @@ class BasicVisualInventory(ColorLayer):
         self.items.clear()
 
         if self.selected:
-            self.btn_refresh('')
             self.selected = ''
             self.item_stack.remove('select')
             self.remove('naming')
@@ -243,8 +242,12 @@ class visual_inventory(BasicVisualInventory):
     is_event_handler = True
     
     def __init__(self, hero):
-        super().__init__(hero)
-        self.width = int(2*director.window.width/3)
+        w = director.window.width
+        h = director.window.height
+        
+        super().__init__(hero, (w/6, h/6))
+        
+        self.width = int(2*w/3)
 
         self.buttons = []
         self.buttons.append(Button('Drop', 230, self.height-200, 100, 30))
@@ -279,6 +282,9 @@ class visual_inventory(BasicVisualInventory):
         self.weapon_place.height = 79
         self.weapon_place.position = (520, self.height-200)
         self.add(self.weapon_place, name='active')
+
+        if self.selected:
+            self.btn_refresh('')
     
     def update(self, pos):
         super().update(pos)
@@ -414,7 +420,15 @@ class interface(MultiplexLayer):
     def __init__(self, stats, host):
         self.stats = stat_interface(stats)
         self.invent = visual_inventory(host)
-        super().__init__(self.stats, self.invent)
+
+        w = director.window.width
+        h = director.window.height
+        self.exchange = Layer()
+        self.mine = BasicVisualInventory(host, (w/6, h/6))
+        self.his = BasicVisualInventory(host, (w/6+480, h/6))
+        self.exchange.add(self.mine)
+        self.exchange.add(self.his)
+        super().__init__(self.stats, self.invent, self.exchange)
 
         self.mouse_pos = (0, 0)
         
@@ -433,6 +447,16 @@ class interface(MultiplexLayer):
                 self.host.lurking = True
                 self.invent.update(self.mouse_pos)
                 self.switch_to(1)
+            else:
+                self.host.lurking = False
+                self.switch_to(0)
+
+        if symbol == key.E:
+            if self.enabled_layer != 2:
+                self.host.lurking = True
+                self.mine.update(self.mouse_pos)
+                self.his.update(self.mouse_pos)
+                self.switch_to(2)
             else:
                 self.host.lurking = False
                 self.switch_to(0)
