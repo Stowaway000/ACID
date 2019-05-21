@@ -75,17 +75,16 @@ class game_menu(Layer):
             director.pop()
 
 
-class visual_inventory(ColorLayer):
+class BasicVisualInventory(ColorLayer):
     is_event_handler = True
-    
-    def __init__(self, hero):
-        super().__init__(31, 38, 0, 200)
 
+    def __init__(self, hero):
         w = director.window.width
         h = director.window.height
+        
+        super().__init__(31, 38, 0, 200, 450, int(2*h/3))
+
         self.position = (w/6, h/6)
-        self.width = int(2*w/3)
-        self.height = int(2*h/3)
 
         self.on_one = self.height/64
 
@@ -110,24 +109,7 @@ class visual_inventory(ColorLayer):
 
         self.hero_ref = hero
 
-        self.buttons = []
-        self.buttons.append(Button('Drop', 230, self.height-200, 100, 30))
-        self.buttons.append(Button('Equip Right', 230, self.height-250, 100, 30))
-        self.buttons.append(Button('Equip Left', 230, self.height-300, 100, 30))
-        self.buttons.append(Button('Unequip', 230, self.height-250, 100, 30))
-
         self.items = []
-        self.active_btn = []
-
-        self.weapon_place = ColorLayer(31, 38, 0, 200, 100, 79)
-        self.weapon_place.scale = 2
-        self.weapon_place.anchor = (0, 0)
-        self.weapon_place.position = (520, self.height-200)
-        self.add(self.weapon_place, name='active')
-
-        self.add(add_label('Right hand', (530, self.height-50), 'left'), 1)
-        self.add(add_label('Left hand', (530, self.height-128), 'left'), 1,\
-                 'lbl_left')
         
         self.selected = ''
 
@@ -165,19 +147,6 @@ class visual_inventory(ColorLayer):
             self.item_stack.remove('select')
             self.remove('naming')
 
-        if 'w_right' in self.weapon_place.children_names:
-            self.weapon_place.remove('w_right')
-        if 'w_left' in self.weapon_place.children_names:
-            self.weapon_place.remove('w_left')
-
-        self.remove('active')
-        if self.weapon_place.height < 79:
-             self.add(add_label('Left hand', (530, self.height-128), 'left'), 1,\
-                 'lbl_left')
-        self.weapon_place.height = 79
-        self.weapon_place.position = (520, self.height-200)
-        self.add(self.weapon_place, name='active')
-    
     def update(self, pos):
         self.refresh(pos)
 
@@ -208,24 +177,6 @@ class visual_inventory(ColorLayer):
                 self.items.append(wps[i].weapon_name+' '+str(i))
                 
                 h += 1
-            elif i == self.hero_ref.weapon_left:
-                spr.position = (50, 16)
-                self.weapon_place.add(spr, 1, 'w_left')
-            elif i == self.hero_ref.weapon_right:
-                spr.position = (50, 55)
-                if get_global(wps[i].weapon_name).two_handed:
-                    self.remove('active')
-                    self.weapon_place.height = 39
-                    self.weapon_place.position = (520, self.height-121)
-                    self.add(self.weapon_place, name='active')
-                    self.remove('lbl_left')
-                    
-                    spr.position = (50, 16)
-                self.weapon_place.add(spr, 1, 'w_right')
-    
-    def on_exit(self):
-        director.window.set_mouse_position(*self.mouse_pos)
-        super().on_exit()
 
     def move_view(self, dy):
         if self.viewpoint[1]+dy/2 > self.up:
@@ -238,13 +189,122 @@ class visual_inventory(ColorLayer):
                 
         self.viewpoint = (self.viewpoint[0], self.viewpoint[1]+dy/2)
         self.item_window.set_focus(*self.viewpoint)
-    
+
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         x -= self.position[0]
         y -= self.position[1]
 
         if 195 < x < 220 and 0 < y < self.height:
             self.move_view(dy)
+
+    def on_item_click(self, key, val, index=''):
+        if self.selected:
+            self.item_stack.remove('select')
+            self.remove('naming')
+                            
+        selection = ColorLayer(120, 20, 8, 140)
+        selection.width = 100
+        selection.height = 32
+        selection.position = (val.position[0]-50, val.position[1]-16)
+        self.item_stack.add(selection, z=0, name='select')
+
+        text = '<b>' + key.capitalize() + '</b><br>' + get_global(key)\
+               .get_info()
+        naming = add_text(text, (230, self.height)\
+                          , 'left')
+        self.add(naming, name='naming')
+
+        self.selected = [key]
+        if index != 'i':
+            self.selected.append(int(index))
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        x -= self.position[0]
+        y -= self.position[1]
+        
+        if button == mouse.LEFT:
+            if 195 < x < 220 and (self.scrollbar.position[1] > y or\
+               y > self.scrollbar.position[1]+self.scrollbar.height):
+                dy = y - self.scrollbar.position[1] - self.scrollbar.height/2
+                dy /= self.pixel_rel
+
+                self.move_view(dy)
+            elif 0 < x < 195 and 0 < y < self.height:
+                y /= 2
+                y += self.viewpoint[1] - self.up + 32
+                names = self.item_stack.children_names
+                for key, val in names.items():
+                    if val.position[1] < y < val.position[1] + val.height and key != 'select':
+                        self.on_item_click(key.split()[0], val, key.split()[1])
+                        break
+
+
+class visual_inventory(BasicVisualInventory):
+    is_event_handler = True
+    
+    def __init__(self, hero):
+        super().__init__(hero)
+        self.width = int(2*director.window.width/3)
+
+        self.buttons = []
+        self.buttons.append(Button('Drop', 230, self.height-200, 100, 30))
+        self.buttons.append(Button('Equip Right', 230, self.height-250, 100, 30))
+        self.buttons.append(Button('Equip Left', 230, self.height-300, 100, 30))
+        self.buttons.append(Button('Unequip', 230, self.height-250, 100, 30))
+
+        self.active_btn = []
+
+        self.weapon_place = ColorLayer(31, 38, 0, 200, 100, 79)
+        self.weapon_place.scale = 2
+        self.weapon_place.anchor = (0, 0)
+        self.weapon_place.position = (520, self.height-200)
+        self.add(self.weapon_place, name='active')
+
+        self.add(add_label('Right hand', (530, self.height-50), 'left'), 1)
+        self.add(add_label('Left hand', (530, self.height-128), 'left'), 1,\
+                 'lbl_left')
+
+    def refresh(self, pos):
+        super().refresh(pos)
+
+        if 'w_right' in self.weapon_place.children_names:
+            self.weapon_place.remove('w_right')
+        if 'w_left' in self.weapon_place.children_names:
+            self.weapon_place.remove('w_left')
+
+        self.remove('active')
+        if self.weapon_place.height < 79:
+             self.add(add_label('Left hand', (530, self.height-128), 'left'), 1,\
+                 'lbl_left')
+        self.weapon_place.height = 79
+        self.weapon_place.position = (520, self.height-200)
+        self.add(self.weapon_place, name='active')
+    
+    def update(self, pos):
+        super().update(pos)
+
+        invent = self.hero_ref.inventory
+        wps = invent.weapons
+        if self.hero_ref.weapon_left != -1:
+            spr = wps[self.hero_ref.weapon_left].item_inv_sprite
+            spr.position = (50, 16)
+            self.weapon_place.add(spr, 1, 'w_left')
+        if self.hero_ref.weapon_right != -1:
+            spr = wps[self.hero_ref.weapon_right].item_inv_sprite
+            spr.position = (50, 55)
+            if get_global(wps[self.hero_ref.weapon_right].weapon_name).two_handed:
+                self.remove('active')
+                self.weapon_place.height = 39
+                self.weapon_place.position = (520, self.height-121)
+                self.add(self.weapon_place, name='active')
+                self.remove('lbl_left')
+                    
+                spr.position = (50, 16)
+            self.weapon_place.add(spr, 1, 'w_right')
+    
+    def on_exit(self):
+        director.window.set_mouse_position(*self.mouse_pos)
+        super().on_exit()
 
     def btn_set(self, key, index=''):
         st = []
@@ -276,29 +336,6 @@ class visual_inventory(ColorLayer):
 
         self.active_btn = need
 
-    def on_item_click(self, key, val, index=''):
-        if self.selected:
-            self.item_stack.remove('select')
-            self.remove('naming')
-        
-        self.btn_refresh(key, index)
-                            
-        selection = ColorLayer(120, 20, 8, 140)
-        selection.width = 100
-        selection.height = 32
-        selection.position = (val.position[0]-50, val.position[1]-16)
-        self.item_stack.add(selection, z=0, name='select')
-
-        text = '<b>' + key.capitalize() + '</b><br>' + get_global(key)\
-               .get_info()
-        naming = add_text(text, (230, self.height)\
-                          , 'left')
-        self.add(naming, name='naming')
-
-        self.selected = [key]
-        if index != 'i':
-            self.selected.append(int(index))
-
     def handle_btns(self, x, y):
         if self.buttons[0].click(x, y):
             self.hero_ref.drop_item(*self.selected)
@@ -317,40 +354,30 @@ class visual_inventory(ColorLayer):
             self.update(self.mouse_pos)
     
     def on_mouse_press(self, x, y, button, modifiers):
+        super().on_mouse_press(x, y, button, modifiers)
         x -= self.position[0]
         y -= self.position[1]
         
-        if button == mouse.LEFT:
-            if 195 < x < 220 and (self.scrollbar.position[1] > y or\
-               y > self.scrollbar.position[1]+self.scrollbar.height):
-                dy = y - self.scrollbar.position[1] - self.scrollbar.height/2
-                dy /= self.pixel_rel
+        self.handle_btns(x, y)
 
-                self.move_view(dy)
-            elif 0 < x < 195 and 0 < y < self.height:
-                y /= 2
-                y += self.viewpoint[1] - self.up + 32
-                names = self.item_stack.children_names
-                for key, val in names.items():
-                    if val.position[1] < y < val.position[1] + val.height and key != 'select':
-                        self.on_item_click(key.split()[0], val, key.split()[1])
-                        break
-            else:
-                self.handle_btns(x, y)
-                
-                cld = self.weapon_place.children_names
-                if 'w_left' in cld:
-                    if 520 < x < 720 and self.height-200 < y < self.height-136:
-                        wp = self.hero_ref.inventory.get_weapon\
-                             (self.hero_ref.weapon_left)
-                        self.on_item_click(wp.weapon_name, cld['w_left'],\
+        cld = self.weapon_place.children_names
+        if 'w_left' in cld:
+            if 520 < x < 720 and self.height-200 < y < self.height-136:
+                wp = self.hero_ref.inventory.get_weapon\
+                        (self.hero_ref.weapon_left)
+                self.on_item_click(wp.weapon_name, cld['w_left'],\
                                            self.hero_ref.weapon_left)
-                if 'w_right' in cld:
-                    if 520 < x < 720 and self.height-121 < y < self.height-57:
-                        wp = self.hero_ref.inventory.get_weapon\
-                             (self.hero_ref.weapon_right)
-                        self.on_item_click(wp.weapon_name, cld['w_right'],\
-                                           self.hero_ref.weapon_right)
+        if 'w_right' in cld:
+            if 520 < x < 720 and self.height-121 < y < self.height-57:
+                wp = self.hero_ref.inventory.get_weapon\
+                        (self.hero_ref.weapon_right)
+                self.on_item_click(wp.weapon_name, cld['w_right'],\
+                                    self.hero_ref.weapon_right)
+
+    def on_item_click(self, key, val, index=''):
+        super().on_item_click(key, val, index)
+        
+        self.btn_refresh(key, index)
 
 
 class stat_interface(Layer):
