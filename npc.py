@@ -77,3 +77,7 @@ class npc_mover(cocos.actions.Move):
         self.target.scroller.set_focus(*new.cshape.center)
 
         self.target.scroller.set_focus(self.target.x, self.target.y)
+
+    def update(self, x, y):
+        self.x = x
+        self.y = y
