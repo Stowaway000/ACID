@@ -251,7 +251,10 @@ class skin(cocos.sprite.Sprite):
             self.add(self.body_seat, name="body_seat", z=1)
         if not self.seating:
             self.remove("body_seat")
-            self.add(self.body, name="body", z=1)
+            if self.armor:
+                self.add(self.armor, name="body", z=1)
+            else:
+                self.add(self.body, name="body", z=1)
 
     def add_weapon(self, name, handler, hand):
         if Weapon.weapons[name].two_handed:
