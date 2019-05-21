@@ -232,12 +232,17 @@ class skin(cocos.sprite.Sprite):
         if self.walking != new_state:
             self.walking = new_state
             if not self.seating:
+                self.remove("body")                
                 if self.walking:
-                    self.remove("body")
-                    self.add(self.animation, name="body", z=1)
+                    if self.armor:
+                        self.add(self.armor.walk_sprite, name="body", z=1)
+                    else:
+                        self.add(self.animation, name="body", z=1)
                 else:
-                    self.remove("body")
-                    self.add(self.body, name="body", z=1)
+                    if self.armor:
+                        self.add(self.armor, name="body", z=1)
+                    else:
+                        self.add(self.body, name="body", z=1)
 
     def seat(self):
         self.seating = not self.seating
