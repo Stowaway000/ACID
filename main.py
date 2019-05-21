@@ -1,7 +1,7 @@
 from cocos.scene import Scene
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from hero import hero
-from item import Item, Weapon
+from item import Item, Weapon, Armor
 from physics import *
 from interface import interface
 from map import *
@@ -82,9 +82,11 @@ def enter():
     Item('metal', 1, 1)
     Weapon('rifle')
     Weapon('shotgun')
+    Armor('armor')
     
     main_hero.take_item('rifle', 1)
     main_hero.take_item('shotgun', 1)
+    main_hero.take_item('armor', 1)
     main_hero.take_item('apple', 2)
     main_hero.take_item('bottle', 1)
     main_hero.take_item('beer', 1)

@@ -60,7 +60,7 @@ class Armor(Item):
         # формат файла
         # max_ac def_firearm weight cost
         file = open("res/stats/armor/" + armor_name + ".txt")
-        stats = list(map(float, file.readline().split()))
+        stats = list(map(int, file.readline().split()))
         file.close()
         
         self.armor_name = armor_name
@@ -72,9 +72,10 @@ class Armor(Item):
 class ArmorHandler():
     def __init__(self, armor_name):
         self.armor_name = armor_name
-        self.item_sprite = armors[armor_name].item_sprite
-        self.ac = armors[armor_name].max_ac
-        self.def_firearm = armors[armor_name].def_firearm
+        self.item_sprite = Armor.armors[armor_name].item_sprite
+        self.item_inv_sprite = Armor.armors[armor_name].item_inv_sprite
+        self.ac = Armor.armors[armor_name].max_ac
+        self.def_firearm = Armor.armors[armor_name].def_firearm
 
     def statusAC(self, dmg=1, k=1):
         # dmg - кол-во урона

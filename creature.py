@@ -148,6 +148,14 @@ class character(cocos.layer.ScrollableLayer):
         if index == self.weapon_right:
             self.weapon_right = -1
             self.skin.remove_weapon('r')
+
+    def equip_armor(self, index):
+        self.armor = index
+        self.skin.add_armor(self.inventory.get_armor(index).item_sprite)
+
+    def unequip_armor(self):
+        self.armor = -1
+        self.skin.remove_armor()
     
     # Положить вещь в инвентарь
     def take_item(self, item, count):

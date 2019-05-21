@@ -122,6 +122,8 @@ class BasicVisualInventory(ColorLayer):
             total -= 1
         if self.hero_ref.weapon_right != -1:
             total -= 1
+        if self.hero_ref.armor != -1:
+            total -= 1
         
         self.remove('sb')
         self.scrollbar.height = int(self.height*min(self.on_one/total, 1))
@@ -174,6 +176,17 @@ class BasicVisualInventory(ColorLayer):
 
                 self.item_stack.add(spr, 1, wps[i].weapon_name+' '+str(i))
                 self.items.append(wps[i].weapon_name+' '+str(i))
+                
+                h += 1
+
+        ars = invent.armors
+        for i in range(len(ars)):
+            spr = ars[i].item_inv_sprite
+            if i != self.hero_ref.armor:
+                spr.position = (50, self.height/2-h*32)
+
+                self.item_stack.add(spr, 1, ars[i].armor_name+' '+str(i))
+                self.items.append(ars[i].armor_name+' '+str(i))
                 
                 h += 1
 
@@ -253,6 +266,8 @@ class visual_inventory(BasicVisualInventory):
         self.buttons.append(Button('Equip Right', 230, self.height-250, 100, 30))
         self.buttons.append(Button('Equip Left', 230, self.height-300, 100, 30))
         self.buttons.append(Button('Unequip', 230, self.height-250, 100, 30))
+        self.buttons.append(Button('Wear', 230, self.height-250, 100, 30))
+        self.buttons.append(Button('Unwear', 230, self.height-250, 100, 30))
 
         self.active_btn = []
 
@@ -262,20 +277,30 @@ class visual_inventory(BasicVisualInventory):
         self.weapon_place.position = (520, self.height-200)
         self.add(self.weapon_place, name='active')
 
+        self.armor_place = ColorLayer(31, 38, 0, 200, 100, 39)
+        self.armor_place.scale = 2
+        self.armor_place.anchor = (0, 0)
+        self.armor_place.position = (520, self.height-289)
+        self.add(self.armor_place)
+
         self.add(add_label('Right hand', (530, self.height-50), 'left'), 1)
         self.add(add_label('Left hand', (530, self.height-128), 'left'), 1,\
                  'lbl_left')
+        self.add(add_label('Armor', (530, self.height-218), 'left'), 1)
 
     def refresh(self, pos):
         if self.selected:
             self.btn_refresh('')
+
+        names = self.weapon_place.children_names
+        if 'w_right' in names:
+            self.weapon_place.remove('w_right')
+        if 'w_left' in names:
+            self.weapon_place.remove('w_left')
+        if 'armor' in self.armor_place.children_names:
+            self.armor_place.remove('armor')
         
         super().refresh(pos)
-
-        if 'w_right' in self.weapon_place.children_names:
-            self.weapon_place.remove('w_right')
-        if 'w_left' in self.weapon_place.children_names:
-            self.weapon_place.remove('w_left')
 
         self.remove('active')
         if self.weapon_place.height < 79:
@@ -294,6 +319,7 @@ class visual_inventory(BasicVisualInventory):
             spr = wps[self.hero_ref.weapon_left].item_inv_sprite
             spr.position = (50, 16)
             self.weapon_place.add(spr, 1, 'w_left')
+        
         if self.hero_ref.weapon_right != -1:
             spr = wps[self.hero_ref.weapon_right].item_inv_sprite
             spr.position = (50, 55)
@@ -306,6 +332,11 @@ class visual_inventory(BasicVisualInventory):
                     
                 spr.position = (50, 16)
             self.weapon_place.add(spr, 1, 'w_right')
+        
+        if self.hero_ref.armor != -1:
+            spr = invent.armors[self.hero_ref.armor].item_inv_sprite
+            spr.position = (50, 16)
+            self.armor_place.add(spr, 1, 'armor')
     
     def on_exit(self):
         director.window.set_mouse_position(*self.mouse_pos)
@@ -325,6 +356,12 @@ class visual_inventory(BasicVisualInventory):
                         st.append(2)
                 else:
                     st.append(3)
+            elif tp == 'armor':
+                index = int(index)
+                if index != self.hero_ref.armor:
+                    st.append(4)
+                else:
+                    st.append(5)
 
         return st
 
@@ -357,6 +394,14 @@ class visual_inventory(BasicVisualInventory):
         if self.buttons[3].click(x, y):
             self.hero_ref.unequip_weapon(self.selected[1])
             self.update(self.mouse_pos)
+
+        if self.buttons[4].click(x, y):
+            self.hero_ref.equip_armor(self.selected[1])
+            self.update(self.mouse_pos)
+
+        if self.buttons[5].click(x, y):
+            self.hero_ref.unequip_armor()
+            self.update(self.mouse_pos)
     
     def on_mouse_press(self, x, y, button, modifiers):
         super().on_mouse_press(x, y, button, modifiers)
@@ -366,6 +411,7 @@ class visual_inventory(BasicVisualInventory):
         self.handle_btns(x, y)
 
         cld = self.weapon_place.children_names
+        cld_ar = self.armor_place.children_names
         if 'w_left' in cld:
             if 520 < x < 720 and self.height-200 < y < self.height-136:
                 wp = self.hero_ref.inventory.get_weapon\
@@ -378,6 +424,11 @@ class visual_inventory(BasicVisualInventory):
                         (self.hero_ref.weapon_right)
                 self.on_item_click(wp.weapon_name, cld['w_right'],\
                                     self.hero_ref.weapon_right)
+        if 'armor' in cld_ar:
+            if 520 < x < 720 and self.height-289 < y < self.height-225:
+                wp = self.hero_ref.inventory.get_armor(self.hero_ref.armor)
+                self.on_item_click(wp.armor_name, cld_ar['armor'],\
+                                           self.hero_ref.armor)
 
     def on_item_click(self, key, val, index=''):
         super().on_item_click(key, val, index)
