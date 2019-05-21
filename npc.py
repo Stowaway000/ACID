@@ -6,7 +6,7 @@ from pyglet.image import load, ImageGrid, Animation
 from pyglet.window import key, mouse
 from cocos.actions import *
 from cocos import mapcolliders
-from math import sqrt, sin, cos, radians, atan, degrees
+from math import sqrt, sin, cos, radians, atan, degrees, hypot
 
 from creature import *
 
@@ -46,5 +46,9 @@ class npc_mover(cocos.actions.Move):
         self.y = self.target.position[1]
 
     def step(self, dt):
-        #TODO
-        pass
+        if self.target.position[0] != self.x and self.target.position[1] != self.y:
+            vel_x = (self.x / hypot(self.x, self.y)) * 50
+            vel_y = (self.y / hypot(self.x, self.y)) * 50
+        else:
+            vel_x = 0
+            vel_y = 0
