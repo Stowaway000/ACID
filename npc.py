@@ -71,3 +71,9 @@ class npc_mover(cocos.actions.Move):
         if self.target.collider.collision_manager.any_near(new, 0):
             vel_y = 0
             new.cshape.center.y -= dy
+
+        self.target.velocity = (vel_x, vel_y)
+        self.target.position = new.cshape.center
+        self.target.scroller.set_focus(*new.cshape.center)
+
+        self.target.scroller.set_focus(self.target.x, self.target.y)
