@@ -11,6 +11,7 @@ import pyglet
 from pyglet.window import key, mouse
 from menu import set_menu_style, go_back, quit_game
 from item import get_global, get_type
+from utils import safe_remove
 
 
 def add_label(txt, point, anchor='center', size=14):
@@ -235,7 +236,9 @@ class BasicVisualInventory(ColorLayer):
         y -= self.position[1]
         
         if button == mouse.LEFT:
-            if 195 < x < 220:
+            if 195 < x < 220 and (self.scrollbar.position[1] +\
+                                  self.scrollbar.height < y or\
+                                  y < self.scrollbar.position[1]):
                 dy = y - self.scrollbar.position[1] - self.scrollbar.height/2
                 dy /= self.pixel_rel
 
@@ -292,13 +295,9 @@ class visual_inventory(BasicVisualInventory):
         if self.selected:
             self.btn_refresh('')
 
-        names = self.weapon_place.children_names
-        if 'w_right' in names:
-            self.weapon_place.remove('w_right')
-        if 'w_left' in names:
-            self.weapon_place.remove('w_left')
-        if 'armor' in self.armor_place.children_names:
-            self.armor_place.remove('armor')
+        safe_remove(self.weapon_place, 'w_right')
+        safe_remove(self.weapon_place, 'w_left')
+        safe_remove(self.armor_place, 'armor')
         
         super().refresh(pos)
 
@@ -448,6 +447,17 @@ class stat_interface(Layer):
             spr.position = val[1]
             self.add(spr)
 
+            if 'weapon' in key:
+                spr.scale = 2
+                
+                if key[-1] == 'r':
+                    self.r_wp = spr
+                else:
+                    self.l_wp = spr
+
+                self.bars[key].position = (self.bars[key].position[0]+80,\
+                                           self.bars[key].position[1]-32)
+
         for key, val in self.bars.items():
             self.add(val, name=key)
 
@@ -455,11 +465,33 @@ class stat_interface(Layer):
         for key, val in stats.items():
             self.change(key, val)
 
+    def on_enter(self):
+        if 'wp' in self.r_wp.children_names:
+            self.r_wp.children_names['wp'].position = (0, 0)
+        if 'wp' in self.l_wp.children_names:
+            self.l_wp.children_names['wp'].position = (0, 0)
+    
     def change(self, stat, new):
         self.remove(stat)
 
         old_pos = self.bars[stat].position
         self.bars[stat] = add_label(str(new), old_pos)
+
+        if 'weapon' in stat:
+            if len(new) > 1:
+                self.bars[stat] = add_label(str(new[0]), old_pos)
+
+                new[1].position = (0, 0)
+                if stat[-1] == 'r':
+                    safe_remove(self.r_wp, 'wp')
+                    self.r_wp.add(new[1], name='wp')
+                else:
+                    safe_remove(self.l_wp, 'wp')
+                    self.l_wp.add(new[1], name='wp')
+            elif stat[-1] == 'r':
+                safe_remove(self.r_wp, 'wp')
+            elif stat[-1] == 'l':
+                safe_remove(self.l_wp, 'wp')
 
         self.add(self.bars[stat], name=stat)
 

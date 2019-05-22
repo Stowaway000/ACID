@@ -50,6 +50,26 @@ class hero(character):
                'armor': ar_ac}
         self.interface.update(dct)
 
+    def equip_weapon(self, index, hand):
+        super().equip_weapon(index, hand)
+
+        dct = {}
+        if hand == 'r':
+            self.get_wp_stats('r', dct)
+        else:
+            self.get_wp_stats('l', dct)
+        
+        self.interface.update(dct)
+
+    def unequip_weapon(self, index):
+        super().unequip_weapon(index)
+
+        dct = {}
+        self.get_wp_stats('r', dct)
+        self.get_wp_stats('l', dct)
+        
+        self.interface.update(dct)
+    
     def equip_armor(self, index):
         super().equip_armor(index)
         
@@ -62,6 +82,24 @@ class hero(character):
         dct = {'armor': 0}
         self.interface.update(dct)
 
+    def get_wp_stats(self, hand, dct):
+        if hand == 'r':
+            if self.weapon_right != -1:
+                wp = self.inventory.get_weapon(self.weapon_right)
+                dct['weapon_r'] = [str(wp.cartridge)+'/'+\
+                                   str(wp.get_max_cartridge()[0])]
+                dct['weapon_r'].append(wp.item_inv_sprite)
+            else:
+                dct['weapon_r'] = [0]
+        else:
+            if self.weapon_left != -1:
+                wp = self.inventory.get_weapon(self.weapon_left)
+                dct['weapon_l'] = [str(wp.cartridge)+'/'+\
+                                   str(wp.get_max_cartridge()[0])]
+                dct['weapon_l'].append(wp.item_inv_sprite)
+            else:
+                dct['weapon_l'] = [0]
+    
     def get_stats(self):
         ar_ac = 0
         if self.armor != -1:
@@ -71,6 +109,10 @@ class hero(character):
         dct = {'hp': [self.hp],
                'armor': [ar_ac],
                'stamina': [self.stamina]}
+
+        self.get_wp_stats('r', dct)
+        self.get_wp_stats('l', dct)
+        
         return dct
     
     # Закончить игру из-за смерти ГГ   
@@ -139,7 +181,6 @@ class hero(character):
     def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = True
-            self.attack('r')
         if button == mouse.RIGHT:
             self.rpressed = True
 
@@ -180,8 +221,8 @@ class hero_mover(cocos.actions.Move):
     def step(self, dt):
         if not self.target.parent.lurking:
             keyboard = self.target.keyboard
-            vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
-            vel_y = (keyboard[key.W] - keyboard[key.S]) * 50
+            vel_x = (keyboard[key.D] - keyboard[key.A]) * 75
+            vel_y = (keyboard[key.W] - keyboard[key.S]) * 75
 
             if self.target.velocity[0] or self.target.velocity[1]:
                 self.target.walker(True)

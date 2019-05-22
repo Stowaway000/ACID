@@ -44,6 +44,8 @@ def create_interface(scene, hero):
     stats['hp'].append((100, 100))
     stats['armor'].append((200, 100))
     stats['stamina'].append((width-100, 100))
+    stats['weapon_r'].append((width/2+110, 100))
+    stats['weapon_l'].append((width/2-110, 100))
 
     inter = interface(stats, hero)
     hero.interface = inter
@@ -85,11 +87,10 @@ def enter():
     Armor('armor')
     Armor('armor_heavy')
     
-    main_hero.take_item('rifle', 1)
-    main_hero.take_item('shotgun', 1)
     main_hero.take_item('armor', 1)
     main_hero.take_item('armor_heavy', 1)
-    
+    main_hero.take_item('rifle', 1)
+    main_hero.take_item('shotgun', 1)
     main_hero.take_item('apple', 2)
     main_hero.take_item('bottle', 1)
     main_hero.take_item('beer', 1)
