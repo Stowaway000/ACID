@@ -46,6 +46,23 @@ class AI:
         self.state = "patrol"
         self.rad_patrol = rad_patrol
 
+    def change_state(self):
+        if self.state == "patrol":
+            self.state = "fight"
+        else:
+            self.state = "patrol"
+
+    def get_way(self, x, y):
+        self.mover.update(x, y)
+
+    def think(self):
+        if self.state == "patrol":
+            pass
+            # x, y = ...
+            # self.get_way(x, y)
+        else:
+            pass
+
 
 class npc_mover(cocos.actions.Move):
     def __init__(self):
