@@ -15,6 +15,7 @@ mouse_x = 10
 mouse_y = 10
 vector = [0, 0]
 
+
 # Класс NPC
 class NPC(character):
     def __init__(self, name, fraction):
@@ -37,6 +38,13 @@ class NPC(character):
     # Создать труп и прочее
     def die(self):
         pass
+
+
+class AI:
+    def __init__(self, rad_patrol):
+        self.mover = npc_mover()
+        self.state = "patrol"
+        self.rad_patrol = rad_patrol
 
 
 class npc_mover(cocos.actions.Move):
