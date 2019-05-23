@@ -449,13 +449,15 @@ class stat_interface(Layer):
 
             if 'weapon' in key:
                 spr.scale = 2
+                spr.opacity = 0
+                self.bars[key].opacity = 0
                 
                 if key[-1] == 'r':
                     self.r_wp = spr
                 else:
                     self.l_wp = spr
 
-                self.bars[key].position = (self.bars[key].position[0]+80,\
+                self.bars[key].position = (self.bars[key].position[0]+70,\
                                            self.bars[key].position[1]-32)
 
         for key, val in self.bars.items():
@@ -478,20 +480,26 @@ class stat_interface(Layer):
         self.bars[stat] = add_label(str(new), old_pos)
 
         if 'weapon' in stat:
+            self.bars[stat].opacity = 0
             if len(new) > 1:
                 self.bars[stat] = add_label(str(new[0]), old_pos)
-
+                self.bars[stat].opacity = 255
+                
                 new[1].position = (0, 0)
                 if stat[-1] == 'r':
+                    self.r_wp.opacity = 255
                     safe_remove(self.r_wp, 'wp')
                     self.r_wp.add(new[1], name='wp')
                 else:
+                    self.l_wp.opacity = 255
                     safe_remove(self.l_wp, 'wp')
                     self.l_wp.add(new[1], name='wp')
             elif stat[-1] == 'r':
                 safe_remove(self.r_wp, 'wp')
+                self.r_wp.opacity = 0
             elif stat[-1] == 'l':
                 safe_remove(self.l_wp, 'wp')
+                self.l_wp.opacity = 0
 
         self.add(self.bars[stat], name=stat)
 
