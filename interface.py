@@ -214,16 +214,16 @@ class BasicVisualInventory(ColorLayer):
         if 195 < x < 220 and 0 < y < self.height:
             self.move_view(dy)
 
-    def on_item_click(self, key, val, index=''):
-        if self.selected:
-            self.item_stack.remove('select')
-            self.remove('naming')
-                            
-        selection = ColorLayer(120, 20, 8, 140)
-        selection.width = 100
-        selection.height = 32
-        selection.position = (val.position[0]-50, val.position[1]-16)
-        self.item_stack.add(selection, z=0, name='select')
+    def on_item_click(self, key, val, index='', no_selection=False):
+        safe_remove(self.item_stack, 'select')
+        safe_remove(self, 'naming')
+
+        if not no_selection:
+            selection = ColorLayer(120, 20, 8, 140)
+            selection.width = 100
+            selection.height = 32
+            selection.position = (val.position[0]-50, val.position[1]-16)
+            self.item_stack.add(selection, z=0, name='select')
 
         text = '<b>' + key.capitalize() + '</b><br>' + get_global(key)\
                .get_info()
@@ -432,7 +432,8 @@ class visual_inventory(BasicVisualInventory):
                 wp = self.hero_ref.inventory.get_weapon\
                         (self.hero_ref.weapon_left)
                 self.on_item_click(wp.weapon_name, cld['w_left'],\
-                                           self.hero_ref.weapon_left)
+                                           self.hero_ref.weapon_left,\
+                                   no_selection=True)
         if 'w_right' in cld:
             if wp_pl.position[0] < x < wp_pl.position[0] + wp_pl.width*2\
                and wp_pl.position[1] + wp_pl.height< y < wp_pl.position[1]\
@@ -441,7 +442,8 @@ class visual_inventory(BasicVisualInventory):
                 wp = self.hero_ref.inventory.get_weapon\
                         (self.hero_ref.weapon_right)
                 self.on_item_click(wp.weapon_name, cld['w_right'],\
-                                    self.hero_ref.weapon_right)
+                                    self.hero_ref.weapon_right,\
+                                   no_selection=True)
         if 'armor' in cld_ar:
             if ar_pl.position[0] < x < ar_pl.position[0] + ar_pl.width*2\
                and ar_pl.position[1]< y < ar_pl.position[1]\
@@ -449,10 +451,11 @@ class visual_inventory(BasicVisualInventory):
                 
                 wp = self.hero_ref.inventory.get_armor(self.hero_ref.armor)
                 self.on_item_click(wp.armor_name, cld_ar['armor'],\
-                                           self.hero_ref.armor)
+                                           self.hero_ref.armor,\
+                                   no_selection=True)
 
-    def on_item_click(self, key, val, index=''):
-        super().on_item_click(key, val, index)
+    def on_item_click(self, key, val, index='', no_selection=False):
+        super().on_item_click(key, val, index, no_selection)
         
         self.btn_refresh(key, index)
 
