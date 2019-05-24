@@ -1,29 +1,24 @@
-import cocos
-import pyglet
-from cocos.director import director
 from cocos.scene import Scene
-from cocos.actions import RotateBy, Repeat
-from pyglet import font
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
+from hero import hero
+from item import Item, Weapon, Armor
 from physics import *
-from creature import *
-from npc import *
-from hero import *
+from interface import interface
 from map import *
+from menu import set_menu_style, previous, quit_game
 
 
-version = '0.03'  # Версия игры
+version = '0.006'  # Версия игры
+
+
 # Ширина и высота окна
 width = 1280
 height = 720
 
-# Убираем настройки по-умолчанию
-def set_menu_style(menu, size=32):
-    menu.font_item_selected['font_size'] = size
-    menu.font_item_selected['font_name'] = 'Calibri'
-    menu.font_item['font_name'] = 'Calibri'
-    menu.font_item_selected['color'] = (229, 43, 80, 240)
-    menu.font_item['color'] = (192, 192, 192, 200)
+
+def on_key_press(symbol, modifiers):
+    if symbol == key.ESCAPE:
+        return True
 
 
 def load_map(name, hero):
@@ -43,8 +38,19 @@ def load_map(name, hero):
     return scroller
 
 
-def previous():
-    director.pop()
+def create_interface(scene, hero):
+    stats = hero.get_stats()
+
+    stats['hp'].append((100, 100))
+    stats['armor'].append((200, 100))
+    stats['stamina'].append((width-100, 100))
+    stats['weapon_r'].append((width/2+110, 100))
+    stats['weapon_l'].append((width/2-110, 100))
+
+    inter = interface(stats, hero)
+    hero.interface = inter
+
+    scene.add(inter, 100)
 
 
 def enter():
@@ -56,16 +62,44 @@ def enter():
     
     scroller = load_map("map_test", main_hero)
     main_hero.set_scroller(scroller)
-    
+
     scene = cocos.scene.Scene(scroller)
 
-    weapon('rifle')
-    main_hero.take_item('rifle', 1)
+    create_interface(scene, main_hero)
+    
     director.push(scene)
 
-
-def quit_game():
-    director.window.close()
+    main_hero.take_damage(20, 1)
+    main_hero.interface.quest_done('Родиться')
+    main_hero.interface.quest_done('Умереть')
+    
+    Item('apple', 1, 1)
+    Item('bottle', 1, 1)
+    Item('beer', 1, 1)
+    Item('water', 1, 1)
+    Item('devil', 1, 1)
+    Item('pig', 1, 1)
+    Item('whale', 1, 1)
+    Item('salad', 1, 1)
+    Item('metal', 1, 1)
+    Weapon('rifle')
+    Weapon('shotgun')
+    Armor('armor')
+    Armor('armor_heavy')
+    
+    main_hero.take_item('armor', 1)
+    main_hero.take_item('armor_heavy', 1)
+    main_hero.take_item('rifle', 1)
+    main_hero.take_item('shotgun', 1)
+    main_hero.take_item('apple', 2)
+    main_hero.take_item('bottle', 1)
+    main_hero.take_item('beer', 1)
+    main_hero.take_item('water', 1)
+    main_hero.take_item('devil', 1)
+    main_hero.take_item('pig', 1)
+    main_hero.take_item('whale', 1)
+    main_hero.take_item('metal', 1)
+    main_hero.take_item('salad', 1)
 
 
 # Сцена "Об игре"
@@ -145,6 +179,7 @@ def create_menu():
 if __name__ == '__main__':
     director.init(width=width, height=height, caption='Game')
     director.window.pop_handlers()
+    director.window.push_handlers(on_key_press)
     
     mainMenu = create_menu()
 

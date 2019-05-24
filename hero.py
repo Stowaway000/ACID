@@ -15,17 +15,18 @@ mouse_x = 10
 mouse_y = 10
 vector = [0, 0]
 
+
 # Класс ГГ
 class hero(character):
     is_event_handler = True
-
+    
     def __init__(self, name, fraction, seacil, stats, pos):
         super().__init__(name, fraction, seacil, hero_mover(), pos)
 
         self.hp = stats[0]
         self.stamina = stats[1]
         self.sp_stamina = stats[2]
-
+        
         self.expirience = 0
         self.level = 0
         self.next_level = 1000
@@ -33,7 +34,88 @@ class hero(character):
         self.lpressed = False
         self.rpressed = False
 
-    # Закончить игру из-за смерти ГГ
+        self.interface = None
+
+        self.lurking = False
+
+    def take_damage(self, dmg, k):
+        super().take_damage(dmg, k)
+
+        arm = self.inventory.get_armor(self.armor)
+        ar_ac = 0
+        if arm:
+            ar_ac = arm.ac
+
+        dct = {'hp': self.hp,
+               'armor': ar_ac}
+        self.interface.update(dct)
+
+    def equip_weapon(self, index, hand):
+        super().equip_weapon(index, hand)
+
+        dct = {}
+        if hand == 'r':
+            self.get_wp_stats('r', dct)
+        else:
+            self.get_wp_stats('l', dct)
+        
+        self.interface.update(dct)
+
+    def unequip_weapon(self, index):
+        super().unequip_weapon(index)
+
+        dct = {}
+        self.get_wp_stats('r', dct)
+        self.get_wp_stats('l', dct)
+        
+        self.interface.update(dct)
+    
+    def equip_armor(self, index):
+        super().equip_armor(index)
+        
+        dct = {'armor': self.inventory.get_armor(self.armor).ac}
+        self.interface.update(dct)
+
+    def unequip_armor(self):
+        super().unequip_armor()
+        
+        dct = {'armor': 0}
+        self.interface.update(dct)
+
+    def get_wp_stats(self, hand, dct):
+        if hand == 'r':
+            if self.weapon_right != -1:
+                wp = self.inventory.get_weapon(self.weapon_right)
+                dct['weapon_r'] = [str(wp.cartridge)+'/'+\
+                                   str(wp.get_max_cartridge()[0])]
+                dct['weapon_r'].append(wp.item_inv_sprite)
+            else:
+                dct['weapon_r'] = [0]
+        else:
+            if self.weapon_left != -1:
+                wp = self.inventory.get_weapon(self.weapon_left)
+                dct['weapon_l'] = [str(wp.cartridge)+'/'+\
+                                   str(wp.get_max_cartridge()[0])]
+                dct['weapon_l'].append(wp.item_inv_sprite)
+            else:
+                dct['weapon_l'] = [0]
+    
+    def get_stats(self):
+        ar_ac = 0
+        if self.armor != -1:
+            armor = self.inventory.get_armor(self.armor)
+            ar_ac = armor.ac
+
+        dct = {'hp': [self.hp],
+               'armor': [ar_ac],
+               'stamina': [self.stamina]}
+
+        self.get_wp_stats('r', dct)
+        self.get_wp_stats('l', dct)
+        
+        return dct
+    
+    # Закончить игру из-за смерти ГГ   
     def die(self):
         pass
 
@@ -43,52 +125,58 @@ class hero(character):
 
     # Поворот взгляда
     def on_mouse_motion(self, x, y, dx, dy):
-        global mouse_x, mouse_y
-        mouse_x = x
-        mouse_y = y
+        if not self.lurking:
+            global mouse_x, mouse_y
+            mouse_x = x
+            mouse_y = y
 
-        scroller = self.skin.scroller
+            self.interface.mouse_pos = x, y
 
-        mid_x, mid_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+            scroller = self.skin.scroller
+            
+            mid_x, mid_y = scroller.world_to_screen(scroller.fx, scroller.fy)
 
-        x -= mid_x
-        y -= mid_y
+            x -= mid_x
+            y -= mid_y
 
-        if x:
-            angle = degrees(atan(y / x))
-        elif y > 0:
-            angle = 90
-        else:
-            angle = -90
+            if x:
+                angle = degrees(atan(y/x))
+            elif y > 0:
+                angle = 90
+            else:
+                angle = -90        
 
-        if x < 0 and y < 0:
-            angle -= 180
-        elif x < 0:
-            angle += 180
+            if x < 0 and y < 0:
+                angle -= 180
+            elif x < 0:
+                angle += 180
 
-        if not y and x < 0:
-            angle = 180
+            if not y and x < 0:
+                angle = 180
 
-        angle = -angle + 90
+            angle = -angle + 90
 
-        if self.skin.rotation != angle:
-            h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+            if self.skin.rotation != angle:
 
-            vector[0] = int(mouse_x - h_x)
+                h_x, h_y = scroller.world_to_screen(scroller.fx, scroller.fy)
+                    
+                vector[0] = int(mouse_x - h_x)
+                    
+                vector[1] = int(mouse_y - h_y)
 
-            vector[1] = int(mouse_y - h_y)
-
-        self.skin.rotation = angle
-
+            self.skin.rotation = angle
+    
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-        self.on_mouse_motion(x, y, dx, dy)
-        if buttons & mouse.LEFT:
-            self.attack('r')
-        elif buttons & mouse.RIGHT:
-            self.attack('l')
-        elif buttons & mouse.LEFT and buttons & mouse.RIGHT:
-            self.attack('r')
-            self.attack('l')
+        if not self.lurking:
+            self.on_mouse_motion(x, y, dx, dy)
+            if buttons & mouse.LEFT and not self.skin.hidden:
+                self.attack('r')
+            elif buttons & mouse.RIGHT and not self.skin.hidden:
+                self.attack('l')
+            elif buttons & mouse.LEFT and buttons & mouse.RIGHT and not self.skin.hidden:
+                print(12)
+                self.attack('r')
+                self.attack('l')
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
@@ -96,31 +184,31 @@ class hero(character):
         if button == mouse.RIGHT:
             self.rpressed = True
 
-        self.on_mouse_drag(x, y, 0, 0, button, modifiers)
-
     def on_mouse_release(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = False
         if button == mouse.RIGHT:
             self.rpressed = False
-
+    
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.R and self.lpressed:
-            self.reload('r')
-        elif symbol == key.R and self.rpressed:
-            self.reload('l')
-        elif symbol == key.R and modifiers & key.MOD_SHIFT:
-            self.switch_weapon()
-        elif symbol == key.R:
-            self.reload('r')
-            self.reload('l')
-
-        if symbol == key.LCTRL or symbol == key.RCTRL:
-            self.skin.seat()
+        if not self.lurking:
+            if symbol == key.R and self.lpressed and not self.skin.hidden:
+                self.reload('r')
+            elif symbol == key.R and self.rpressed and not self.skin.hidden:
+                self.reload('l')
+            elif symbol == key.R and modifiers & key.MOD_SHIFT:
+                self.switch_weapon()
+            elif symbol == key.R and not self.skin.hidden:
+                self.reload('r')
+                self.reload('l')
+            
+            if symbol == key.LCTRL or symbol == key.RCTRL:
+                self.skin.seat()
 
     def on_key_release(self, symbol, modifiers):
-        if symbol == key.LCTRL or symbol == key.RCTRL:
-            self.skin.seat()
+        if not self.lurking:
+            if symbol == key.LCTRL or symbol == key.RCTRL:
+                self.skin.seat()
 
     def set_scroller(self, scr):
         self.skin.scroller = scr
@@ -131,38 +219,41 @@ class hero(character):
 
 class hero_mover(cocos.actions.Move):
     def step(self, dt):
-        keyboard = self.target.keyboard
-        vel_x = (keyboard[key.D] - keyboard[key.A]) * 50
-        vel_y = (keyboard[key.W] - keyboard[key.S]) * 50
+        if not self.target.parent.lurking:
+            keyboard = self.target.keyboard
+            vel_x = (keyboard[key.D] - keyboard[key.A]) * 75
+            vel_y = (keyboard[key.W] - keyboard[key.S]) * 75
 
-        if self.target.velocity[0] or self.target.velocity[1]:
-            self.target.walker(True)
-        elif not (self.target.velocity[0] or self.target.velocity[1]):
+            if self.target.velocity[0] or self.target.velocity[1]:
+                self.target.walker(True)
+            elif not (self.target.velocity[0] or self.target.velocity[1]):
+                self.target.walker(False)
+
+            dx = vel_x * dt
+            dy = vel_y * dt
+            new = self.target.cshape
+
+            new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y)
+            if self.target.collider.collision_manager.any_near(new, 0):
+                vel_x = 0
+                new.cshape.center.x -= dx
+
+            new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
+            if self.target.collider.collision_manager.any_near(new, 0):
+                vel_y = 0
+                new.cshape.center.y -= dy
+
+            self.target.velocity = (vel_x, vel_y)
+            self.target.position = new.cshape.center
+            self.target.scroller.set_focus(*new.cshape.center)
+
+            self.target.scroller.set_focus(self.target.x, self.target.y)
+
+            global mouse_x, mouse_y
+            if self.target.velocity[0] or self.target.velocity[1]:
+                mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)
+                mouse_x += vector[0]
+                mouse_y += vector[1]
+                director.window.set_mouse_position(mouse_x, mouse_y)
+        else:
             self.target.walker(False)
-
-        dx = vel_x * dt
-        dy = vel_y * dt
-        new = self.target.cshape
-
-        new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y)
-        if self.target.collider.collision_manager.any_near(new, 0):
-            vel_x = 0
-            new.cshape.center.x -= dx
-
-        new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
-        if self.target.collider.collision_manager.any_near(new, 0):
-            vel_y = 0
-            new.cshape.center.y -= dy
-
-        self.target.velocity = (vel_x, vel_y)
-        self.target.position = new.cshape.center
-        self.target.scroller.set_focus(*new.cshape.center)
-
-        self.target.scroller.set_focus(self.target.x, self.target.y)
-
-        global mouse_x, mouse_y
-        if self.target.velocity[0] or self.target.velocity[1]:
-            mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)
-            mouse_x += vector[0]
-            mouse_y += vector[1]
-            director.window.set_mouse_position(mouse_x, mouse_y)

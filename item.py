@@ -1,12 +1,8 @@
-import cocos
+﻿import cocos
 from cocos.director import director
 from cocos.sprite import Sprite
 import pyglet
 from pyglet.image import load, ImageGrid, Animation
-from pyglet.window import key, mouse
-from cocos.actions import *
-from cocos import mapcolliders
-from math import sqrt, sin, cos, radians, atan, degrees
 
 # Параметры мыши
 mouse_x = 10
@@ -18,60 +14,76 @@ class Item(cocos.sprite.Sprite):
     items = dict()
 
     def __init__(self, name, weight, cost):
-        if not (name in armor.armors or name in weapon.weapons \
-                or name in Item.items or name in usable_obj.usable_objs):
+        if not (name in Armor.armors or name in Weapon.weapons\
+                or name in Item.items or name in UsableObj.usable_objs):
             Item.items[name] = self
-
         self.name = name
         self.item_sprite = Sprite("res/img/items/" + name + ".png")
+        self.item_inv_sprite = Sprite("res/img/items/" + name + "_inv.png")
         self.weight = weight
         self.cost = cost
+        self.description = "Well... I don't know"
+
+    def get_info(self):
+        info = 'Weight: ' + str(self.weight) + '<br>'
+        info += 'Cost: ' + str(self.cost) + '<br>'
+        info += 'Description:<br>' + self.description
+        return info
 
 
-class usable_obj(Item):
+class UsableObj(Item):
     usable_objs = dict()
 
     def __init__(self, usable_obj_name):
-        if not usable_obj_name in usable_obj.usable_objs:
-            usable_obj.usable_objs[usable_obj_name] = self
+        if usable_obj_name not in UsableObj.usable_objs:
+            UsableObj.usable_objs[usable_obj_name] = self
         file = open("res/stats/usable_obj/" + usable_obj_name + ".txt")
         stats = file.readline().split()
         file.close()
-
+        
         self.buff_type = stats[0]  # Изменяемая характеристика
         self.buff_value = int(stats[1])  # Значение, на которое изменяется характеристика
         super().__init__(usable_obj_name, float(stats[2]), float(stats[3]))
-
+    
     def use(self, char):
         char.set(self.buff_type, self.buff_value)
 
 
-class armor(Item):
+class Armor(Item):
     armors = dict()
-
     # 0 <= mac_ac <= 100
     # 0 <= def_firearm <= 0.99
+
     def __init__(self, armor_name):
-        if not armor_name in armor.armors:
-            armor.armors[armor_name] = self
+        if armor_name not in Armor.armors:
+            Armor.armors[armor_name] = self
         # формат файла
         # max_ac def_firearm weight cost
         file = open("res/stats/armor/" + armor_name + ".txt")
-        stats = list(map(float, file.readline().split()))
+        stats = list(map(int, file.readline().split()))
         file.close()
 
+        w_img = pyglet.image.load("res/img/items/" + armor_name + "_walk.png")
+        walk_grid = ImageGrid(w_img, 1, 9, item_width=29, item_height=14)
+        self.walk_sprite = Sprite(Animation.from_image_sequence\
+                                  (walk_grid[:], 0.05, loop=True))
+        
         self.armor_name = armor_name
         super().__init__(armor_name, stats[2], stats[3])
         self.max_ac = stats[0]  # max_ac - максимальная прочность брони
         self.def_firearm = stats[1]  # def_firearm - защита от огнестрельного оружия
 
 
-class armor_handler():
+class ArmorHandler(Sprite):
     def __init__(self, armor_name):
         self.armor_name = armor_name
-        self.item_sprite = armors[armor_name].item_sprite
-        self.ac = armors[armor_name].max_ac
-        self.def_firearm = armors[armor_name].def_firearm
+        self.item_sprite = Armor.armors[armor_name].item_sprite
+        self.item_inv_sprite = Armor.armors[armor_name].item_inv_sprite
+        self.walk_sprite = Armor.armors[armor_name].walk_sprite
+        self.ac = Armor.armors[armor_name].max_ac
+        self.def_firearm = Armor.armors[armor_name].def_firearm
+
+        super().__init__(self.item_sprite.image)
 
     def statusAC(self, dmg=1, k=1):
         # dmg - кол-во урона
@@ -83,12 +95,12 @@ class armor_handler():
         return dmg * 0.5  # пока я не придумаю адекватную формулу, будет так, потом исправим
 
 
-class weapon(Item):
+class Weapon(Item):
     weapons = dict()
 
     def __init__(self, weapon_name):
-        if not weapon_name in weapon.weapons:
-            weapon.weapons[weapon_name] = self
+        if weapon_name not in Weapon.weapons:
+            Weapon.weapons[weapon_name] = self
         file = open("res/stats/weapon/" + weapon_name + ".txt")
         stats = file.readline().split()
         file.close()
@@ -124,28 +136,29 @@ class weapon(Item):
         pass
 
 
-class weapon_handler(cocos.sprite.Sprite):
+class WeaponHandler(cocos.sprite.Sprite):
     def __init__(self, weapon_name):
         self.cartridge = 0
         self.flag_shoot = False
         self.weapon_name = weapon_name
-        self.weapon_anim = weapon.weapons[weapon_name].weapon_anim
-        self.item_sprite = weapon.weapons[weapon_name].item_sprite
+        self.weapon_anim = Weapon.weapons[weapon_name].weapon_anim
+        self.item_sprite = Weapon.weapons[weapon_name].item_sprite
+        self.item_inv_sprite = Weapon.weapons[weapon_name].item_inv_sprite
 
         super().__init__(self.item_sprite.image)
 
     def shoot_anim(self):
         self.image = self.weapon_anim
 
-    def get_max_cartrige(self):
-        return weapon.weapons[self.weapon_name].max_cartridge, \
-               weapon.weapons[self.weapon_name].ammo_type
+    def get_max_cartridge(self):
+        return Weapon.weapons[self.weapon_name].max_cartridge, \
+               Weapon.weapons[self.weapon_name].ammo_type
 
     def recharge(self, count_bullet):
         # count_bullet - кол-во патронов для перезарядки
-        if self.cartridge + count_bullet > weapon.weapons[self.weapon_name].max_cartridge:
-            remainder = self.cartridge + count_bullet - weapon.weapons[self.weapon_name].max_cartridge
-            self.cartridge = weapon.weapons[self.weapon_name].max_cartridge
+        if self.cartridge + count_bullet > Weapon.weapons[self.weapon_name].max_cartridge:
+            remainder = self.cartridge + count_bullet - Weapon.weapons[self.weapon_name].max_cartridge
+            self.cartridge = Weapon.weapons[self.weapon_name].max_cartridge
             return remainder
         else:
             self.cartridge += count_bullet
@@ -175,10 +188,10 @@ class inventory():
                 self.items[item] = count
         elif tp == 'weapon':
             for i in range(count):
-                self.weapons.append(weapon_handler(item))
+                self.weapons.append(WeaponHandler(item))
         elif tp == 'armor':
             for i in range(count):
-                self.armors.append(armor_handler(item))
+                self.armors.append(ArmorHandler(item))
         elif tp == 'usable':
             if item in self.usables:
                 self.usables[item] += count
@@ -188,33 +201,41 @@ class inventory():
     # Получить экземпляр предмета по имени
     def get(self, item):
         if item in self.items:
-            return item.items[item]
+            return Item.items[item]
         return None
 
     # Забрать count предметов из инвентаря
-    def take(self, item, count):
+    def take(self, item, count=-1, index=0):
         n = self.count(item)
-        self.weight -= get_weight(item) * n
-        if n < count:
+        if count == 'all' or n < count:
             count = n
+        self.weight -= get_weight(item) * count
 
         tp = get_type(item)
         if tp == 'item':
             self.items[item] -= n
+            if not self.items[item]:
+                self.items.pop(item)
 
         elif tp == 'usable':
             self.usables[item] -= n
-
+            if not self.usables[item]:
+                self.usables.pop(item)
+        
         elif tp == 'weapon':
-            get = 0
-            i = 0
-            while get < count:
-                if self.weapons[i].name == item:
-                    self.weapons.pop(i)
-                    i -= 1
-                    get += 1
-                i += 1
-
+            if count != -1:
+                get = 0
+                i = 0
+                while get < count:
+                    if self.weapons[i].weapon_name == item:
+                        self.weapons.pop(i)
+                        i -= 1
+                        get += 1
+                    i += 1
+            elif self.weapons[index].weapon_name == item:
+                self.weapons.pop(index)
+                
+        
         elif tp == 'armor':
             get = 0
             i = 0
@@ -224,7 +245,7 @@ class inventory():
                     i -= 1
                     get += 1
                 i += 1
-
+        
         return count
 
     # Посчитать количество предметов типа item в инвентаре
@@ -237,7 +258,7 @@ class inventory():
         elif tp == 'weapon':
             n = 0
             for i in self.weapons:
-                if i.name == item:
+                if i.weapon_name == item:
                     n += 1
             return n
         elif tp == 'armor':
@@ -249,7 +270,10 @@ class inventory():
 
     # Получить экземпляр брони из инвентаря по номеру
     def get_armor(self, i):
-        return self.armors[i]
+        if len(self.armors):
+            return self.armors[i]
+        else:
+            return None
 
     # Получить экземпляр оружия из инвентаря по номеру
     def get_weapon(self, i):
@@ -266,37 +290,33 @@ class inventory():
 def get_type(item):
     if item in Item.items:
         return 'item'
-    elif item in weapon.weapons:
+    elif item in Weapon.weapons:
         return 'weapon'
-    elif item in armor.armors:
+    elif item in Armor.armors:
         return 'armor'
-    elif item in usable_object.usable_objs:
+    elif item in UsableObj.usable_objs:
         return 'usable'
 
 
 # Получить образец предмета
 def get_global(item):
     tp = get_type(item)
-
+    
     if tp == 'item':
         return Item.items[item]
     elif tp == 'weapon':
-        return weapon.weapons[item]
+        return Weapon.weapons[item]
     elif tp == 'armor':
-        return armor.armors[item]
+        return Armor.armors[item]
     elif tp == 'usable':
-        return usable_object.usable_objs[item]
+        return UsableObj.usable_objs[item]
 
 
 # Получить вес какого-то предмета
 def get_weight(item):
-    tp = get_type(item)
-
     return get_global(item).weight
 
 
 # Получить цену какого-то предмета
 def get_cost(item):
-    tp = get_type(item)
-
     return get_global(item).cost
