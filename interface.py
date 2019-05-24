@@ -19,12 +19,12 @@ def add_label(txt, point, anchor='center', size=14):
                  anchor_x=anchor, anchor_y='center')
 
 
-def add_text(txt, point, anchor='center', size=14, padding=10):
+def add_text(txt, point, anchor='center', size=14, padding=10, width=200):
     point = (point[0]+padding, point[1]-padding)
     txt = '<font face="Calibri" size="' + str(size) + '" color="white">'\
           + txt + '</font>'
     return HTMLLabel(txt, point, anchor_x=anchor, anchor_y='top',\
-                     multiline=True, width=200-padding*2)
+                     multiline=True, width=width-padding*2)
 
 
 class Button(ColorLayer):
@@ -113,6 +113,10 @@ class BasicVisualInventory(ColorLayer):
         self.items = []
         
         self.selected = ''
+
+        description_bg = ColorLayer(31, 38, 0, 200, 280, 246)
+        description_bg.position = (230, self.height-256)
+        self.add(description_bg)
 
     def refresh(self, pos):
         self.mouse_pos = pos
@@ -223,8 +227,8 @@ class BasicVisualInventory(ColorLayer):
 
         text = '<b>' + key.capitalize() + '</b><br>' + get_global(key)\
                .get_info()
-        naming = add_text(text, (230, self.height)\
-                          , 'left')
+        naming = add_text(text, (230, self.height-10)\
+                          , 'left', width=280)
         self.add(naming, name='naming')
 
         self.selected = [key]
@@ -260,36 +264,42 @@ class visual_inventory(BasicVisualInventory):
         w = director.window.width
         h = director.window.height
         
-        super().__init__(hero, (w/6, h/6))
+        super().__init__(hero, (w/2-365, h/6))
         
-        self.width = int(2*w/3)
+        self.width = 730
 
         self.buttons = []
-        self.buttons.append(Button('Drop', 230, self.height-200, 100, 30))
-        self.buttons.append(Button('Equip Right', 230, self.height-250, 100, 30))
-        self.buttons.append(Button('Equip Left', 230, self.height-300, 100, 30))
-        self.buttons.append(Button('Unequip', 230, self.height-250, 100, 30))
-        self.buttons.append(Button('Wear', 230, self.height-250, 100, 30))
-        self.buttons.append(Button('Unwear', 230, self.height-250, 100, 30))
+        self.buttons.append(Button('Drop', 230, self.height-296, 100, 30))
+        self.buttons.append(Button('Equip Right', 340, self.height-296, 100, 30))
+        self.buttons.append(Button('Equip Left', 450, self.height-296, 100, 30))
+        self.buttons.append(Button('Unequip', 340, self.height-296, 100, 30))
+        self.buttons.append(Button('Wear', 340, self.height-296, 100, 30))
+        self.buttons.append(Button('Unwear', 340, self.height-296, 100, 30))
 
         self.active_btn = []
 
         self.weapon_place = ColorLayer(31, 38, 0, 200, 100, 79)
         self.weapon_place.scale = 2
         self.weapon_place.anchor = (0, 0)
-        self.weapon_place.position = (520, self.height-200)
+        self.weapon_place.position = (520, self.height-168)
         self.add(self.weapon_place, name='active')
 
         self.armor_place = ColorLayer(31, 38, 0, 200, 100, 39)
         self.armor_place.scale = 2
         self.armor_place.anchor = (0, 0)
-        self.armor_place.position = (520, self.height-289)
+        self.armor_place.position = (520, self.height-256)
         self.add(self.armor_place)
 
-        self.add(add_label('Right hand', (530, self.height-50), 'left'), 1)
-        self.add(add_label('Left hand', (530, self.height-128), 'left'), 1,\
+        self.add(add_label('Right hand', (self.weapon_place.position[0]+10,\
+                                          self.weapon_place.position[1]+150),\
+                           'left'), 1)
+        self.add(add_label('Left hand', (self.weapon_place.position[0]+10,\
+                                         self.weapon_place.position[1]+72),\
+                           'left'), 1,\
                  'lbl_left')
-        self.add(add_label('Armor', (530, self.height-218), 'left'), 1)
+        self.add(add_label('Armor', (self.armor_place.position[0]+10,\
+                                     self.armor_place.position[1]+70),\
+                           'left'), 1)
 
     def refresh(self, pos):
         if self.selected:
@@ -303,10 +313,12 @@ class visual_inventory(BasicVisualInventory):
 
         self.remove('active')
         if self.weapon_place.height < 79:
-             self.add(add_label('Left hand', (530, self.height-128), 'left'), 1,\
+             self.add(add_label('Left hand', (self.weapon_place.position[0]+10,\
+                                         self.weapon_place.position[1]+72),\
+                           'left'), 1,\
                  'lbl_left')
         self.weapon_place.height = 79
-        self.weapon_place.position = (520, self.height-200)
+        self.weapon_place.position = (520, self.height-168)
         self.add(self.weapon_place, name='active')
     
     def update(self, pos):
@@ -325,7 +337,7 @@ class visual_inventory(BasicVisualInventory):
             if get_global(wps[self.hero_ref.weapon_right].weapon_name).two_handed:
                 self.remove('active')
                 self.weapon_place.height = 39
-                self.weapon_place.position = (520, self.height-121)
+                self.weapon_place.position = (520, self.height-89)
                 self.add(self.weapon_place, name='active')
                 self.remove('lbl_left')
                     
@@ -411,20 +423,30 @@ class visual_inventory(BasicVisualInventory):
 
         cld = self.weapon_place.children_names
         cld_ar = self.armor_place.children_names
+        wp_pl = self.weapon_place
+        ar_pl = self.armor_place
         if 'w_left' in cld:
-            if 520 < x < 720 and self.height-200 < y < self.height-136:
+            if wp_pl.position[0] < x < wp_pl.position[0] + wp_pl.width*2\
+               and wp_pl.position[1] < y < wp_pl.position[1]+wp_pl.height:
+                
                 wp = self.hero_ref.inventory.get_weapon\
                         (self.hero_ref.weapon_left)
                 self.on_item_click(wp.weapon_name, cld['w_left'],\
                                            self.hero_ref.weapon_left)
         if 'w_right' in cld:
-            if 520 < x < 720 and self.height-121 < y < self.height-57:
+            if wp_pl.position[0] < x < wp_pl.position[0] + wp_pl.width*2\
+               and wp_pl.position[1] + wp_pl.height< y < wp_pl.position[1]\
+               + wp_pl.height*2:
+                
                 wp = self.hero_ref.inventory.get_weapon\
                         (self.hero_ref.weapon_right)
                 self.on_item_click(wp.weapon_name, cld['w_right'],\
                                     self.hero_ref.weapon_right)
         if 'armor' in cld_ar:
-            if 520 < x < 720 and self.height-289 < y < self.height-225:
+            if ar_pl.position[0] < x < ar_pl.position[0] + ar_pl.width*2\
+               and ar_pl.position[1]< y < ar_pl.position[1]\
+               + ar_pl.height*2:
+                
                 wp = self.hero_ref.inventory.get_armor(self.hero_ref.armor)
                 self.on_item_click(wp.armor_name, cld_ar['armor'],\
                                            self.hero_ref.armor)
