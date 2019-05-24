@@ -251,6 +251,7 @@ class skin(cocos.sprite.Sprite):
             self.add(self.body_seat, name="body_seat", z=1)
         if not self.seating:
             self.remove("body_seat")
+
             if self.armor:
                 self.add(self.armor, name="body", z=1)
             else:
@@ -262,7 +263,6 @@ class skin(cocos.sprite.Sprite):
                 self.remove_weapon('l')
             if self.rweapon:
                 self.remove_weapon('r')
-            
             self.rweapon = handler
             self.rweapon.position = 10, 15
             self.body.rotation = 20
@@ -271,14 +271,12 @@ class skin(cocos.sprite.Sprite):
         else:
             if hand == 'l':
                 self.remove_weapon('l')
-                
                 self.lweapon = handler
                 self.lweapon.position = -10, 20
                 self.body.rotation = 0
                 self.rhand.position = 10, 7
             if hand == 'r':
                 self.remove_weapon('r')
-                
                 self.rweapon = handler
                 self.rweapon.position = 10, 20
                 self.body.rotation = 0
