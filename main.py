@@ -51,7 +51,7 @@ def enter():
     
     main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
     
-    scroller = load_map("map_block", main_hero)
+    scroller = load_map("map_outdoors", main_hero)
     main_hero.set_scroller(scroller)
     
     scene = cocos.scene.Scene(scroller)
