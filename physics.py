@@ -1,6 +1,6 @@
 import cocos.euclid as eu
 import cocos.collision_model as cm
-
+import cocos
 
 class collision_unit():
     def __init__(self, obj, type):

@@ -173,6 +173,9 @@ class weapon_handler(cocos.sprite.Sprite):
             self.flag_shoot = False
         else:
             self.cartridge -= 1
+            bul = bullet("res/img/bullet.png", self.parent.position, self.parent.rotation)
+            self.parent.parent.parent.add(bul, z=3)
+            bul.do(bullet_mover())
     
     def shoot_anim(self):
         self.image = self.weapon_anim
@@ -358,3 +361,23 @@ def get_cost(item):
     tp = get_type(item)
 
     return get_global(item).cost
+
+class bullet(cocos.layer.ScrollableLayer):
+    def __init__(self, path, pos, rot):
+        super().__init__(path)
+        self.position = pos
+        self.rotation = rot
+        self.speed = 300/10
+        print(rot)
+
+
+class bullet_mover(Move):
+    def step(self, dt):
+        for i in range(10):
+            self.elem_step(dt/10)
+
+    def elem_step(self, dt):
+        old_pos = self.target.position
+        angle = self.target.rotation
+        new_pos = (old_pos[0] + sin(radians(angle)), old_pos[1] + cos(radians(angle)))
+        self.target.position = new_pos
