@@ -178,7 +178,8 @@ class weapon_handler(cocos.sprite.Sprite):
             self.cartridge -= 1
             bul = bullet("res/img/bullet.png", self.parent.position, self.parent.rotation,
                          self.parent.collider)
-            self.parent.parent.parent.add(bul, z=3)
+            print(self.parent.parent.parent)
+            self.parent.parent.parent.add(bul, name="bul", z=3)
             bul.do(bullet_mover())
     
     def shoot_anim(self):
@@ -396,11 +397,12 @@ class bullet_mover(Move):
 
         new.cshape.center = eu.Vector2(new.cshape.center[0] + dx, new.cshape.center[1])
         if self.target.manager.collision_manager.any_near(new, 0):
-            self.target.parent.remove(self.target)
+            print(self.target.parent)
+            self.target.parent.remove("bul")
             pass
         new.cshape.center = eu.Vector2(new.cshape.center[0], new.cshape.center[1] + dy)
         if self.target.manager.collision_manager.any_near(new, 0):
-            self.target.parent.remove(self.target)
+            self.target.parent.remove("bul")
             pass
 #        self.target.velocity = (vel_x, vel_y)
 #        self.target.position = new.cshape.center
