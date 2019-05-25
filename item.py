@@ -3,6 +3,7 @@ from cocos.director import director
 from cocos.sprite import Sprite
 import pyglet
 from pyglet.image import load, ImageGrid, Animation
+from pyglet.window import key, mouse
 
 # Параметры мыши
 mouse_x = 10
@@ -284,6 +285,24 @@ class inventory():
         if item in self.usables:
             return usable_object.objects[item]
         return None
+
+
+class PickableObject(cocos.layer.ScrollableLayer):
+    is_event_handler = True
+    
+    def __init__(self, name, pos, count):
+        super().__init__()
+        self.spr = get_global(name).item_sprite
+        self.spr.position = pos
+        self.add(self.spr)
+        
+        self.name = name
+        self.count = count
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        x, y = self.parent.screen_to_world(x, y)
+        if button == mouse.LEFT and self.spr.get_rect().contains(x, y):
+            print(12)
 
 
 # Получить тип какого-то предмета

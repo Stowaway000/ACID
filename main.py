@@ -1,7 +1,7 @@
 from cocos.scene import Scene
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from hero import hero
-from item import Item, Weapon, Armor
+from item import *
 from physics import *
 from interface import interface
 from map import *
@@ -63,10 +63,12 @@ def enter():
     scroller = load_map("map_test", main_hero)
     main_hero.set_scroller(scroller)
 
+    Weapon('rifle')
+
+    scroller.add(PickableObject('rifle', (150, 100), 1))
     scene = cocos.scene.Scene(scroller)
 
     create_interface(scene, main_hero)
-    
     director.push(scene)
 
     main_hero.take_damage(20, 1)
@@ -82,14 +84,12 @@ def enter():
     Item('whale', 1, 1)
     Item('salad', 1, 1)
     Item('metal', 1, 1)
-    Weapon('rifle')
     Weapon('shotgun')
     Armor('armor')
     Armor('armor_heavy')
     
     main_hero.take_item('armor', 1)
     main_hero.take_item('armor_heavy', 1)
-    main_hero.take_item('rifle', 1)
     main_hero.take_item('shotgun', 1)
     main_hero.take_item('apple', 2)
     main_hero.take_item('bottle', 1)
