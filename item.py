@@ -7,6 +7,9 @@ from pyglet.window import key, mouse
 from cocos.actions import *
 from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
+from physics import collision_unit
+import cocos.euclid as eu
+import cocos.collision_model as cm
 
 # Параметры мыши
 mouse_x = 10
@@ -152,7 +155,7 @@ class shooter(cocos.actions.Move):
 
 class weapon_handler(cocos.sprite.Sprite):
     def __init__(self, weapon_name):
-        self.cartridge = 20
+        self.cartridge = 999
         self.flag_shoot = False
         self.flag_shooting = False
         self.shoot_time = 0
@@ -173,7 +176,8 @@ class weapon_handler(cocos.sprite.Sprite):
             self.flag_shoot = False
         else:
             self.cartridge -= 1
-            bul = bullet("res/img/bullet.png", self.parent.position, self.parent.rotation)
+            bul = bullet("res/img/bullet.png", self.parent.position, self.parent.rotation,
+                         self.parent.collider)
             self.parent.parent.parent.add(bul, z=3)
             bul.do(bullet_mover())
     
@@ -363,12 +367,16 @@ def get_cost(item):
     return get_global(item).cost
 
 class bullet(cocos.layer.ScrollableLayer):
-    def __init__(self, path, pos, rot):
-        super().__init__(path)
-        self.position = pos
-        self.rotation = rot
+    def __init__(self, path, pos, rot, man):
+        super().__init__()
+        self.bul = cocos.sprite.Sprite(path)
+        self.bul.position = pos#(pos[0] + 10 + 10*cos(radians(rot)), pos[1] + 15 - 15*sin(radians(rot)))
+        self.add(self.bul, z=3)
+        self.position = (0, 0)
+        self.bul.rotation = rot
         self.speed = 300/10
-        print(rot)
+        self.manager = man
+        self.cshape = collision_unit((pos, 2), "circle")
 
 
 class bullet_mover(Move):
@@ -377,7 +385,22 @@ class bullet_mover(Move):
             self.elem_step(dt/10)
 
     def elem_step(self, dt):
-        old_pos = self.target.position
-        angle = self.target.rotation
+        old_pos = self.target.bul.position
+        angle = self.target.bul.rotation
         new_pos = (old_pos[0] + sin(radians(angle)), old_pos[1] + cos(radians(angle)))
-        self.target.position = new_pos
+        self.target.bul.position = new_pos
+
+        dx = self.target.speed * dt
+        dy = self.target.speed * dt
+        new = self.target.cshape
+
+        new.cshape.center = eu.Vector2(new.cshape.center[0] + dx, new.cshape.center[1])
+        if self.target.manager.collision_manager.any_near(new, 0):
+            self.target.parent.remove(self.target)
+            pass
+        new.cshape.center = eu.Vector2(new.cshape.center[0], new.cshape.center[1] + dy)
+        if self.target.manager.collision_manager.any_near(new, 0):
+            self.target.parent.remove(self.target)
+            pass
+#        self.target.velocity = (vel_x, vel_y)
+#        self.target.position = new.cshape.center
