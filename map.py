@@ -45,5 +45,5 @@ class MapLayer(cocos.layer.ScrollableLayer):
         scroller.add(self.layer_vertical, 1)
         scroller.add(self.layer_objects, 1)
         scroller.add(self.layer_decoration, 0)
-        scroller.add(self.layer_above, 2)
-        scroller.add(self.layer_anim_up, 2)
+        scroller.add(self.layer_above, 3)
+        scroller.add(self.layer_anim_up, 3)

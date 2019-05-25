@@ -34,7 +34,7 @@ def load_map(name, hero):
     scroller = cocos.layer.ScrollingManager()
     scroller.scale = 2
     
-    scroller.add(hero, 1)
+    scroller.add(hero, 2)
     map_layer.draw_on(scroller)
 
     return scroller
@@ -140,7 +140,7 @@ def create_menu():
 
 
 if __name__ == '__main__':
-    director.init(width=width, height=height, caption='Game')
+    director.init(width=width, height=height, caption='Game', fullscreen=True)
     director.window.pop_handlers()
     
     mainMenu = create_menu()
