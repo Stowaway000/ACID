@@ -223,13 +223,8 @@ class hero(character):
     def set_position(self, pos, vect):
         super().set_position(pos)
 
-        global mouse_x, mouse_y, vector
-        vector = [vect[0]*100, vect[1]*100]
-        mouse_x, mouse_y = self.skin.scroller.world_to_screen\
-                           (self.skin.scroller.fx, self.skin.scroller.fy)
-        mouse_x += vector[0]
-        mouse_y += vector[1]
-        director.window.set_mouse_position(mouse_x, mouse_y)
+        director.window.set_mouse_position(int(director.window.width/2),\
+                                           int(director.window.height/2))
 
 
 class hero_mover(cocos.actions.Move):
@@ -261,8 +256,6 @@ class hero_mover(cocos.actions.Move):
             self.target.velocity = (vel_x, vel_y)
             self.target.position = new.cshape.center
             self.target.scroller.set_focus(*new.cshape.center)
-
-            self.target.scroller.set_focus(self.target.x, self.target.y)
 
             global mouse_x, mouse_y
             if self.target.velocity[0] or self.target.velocity[1] and not self.target.parent.mouse_moving:

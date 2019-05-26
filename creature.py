@@ -234,6 +234,7 @@ class skin(cocos.sprite.Sprite):
     def set_position(self, pos):
         self.position = pos
         self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle")
+        self.scroller.set_focus(*self.position)
     
     def walker(self, new_state):
         if self.walking != new_state:

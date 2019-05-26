@@ -83,7 +83,7 @@ class map_manager(cocos.scene.Scene):
             p = cur_ports.readline()
 
             if i == port_n:
-                hero.set_position(port.new_position, port.vector)
+                self.main_hero.set_position(port.new_position, port.vector)
             
             i += 1
         
@@ -101,7 +101,7 @@ class map_manager(cocos.scene.Scene):
         while n:
             pass
         super().__init__(scroller)
-
+        
         self.add(hero.interface, 100)
 
         self.schedule_interval(self.update, 1/20)
