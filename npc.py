@@ -33,7 +33,14 @@ class NPC(character):
         super().__init__(name, fraction, stats[3:-1], npc_mover(), stats[-1])
 
         self.angle_velocity = 0
+        self.state = "patrol"
 
+    def change_state(self):
+        if self.state == "patrol":
+            self.state = "fight"
+        else:
+            self.state = "patrol"
+    
     # AI
     def think(self):
         pass
@@ -46,14 +53,7 @@ class NPC(character):
 class AI:
     def __init__(self, rad_patrol):
         self.mover = npc_mover()
-        self.state = "patrol"
         self.rad_patrol = rad_patrol
-
-    def change_state(self):
-        if self.state == "patrol":
-            self.state = "fight"
-        else:
-            self.state = "patrol"
 
     def get_way(self, x, y):
         self.mover.update(x, y)
