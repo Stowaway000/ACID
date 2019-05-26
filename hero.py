@@ -179,17 +179,22 @@ class hero(character):
     
     def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
-            self.lpressed = True
+            clicked = False
 
-            X, Y = self.parent.screen_to_world(x, y)
-            for i in self.skin.near_objects:
-                obj = PickableObject.pickables[i]
-                if obj.spr.get_rect().contains(X, Y):
-                    self.take_item(obj.name, obj.count)
-                    obj.destruct()
-                    self.skin.near_objects.remove(i)
-                    
-                    break
+            if not self.lurking:
+                X, Y = self.parent.screen_to_world(x, y)
+                for i in self.skin.near_objects:
+                    obj = PickableObject.pickables[i]
+                    if obj.spr.get_rect().contains(X, Y):
+                        self.take_item(obj.name, obj.count)
+                        obj.destruct()
+                        self.skin.near_objects.remove(i)
+
+                        clicked = True
+                        break
+            
+            if not clicked:
+                self.lpressed = True
             
         if button == mouse.RIGHT:
             self.rpressed = True

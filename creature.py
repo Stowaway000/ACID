@@ -173,10 +173,12 @@ class character(cocos.layer.ScrollableLayer):
     def drop_item(self, item, ind=0, count='all'):
         tp = get_type(item)
         if tp == 'item':
-            self.inventory.take(item, count)
+            count = self.inventory.take(item, count)
         elif tp == 'weapon':
-            self.inventory.take(item, index=ind)
+            count = self.inventory.take(item, index=ind)
             self.unequip_weapon(ind)
+
+        PickableObject(item, self.skin.position, count).place(self.skin.scroller)
 
     # Выложить предмет в ящик
     def store_item(self):

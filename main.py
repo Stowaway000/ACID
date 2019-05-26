@@ -66,8 +66,9 @@ def enter():
     Weapon('rifle')
     Weapon('shotgun')
 
-    PickableObject('rifle', (150, 100), 1).place(scroller)
     PickableObject('shotgun', (180, 100), 1).place(scroller)
+    PickableObject('rifle', (150, 100), 1).place(scroller)
+    PickableObject('rifle', (150, 70), 1).place(scroller)
     scene = cocos.scene.Scene(scroller)
 
     create_interface(scene, main_hero)

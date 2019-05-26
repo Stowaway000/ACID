@@ -294,7 +294,7 @@ class PickableObject(cocos.layer.ScrollableLayer):
     
     def __init__(self, name, pos, count):
         super().__init__()
-        self.spr = get_global(name).item_sprite
+        self.spr = Sprite(get_global(name).item_sprite.image)
         self.spr.position = pos
 
         self.selector = Sprite('res/img/outline.png')
@@ -331,6 +331,11 @@ class PickableObject(cocos.layer.ScrollableLayer):
     def deselect(self):
         self.remove('selector')
         self.remove('E')
+
+
+class Stash:
+    def __init__(self):
+        pass
 
 
 # Получить тип какого-то предмета
