@@ -382,7 +382,6 @@ class bullet(cocos.layer.ScrollableLayer):
     def stop_move(self):
         self.stop()
         self.parent.remove(self.name)
-        print("STOP")
 
 class bullet_mover(Move):
     def step(self, dt):
