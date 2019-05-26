@@ -1,7 +1,6 @@
 import cocos
 from cocos.director import director
 from cocos.sprite import Sprite
-from cocos.text import Label, HTMLLabel
 from cocos.layer import Layer, ColorLayer, MultiplexLayer, ScrollingManager, ScrollableLayer
 from cocos.scenes import pause
 from cocos.scene import Scene
@@ -11,20 +10,7 @@ import pyglet
 from pyglet.window import key, mouse
 from menu import set_menu_style, go_back, quit_game
 from item import get_global, get_type
-from utils import safe_remove
-
-
-def add_label(txt, point, anchor='center', size=14):
-    return Label(txt, point, font_name='Calibri', font_size=size,\
-                 anchor_x=anchor, anchor_y='center')
-
-
-def add_text(txt, point, anchor='center', size=14, padding=10, width=200):
-    point = (point[0]+padding, point[1]-padding)
-    txt = '<font face="Calibri" size="' + str(size) + '" color="white">'\
-          + txt + '</font>'
-    return HTMLLabel(txt, point, anchor_x=anchor, anchor_y='top',\
-                     multiline=True, width=width-padding*2)
+from utils import safe_remove, add_label, add_text
 
 
 class Button(ColorLayer):
@@ -565,7 +551,7 @@ class interface(MultiplexLayer):
             else:
                 self.host.lurking = False
                 self.switch_to(0)
-
+        '''
         if symbol == key.E:
             if self.enabled_layer != 2:
                 self.host.lurking = True
@@ -575,7 +561,7 @@ class interface(MultiplexLayer):
             else:
                 self.host.lurking = False
                 self.switch_to(0)
-        
+        '''
         if symbol == key.ESCAPE:
             pause_sc = pause.get_pause_scene()
             

@@ -4,6 +4,8 @@ from cocos.sprite import Sprite
 import pyglet
 from pyglet.image import load, ImageGrid, Animation
 from pyglet.window import key, mouse
+from physics import *
+from utils import add_label, add_text
 
 # Параметры мыши
 mouse_x = 10
@@ -288,21 +290,52 @@ class inventory():
 
 
 class PickableObject(cocos.layer.ScrollableLayer):
-    is_event_handler = True
+    pickables = []
     
     def __init__(self, name, pos, count):
         super().__init__()
         self.spr = get_global(name).item_sprite
         self.spr.position = pos
+
+        self.selector = Sprite('res/img/outline.png')
+        self.selector.position = pos
+        self.selector.scale_x = (self.spr.width+10) / self.selector.width
+        self.selector.scale_y = (self.spr.height+10) / self.selector.height
+        
+        self.e = add_label('E', (pos[0]-5, pos[1]+self.spr.height-15), size=8)
+
         self.add(self.spr)
         
         self.name = name
         self.count = count
 
-    def on_mouse_press(self, x, y, button, modifiers):
-        x, y = self.parent.screen_to_world(x, y)
-        if button == mouse.LEFT and self.spr.get_rect().contains(x, y):
-            print(12)
+        self.index = len(PickableObject.pickables)
+        self.sprite_name = self.name + str(self.index)
+        PickableObject.pickables.append(self)
+
+        radius = max(self.spr.width, self.spr.height) / 2
+        self.cshape = collision_unit([eu.Vector2(*self.spr.position),\
+                                      radius], "circle")
+
+    def destruct(self):
+        ind = self.index
+        PickableObject.pickables.pop(self.index)
+        for i in PickableObject.pickables:
+            if i.index > ind:
+                i.index -= 1
+        
+        self.parent.remove(self.sprite_name)
+
+    def place(self, scr):
+        scr.add(self, name=self.name+str(self.index))
+
+    def select(self):
+        self.add(self.selector, name='selector')
+        self.add(self.e, name='E')
+
+    def deselect(self):
+        self.remove('selector')
+        self.remove('E')
 
 
 # Получить тип какого-то предмета

@@ -174,13 +174,23 @@ class hero(character):
             elif buttons & mouse.RIGHT and not self.skin.hidden:
                 self.attack('l')
             elif buttons & mouse.LEFT and buttons & mouse.RIGHT and not self.skin.hidden:
-                print(12)
                 self.attack('r')
                 self.attack('l')
-
+    
     def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = True
+
+            X, Y = self.parent.screen_to_world(x, y)
+            for i in self.skin.near_objects:
+                obj = PickableObject.pickables[i]
+                if obj.spr.get_rect().contains(X, Y):
+                    self.take_item(obj.name, obj.count)
+                    obj.destruct()
+                    self.skin.near_objects.clear()
+                    
+                    break
+            
         if button == mouse.RIGHT:
             self.rpressed = True
 
@@ -201,6 +211,11 @@ class hero(character):
             elif symbol == key.R and not self.skin.hidden:
                 self.reload('r')
                 self.reload('l')
+            elif symbol == key.E and self.skin.near_objects:
+                obj = PickableObject.pickables[0]
+                self.take_item(obj.name, obj.count)
+                obj.destruct()
+                self.skin.near_objects.clear()
             
             if symbol == key.LCTRL or symbol == key.RCTRL:
                 self.skin.seat()
@@ -248,6 +263,16 @@ class hero_mover(cocos.actions.Move):
             self.target.scroller.set_focus(*new.cshape.center)
 
             self.target.scroller.set_focus(self.target.x, self.target.y)
+
+            for i in PickableObject.pickables:
+                if self.target.collider.collision_manager.they_collide(i.cshape, self.target.cshape):
+                    if i.index not in self.target.near_objects:
+                        self.target.near_objects.append(i.index)
+                        i.select()
+                else:
+                    if i.index in self.target.near_objects:
+                        self.target.near_objects.remove(i.index)
+                        i.deselect()
 
             global mouse_x, mouse_y
             if self.target.velocity[0] or self.target.velocity[1]:

@@ -228,6 +228,8 @@ class skin(cocos.sprite.Sprite):
         self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle")
         self.do(mover)
 
+        self.near_objects = []
+
     def walker(self, new_state):
         if self.walking != new_state:
             self.walking = new_state

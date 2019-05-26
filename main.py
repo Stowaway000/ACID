@@ -64,8 +64,10 @@ def enter():
     main_hero.set_scroller(scroller)
 
     Weapon('rifle')
+    Weapon('shotgun')
 
-    scroller.add(PickableObject('rifle', (150, 100), 1))
+    PickableObject('rifle', (150, 100), 1).place(scroller)
+    PickableObject('shotgun', (180, 100), 1).place(scroller)
     scene = cocos.scene.Scene(scroller)
 
     create_interface(scene, main_hero)
@@ -84,13 +86,12 @@ def enter():
     Item('whale', 1, 1)
     Item('salad', 1, 1)
     Item('metal', 1, 1)
-    Weapon('shotgun')
+    
     Armor('armor')
     Armor('armor_heavy')
     
     main_hero.take_item('armor', 1)
     main_hero.take_item('armor_heavy', 1)
-    main_hero.take_item('shotgun', 1)
     main_hero.take_item('apple', 2)
     main_hero.take_item('bottle', 1)
     main_hero.take_item('beer', 1)
