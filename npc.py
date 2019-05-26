@@ -125,12 +125,12 @@ class npc_mover(cocos.actions.Move):
             vel_y = 0
             new.cshape.center.y -= dy
 
+        self.target.parent.info = self.target.parent.get_in_sector()
         self.target.velocity = (vel_x, vel_y)
         self.target.position = new.cshape.center
         self.target.scroller.set_focus(*new.cshape.center)
 
         self.target.scroller.set_focus(self.target.x, self.target.y)
-        
+
         if vel_x == 0 and vel_y == 0:
-            self.target.parent.info = self.target.parent.get_in_sector()
             self.x, self.y = self.target.parent.patrol.choose_point()
