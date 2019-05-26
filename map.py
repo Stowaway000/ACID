@@ -41,16 +41,21 @@ class MapLayer(cocos.layer.ScrollableLayer):
 
 
 class Port(cocos.sprite.Sprite):
-    def __init__(self, name, number, cur_x, cur_y, new_x, new_y):
+    def __init__(self, name, number, cur_x, cur_y, new_x, new_y, width):
         self.next_map = name
         self.number = number
         self.new_position = new_x*32, new_y*32
         self.vector = new_x - cur_x, new_y - cur_y
         
-        super().__init__("res/img/port.png")
+        super().__init__("res/img/port.png", anchor=(0, 16))
         self.position = cur_x*32, cur_y*32
+        for i in range(width-1):
+            spr = Sprite("res/img/port.png", anchor=(0, 16))
+            spr.position = (32+i*32, 0)
+            self.add(spr)
         
-        self.cshape = cm.AARectShape(eu.Vector2(*self.position), self.width/2, self.height/2)
+        self.cshape = cm.AARectShape(eu.Vector2(self.position[0]+self.width/2*width, self.position[1]),\
+                                     self.width/2*width, self.height/2)
     
     def change_map(self, main_hero):
         scene = map_manager(self.next_map, main_hero, self.number)
