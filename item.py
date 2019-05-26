@@ -290,7 +290,7 @@ class inventory():
 
 
 class PickableObject(cocos.layer.ScrollableLayer):
-    pickables = []
+    pickables = {}
     
     def __init__(self, name, pos, count):
         super().__init__()
@@ -309,25 +309,20 @@ class PickableObject(cocos.layer.ScrollableLayer):
         self.name = name
         self.count = count
 
-        self.index = len(PickableObject.pickables)
-        self.sprite_name = self.name + str(self.index)
-        PickableObject.pickables.append(self)
+        index = len(PickableObject.pickables)
+        self.sprite_name = self.name + str(index)
+        PickableObject.pickables[self.sprite_name] = self
 
         radius = max(self.spr.width, self.spr.height) / 2
         self.cshape = collision_unit([eu.Vector2(*self.spr.position),\
                                       radius], "circle")
 
     def destruct(self):
-        ind = self.index
-        PickableObject.pickables.pop(self.index)
-        for i in PickableObject.pickables:
-            if i.index > ind:
-                i.index -= 1
-        
+        PickableObject.pickables.pop(self.sprite_name)
         self.parent.remove(self.sprite_name)
 
     def place(self, scr):
-        scr.add(self, name=self.name+str(self.index))
+        scr.add(self, name=self.sprite_name)
 
     def select(self):
         self.add(self.selector, name='selector')

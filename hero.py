@@ -187,7 +187,7 @@ class hero(character):
                 if obj.spr.get_rect().contains(X, Y):
                     self.take_item(obj.name, obj.count)
                     obj.destruct()
-                    self.skin.near_objects.clear()
+                    self.skin.near_objects.remove(i)
                     
                     break
             
@@ -212,10 +212,10 @@ class hero(character):
                 self.reload('r')
                 self.reload('l')
             elif symbol == key.E and self.skin.near_objects:
-                obj = PickableObject.pickables[0]
+                obj = PickableObject.pickables[self.skin.near_objects[0]]
                 self.take_item(obj.name, obj.count)
                 obj.destruct()
-                self.skin.near_objects.clear()
+                self.skin.near_objects.pop(0)
             
             if symbol == key.LCTRL or symbol == key.RCTRL:
                 self.skin.seat()
@@ -264,14 +264,14 @@ class hero_mover(cocos.actions.Move):
 
             self.target.scroller.set_focus(self.target.x, self.target.y)
 
-            for i in PickableObject.pickables:
+            for name, i in PickableObject.pickables.items():
                 if self.target.collider.collision_manager.they_collide(i.cshape, self.target.cshape):
-                    if i.index not in self.target.near_objects:
-                        self.target.near_objects.append(i.index)
+                    if name not in self.target.near_objects:
+                        self.target.near_objects.append(name)
                         i.select()
                 else:
-                    if i.index in self.target.near_objects:
-                        self.target.near_objects.remove(i.index)
+                    if name in self.target.near_objects:
+                        self.target.near_objects.remove(name)
                         i.deselect()
 
             global mouse_x, mouse_y
