@@ -26,6 +26,9 @@ class NPC(character):
         self.hp = stats[0]
         self.stamina = stats[1]
         self.sp_stamina = stats[2]
+        for i in range(2):
+            for j in range(2):
+                self.rad_patrol[i][j] = stats[3 + i + j]
 
         super().__init__(name, fraction, stats[3:-1], npc_mover(), stats[-1])
 
@@ -62,6 +65,8 @@ class AI:
             # self.get_way(x, y)
         else:
             pass
+
+
 
 
 class npc_mover(cocos.actions.Move):
