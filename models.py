@@ -53,3 +53,48 @@ class Port(cocos.sprite.Sprite):
         self.cshape = cm. AARectShape(eu.Vector2(*self.position), self.width/2, self.height/2)
     def change_map(self):
         pass
+
+    
+        
+class map_manager(cocos.scene.Scene):
+    def __init__(cur_map, hero):
+        self.layer = MapLayer(cur_map)
+        self.ports = []
+        self.main_hero = hero
+        cur_ports = open("maps/name/ports.txt")
+        p = cur_ports.readline()
+        while p:
+            p = p.split()
+            port = Port(p[0],p[1],p[2],p[3],p[4])
+            self.ports.append(port)
+            self.add(port)
+            p = cur_ports.readline()
+
+        self.map_collider = circle_map_collider(map_layer)
+        hero.set_collision(self.map_collider)
+        scroller = cocos.layer.ScrollingManager()
+        scroller.scale = 2
+        
+        scroller.add(hero, 1)
+        scroller.add(map_layer.layer_floor, -1)
+        scroller.add(map_layer.layer_vertical, 1)
+        scroller.add(map_layer.layer_objects, 1)
+        scroller.add(map_layer.layer_above, 2)
+        scroller.add(map_layer.layer_decoration, 1)
+        scroller.add(map_layer.layer_collision, 1)
+        
+        cur_npc = open("maps/name/npc.txt")
+        n = cur_npc.readline()
+        while n:
+            pass
+        main_hero.set_scroller(scroller)
+        super().__init__(scroller)
+
+            
+    def update(self):
+        for port in self.ports:
+            if self.coll_manager.they_collide(self.port, self.main_hero):
+                port.change_map        
+            
+
+
