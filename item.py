@@ -178,8 +178,7 @@ class weapon_handler(cocos.sprite.Sprite):
             self.cartridge -= 1
             bul = bullet("res/img/bullet.png", self.parent.position, self.parent.rotation,
                          self.parent.collider)
-            print(self.parent.parent.parent)
-            self.parent.parent.parent.add(bul, name="bul", z=3)
+            self.parent.parent.parent.add(bul, name=bul.name, z=3)
             bul.do(bullet_mover())
     
     def shoot_anim(self):
@@ -373,36 +372,41 @@ class bullet(cocos.layer.ScrollableLayer):
         self.bul = cocos.sprite.Sprite(path)
         self.bul.position = pos#(pos[0] + 10 + 10*cos(radians(rot)), pos[1] + 15 - 15*sin(radians(rot)))
         self.add(self.bul, z=3)
-        self.position = (0, 0)
+        self.position = (10, 10)
         self.bul.rotation = rot
-        self.speed = 300/10
+        self.speed = 500
         self.manager = man
         self.cshape = collision_unit((pos, 2), "circle")
+        self.name = str(hash(self))
 
+    def stop_move(self):
+        self.stop()
+        self.parent.remove(self.name)
+        print("STOP")
 
 class bullet_mover(Move):
     def step(self, dt):
         for i in range(10):
-            self.elem_step(dt/10)
+            if self.elem_step(dt/10):
+                break
 
     def elem_step(self, dt):
         old_pos = self.target.bul.position
         angle = self.target.bul.rotation
-        new_pos = (old_pos[0] + sin(radians(angle)), old_pos[1] + cos(radians(angle)))
+        dx = sin(radians(angle)) * self.target.speed * dt
+        dy = cos(radians(angle)) * self.target.speed * dt
+        new_pos = (old_pos[0] + dx, old_pos[1] + dy)
         self.target.bul.position = new_pos
-
-        dx = self.target.speed * dt
-        dy = self.target.speed * dt
         new = self.target.cshape
 
         new.cshape.center = eu.Vector2(new.cshape.center[0] + dx, new.cshape.center[1])
         if self.target.manager.collision_manager.any_near(new, 0):
-            print(self.target.parent)
-            self.target.parent.remove("bul")
-            pass
+            self.target.stop_move()
+            return 1
+
         new.cshape.center = eu.Vector2(new.cshape.center[0], new.cshape.center[1] + dy)
         if self.target.manager.collision_manager.any_near(new, 0):
-            self.target.parent.remove("bul")
-            pass
-#        self.target.velocity = (vel_x, vel_y)
-#        self.target.position = new.cshape.center
+            self.target.stop_move()
+            return 1
+
+        return 0
