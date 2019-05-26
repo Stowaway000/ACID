@@ -76,8 +76,8 @@ class hero(character):
         dct = {'armor': self.inventory.get_armor(self.armor).ac}
         self.interface.update(dct)
 
-    def unequip_armor(self):
-        super().unequip_armor()
+    def unequip_armor(self, index):
+        super().unequip_armor(index)
         
         dct = {'armor': 0}
         self.interface.update(dct)

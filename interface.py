@@ -397,7 +397,7 @@ class visual_inventory(BasicVisualInventory):
             self.update(self.mouse_pos)
 
         if self.buttons[5].click(x, y):
-            self.hero_ref.unequip_armor()
+            self.hero_ref.unequip_armor(self.selected[1])
             self.update(self.mouse_pos)
     
     def on_mouse_press(self, x, y, button, modifiers):
