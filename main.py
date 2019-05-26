@@ -2,7 +2,7 @@ from cocos.scene import Scene
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
 from cocos.actions import RotateBy, Repeat
 from hero import hero
-from item import Item, Weapon, Armor
+from item import *
 from physics import *
 from interface import interface
 from map import *
@@ -10,7 +10,7 @@ from menu import set_menu_style, previous, quit_game
 from pyglet.window import key, mouse
 
 
-version = '0.006'  # Версия игры
+version = '0.01'  # Версия игры
 
 
 # Ширина и высота окна
@@ -65,11 +65,9 @@ def enter():
     Weapon('shotgun')
     Armor('armor')
     Armor('armor_heavy')
-    
-    main_hero.take_item('armor', 1)
+
     main_hero.take_item('armor_heavy', 1)
-    main_hero.take_item('rifle', 1)
-    main_hero.take_item('shotgun', 1)
+    main_hero.take_item('armor', 1)
     main_hero.take_item('apple', 2)
     main_hero.take_item('bottle', 1)
     main_hero.take_item('beer', 1)
@@ -156,8 +154,8 @@ def create_menu():
 
 
 if __name__ == '__main__':
-    director.init(width=width, height=height, caption='Game', fullscreen=True)
-    #director.init(width=width, height=height, caption='Game')
+    #director.init(width=width, height=height, caption='Game', fullscreen=True)
+    director.init(width=width, height=height, caption='Game')
     director.window.pop_handlers()
     director.window.push_handlers(on_key_press)
     
