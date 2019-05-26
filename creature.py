@@ -175,8 +175,14 @@ class character(cocos.layer.ScrollableLayer):
         if tp == 'item':
             count = self.inventory.take(item, count)
         elif tp == 'weapon':
-            count = self.inventory.take(item, index=ind)
             self.unequip_weapon(ind)
+            if self.weapon_left == len(self.inventory.weapons) - 1:
+                self.weapon_left = ind
+            
+            if self.weapon_right == len(self.inventory.weapons) - 1:
+                self.weapon_right = ind
+            
+            count = self.inventory.take(item, index=ind)
 
         PickableObject(item, self.skin.position, count).place(self.skin.scroller)
 

@@ -146,7 +146,7 @@ class WeaponHandler(cocos.sprite.Sprite):
         self.weapon_name = weapon_name
         self.weapon_anim = Weapon.weapons[weapon_name].weapon_anim
         self.item_sprite = Weapon.weapons[weapon_name].item_sprite
-        self.item_inv_sprite = Weapon.weapons[weapon_name].item_inv_sprite
+        self.item_inv_sprite = Sprite(Weapon.weapons[weapon_name].item_inv_sprite.image)
 
         super().__init__(self.item_sprite.image)
 
@@ -192,6 +192,7 @@ class inventory():
         elif tp == 'weapon':
             for i in range(count):
                 self.weapons.append(WeaponHandler(item))
+                #self.weapons[str(len(self.weapons))] = WeaponHandler(item)
         elif tp == 'armor':
             for i in range(count):
                 self.armors.append(ArmorHandler(item))
@@ -231,12 +232,15 @@ class inventory():
                 i = 0
                 while get < count:
                     if self.weapons[i].weapon_name == item:
-                        self.weapons.pop(i)
+                        self.weapons[i], self.weapons[-1] = self.weapons[-1], self.weapons[i]
+                        self.weapons.pop(-1)
                         i -= 1
                         get += 1
                     i += 1
             elif self.weapons[index].weapon_name == item:
-                self.weapons.pop(index)
+                self.weapons[index], self.weapons[-1] = self.weapons[-1], self.weapons[index]
+                self.weapons.pop(-1)
+                count = 1
                 
         
         elif tp == 'armor':
@@ -294,6 +298,7 @@ class PickableObject(cocos.layer.ScrollableLayer):
     
     def __init__(self, name, pos, count):
         super().__init__()
+        
         self.spr = Sprite(get_global(name).item_sprite.image)
         self.spr.position = pos
 
