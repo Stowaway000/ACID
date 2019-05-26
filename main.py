@@ -1,11 +1,13 @@
 from cocos.scene import Scene
 from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
+from cocos.actions import RotateBy, Repeat
 from hero import hero
 from item import Item, Weapon, Armor
 from physics import *
 from interface import interface
 from map import *
 from menu import set_menu_style, previous, quit_game
+from pyglet.window import key, mouse
 
 
 version = '0.006'  # Версия игры
@@ -56,12 +58,9 @@ def enter():
     director.window.set_mouse_cursor(cursor)
     
     main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
+
+    scene = map_manager("map_outdoors", main_hero)
     
-    scroller = load_map("map_outdoors", main_hero)
-    main_hero.set_scroller(scroller)
-
-    scene = cocos.scene.Scene(scroller)
-
     create_interface(scene, main_hero)
     
     director.push(scene)
@@ -174,7 +173,8 @@ def create_menu():
 
 
 if __name__ == '__main__':
-    director.init(width=width, height=height, caption='Game', fullscreen=True)
+    #director.init(width=width, height=height, caption='Game', fullscreen=True)
+    director.init(width=width, height=height, caption='Game')
     director.window.pop_handlers()
     director.window.push_handlers(on_key_press)
     

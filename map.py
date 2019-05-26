@@ -1,13 +1,10 @@
 import cocos
 from cocos.director import director
 import pyglet
-from pyglet.window import key, mouse
 from cocos import mapcolliders
-from cocos.actions import *
-from math import atan, degrees
 import cocos.euclid as eu
 import cocos.collision_model as cm
-import os
+from physics import *
 
 
 class MapLayer(cocos.layer.ScrollableLayer):
@@ -56,11 +53,11 @@ class Port(cocos.sprite.Sprite):
 
 
 class map_manager(cocos.scene.Scene):
-    def __init__(cur_map, hero):
+    def __init__(self, cur_map, hero):
         self.layer = MapLayer(cur_map)
         self.ports = []
         self.main_hero = hero
-        cur_ports = open("maps/name/ports.txt")
+        cur_ports = open("maps/" + cur_map + "/ports.txt")
         p = cur_ports.readline()
         while p:
             p = p.split()
@@ -69,28 +66,31 @@ class map_manager(cocos.scene.Scene):
             self.add(port)
             p = cur_ports.readline()
 
-        self.map_collider = circle_map_collider(map_layer)
+        self.map_collider = circle_map_collider(self.layer)
         hero.set_collision(self.map_collider)
         scroller = cocos.layer.ScrollingManager()
         scroller.scale = 2
         
-        scroller.add(hero, 1)
-        scroller.add(map_layer.layer_floor, -1)
-        scroller.add(map_layer.layer_vertical, 1)
-        scroller.add(map_layer.layer_objects, 1)
-        scroller.add(map_layer.layer_above, 2)
-        scroller.add(map_layer.layer_decoration, 1)
-        scroller.add(map_layer.layer_collision, 1)
+        scroller.add(hero, 2)
+        scroller.add(self.layer.layer_floor, -1)
+        scroller.add(self.layer.layer_vertical, 2)
+        scroller.add(self.layer.layer_objects, 2)
+        scroller.add(self.layer.layer_above, 3)
+        scroller.add(self.layer.layer_decoration, 1)
+        scroller.add(self.layer.layer_collision, 1)
         
-        cur_npc = open("maps/name/npc.txt")
+        cur_npc = open("maps/" + cur_map + "/npc.txt")
         n = cur_npc.readline()
         while n:
             pass
-        main_hero.set_scroller(scroller)
+        self.main_hero.set_scroller(scroller)
         super().__init__(scroller)
 
             
     def update(self):
+        pass
+    '''
         for port in self.ports:
             if self.coll_manager.they_collide(self.port, self.main_hero):
                 port.change_map
+        '''
