@@ -202,8 +202,38 @@ class character(cocos.layer.ScrollableLayer):
         PickableObject(item, self.skin.position, count, adds).place(self.skin.scroller)
 
     # Выложить предмет в ящик
-    def store_item(self):
-        pass
+    def store_item(self, item, ind=0, count='all'):
+        tp = get_type(item)
+        adds = []
+        
+        if tp == 'item':
+            count = self.inventory.take(item, count)
+            self.partner.take_item(item, count)
+        elif tp == 'weapon':
+            adds.append(self.inventory.weapons[ind].cartridge)
+            
+            self.unequip_weapon(ind)
+            
+            if self.weapon_left == len(self.inventory.weapons) - 1:
+                self.weapon_left = ind
+            
+            if self.weapon_right == len(self.inventory.weapons) - 1:
+                self.weapon_right = ind
+            
+            count = self.inventory.take(item, index=ind)
+            self.partner.take_item(item, count, adds)
+        elif tp == 'armor':
+            adds.append(self.inventory.armors[ind].ac)
+            
+            self.unequip_armor(ind)
+            
+            if self.armor == len(self.inventory.armors) - 1:
+                self.weapon_left = ind
+            
+            count = self.inventory.take(item, index=ind)
+            self.partner.take_item(item, count, adds)
+        
+        self.interface.update_both()
 
 
 class skin(cocos.sprite.Sprite):

@@ -376,6 +376,34 @@ class Stash(cocos.layer.ScrollableLayer):
     def deselect(self):
         self.remove('selector')
         self.remove('E')
+    
+    def take_item(self, item, count, adds=[]):
+        self.inventory.add(item, count, adds)
+
+    def store_item(self, item, ind=0, count='all'):
+        tp = get_type(item)
+        adds = []
+        
+        if tp == 'item':
+            count = self.inventory.take(item, count)
+            self.partner.take_item(item, count)
+        elif tp == 'weapon':
+            adds.append(self.inventory.weapons[ind].cartridge)
+            
+            count = self.inventory.take(item, index=ind)
+            
+            self.partner.take_item(item, count, adds)
+        elif tp == 'armor':
+            adds.append(self.inventory.armors[ind].ac)
+            
+            count = self.inventory.take(item, index=ind)
+            
+            self.partner.take_item(item, count, adds)
+        
+        self.partner.interface.update_both()
+
+    def set_partner(self, prt):
+        self.partner = prt
 
 
 # Получить тип какого-то предмета

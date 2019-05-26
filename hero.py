@@ -197,7 +197,7 @@ class hero(character):
                     obj = Stash.stashes[i]
                     if obj.sprite.get_rect().contains(X, Y):
                         self.interface.exchange_with(obj)
-
+                        self.partner = obj
                         clicked = True
                         break
             
@@ -229,9 +229,6 @@ class hero(character):
                 self.take_item(obj.name, obj.count, obj.additional)
                 obj.destruct()
                 self.skin.near_objects.pop(0)
-            elif symbol == key.E and self.skin.near_stashes:
-                obj = Stash.stashes[self.skin.near_stashes[0]]
-                pass
             
             if symbol == key.LCTRL or symbol == key.RCTRL:
                 self.skin.seat()
@@ -246,6 +243,11 @@ class hero(character):
 
     def set_collision(self, manager):
         self.skin.collider = manager
+
+    def get_partner(self):
+        if self.skin.near_stashes and not self.skin.near_objects:
+            return Stash.stashes[self.skin.near_stashes[0]]
+        return None
 
 
 class hero_mover(cocos.actions.Move):
