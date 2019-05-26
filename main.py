@@ -29,11 +29,8 @@ def load_map(name, hero):
     scroller = cocos.layer.ScrollingManager()
     scroller.scale = 2
     
-    scroller.add(hero, 1)
-    scroller.add(map_layer.layer_floor, -1)
-    scroller.add(map_layer.layer_vertical, 1)
-    scroller.add(map_layer.layer_objects, 1)
-    scroller.add(map_layer.layer_above, 2)
+    scroller.add(hero, 2)
+    map_layer.draw_on(scroller)
 
     return scroller
 
@@ -58,9 +55,9 @@ def enter():
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
     director.window.set_mouse_cursor(cursor)
     
-    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (100, 80))
+    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
     
-    scroller = load_map("map_test", main_hero)
+    scroller = load_map("map_outdoors", main_hero)
     main_hero.set_scroller(scroller)
 
     scene = cocos.scene.Scene(scroller)
@@ -177,7 +174,7 @@ def create_menu():
 
 
 if __name__ == '__main__':
-    director.init(width=width, height=height, caption='Game')
+    director.init(width=width, height=height, caption='Game', fullscreen=True)
     director.window.pop_handlers()
     director.window.push_handlers(on_key_press)
     
