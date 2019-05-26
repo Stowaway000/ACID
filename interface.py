@@ -136,7 +136,7 @@ class BasicVisualInventory(ColorLayer):
 
         if self.selected:
             self.selected = ''
-            self.item_stack.remove('select')
+            safe_remove(self.item_stack, 'select')
             self.remove('naming')
 
     def update(self, pos):
