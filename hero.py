@@ -246,7 +246,8 @@ class hero(character):
 
     def get_partner(self):
         if self.skin.near_stashes and not self.skin.near_objects:
-            return Stash.stashes[self.skin.near_stashes[0]]
+            self.partner = Stash.stashes[self.skin.near_stashes[0]]
+            return self.partner
         return None
 
 
