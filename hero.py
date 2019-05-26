@@ -38,6 +38,8 @@ class hero(character):
 
         self.lurking = False
 
+        self.mouse_moving = False
+
     def take_damage(self, dmg, k):
         super().take_damage(dmg, k)
 
@@ -164,6 +166,8 @@ class hero(character):
                     
                 vector[1] = int(mouse_y - h_y)
 
+                self.mouse_moving = True
+
             self.skin.rotation = angle
     
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
@@ -250,10 +254,11 @@ class hero_mover(cocos.actions.Move):
             self.target.scroller.set_focus(self.target.x, self.target.y)
 
             global mouse_x, mouse_y
-            if self.target.velocity[0] or self.target.velocity[1]:
+            if self.target.velocity[0] or self.target.velocity[1] and not self.target.parent.mouse_moving:
                 mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)
                 mouse_x += vector[0]
                 mouse_y += vector[1]
                 director.window.set_mouse_position(mouse_x, mouse_y)
+            self.target.parent.mouse_moving = False
         else:
             self.target.walker(False)
