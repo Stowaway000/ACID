@@ -67,6 +67,15 @@ class AI:
             pass
 
 
+class patroling(AI):
+    def choose_point(self):
+        pass
+
+    def trade(self):
+        pass
+
+    def think(self):
+        pass
 
 
 class npc_mover(cocos.actions.Move):
