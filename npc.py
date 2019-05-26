@@ -7,6 +7,7 @@ from pyglet.window import key, mouse
 from cocos.actions import *
 from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees, hypot
+from random import randint
 
 from creature import *
 
@@ -34,30 +35,17 @@ class NPC(character):
 
         self.angle_velocity = 0
         self.state = "patrol"
+        self.patrol = patroling(self.rad_patrol)
+        self.fight = fight()
+        self.info = []
 
     def change_state(self):
         if self.state == "patrol":
             self.state = "fight"
         else:
             self.state = "patrol"
-    
+
     # AI
-    def think(self):
-        pass
-
-    # Создать труп и прочее
-    def die(self):
-        pass
-
-
-class AI:
-    def __init__(self, rad_patrol):
-        self.mover = npc_mover()
-        self.rad_patrol = rad_patrol
-
-    def get_way(self, x, y):
-        self.mover.update(x, y)
-
     def think(self):
         if self.state == "patrol":
             pass
@@ -66,10 +54,19 @@ class AI:
         else:
             pass
 
-
-class patroling(AI):
-    def choose_point(self):
+    # Создать труп и прочее
+    def die(self):
         pass
+
+
+class patroling():
+    def __init__(self, rad_patrol):
+        self.rad_patrol = rad_patrol
+
+    def choose_point(self):
+        x = randint(self.rad_patrol[0][0], self.rad_patrol[1][0])
+        y = randint(self.rad_patrol[0][1], self.rad_patrol[1][1])
+        return x, y
 
     def trade(self):
         pass
@@ -78,7 +75,7 @@ class patroling(AI):
         pass
 
 
-class fight(AI):
+class fight():
     def choose_enemy(self):
         pass
 
@@ -133,7 +130,7 @@ class npc_mover(cocos.actions.Move):
         self.target.scroller.set_focus(*new.cshape.center)
 
         self.target.scroller.set_focus(self.target.x, self.target.y)
-
-    def update(self, x, y):
-        self.x = x
-        self.y = y
+        
+        if vel_x == 0 and vel_y == 0:
+            self.target.parent.info = self.target.parent.get_in_sector()
+            self.x, self.y = self.target.parent.patrol.choose_point()
