@@ -159,8 +159,8 @@ class character(cocos.layer.ScrollableLayer):
             self.skin.remove_armor()
     
     # Положить вещь в инвентарь
-    def take_item(self, item, count):
-        self.inventory.add(item, count)
+    def take_item(self, item, count, adds=[]):
+        self.inventory.add(item, count, adds)
         if self.inventory.weight > 4 * self.SEACIL[0]:
             self.overweight = True
         
@@ -173,10 +173,15 @@ class character(cocos.layer.ScrollableLayer):
     # Выбросить педмет из инвентаря
     def drop_item(self, item, ind=0, count='all'):
         tp = get_type(item)
+        adds = []
+        
         if tp == 'item':
             count = self.inventory.take(item, count)
         elif tp == 'weapon':
+            adds.append(self.inventory.weapons[ind].cartridge)
+            
             self.unequip_weapon(ind)
+            
             if self.weapon_left == len(self.inventory.weapons) - 1:
                 self.weapon_left = ind
             
@@ -185,6 +190,8 @@ class character(cocos.layer.ScrollableLayer):
             
             count = self.inventory.take(item, index=ind)
         elif tp == 'armor':
+            adds.append(self.inventory.armors[ind].ac)
+            
             self.unequip_armor(ind)
             
             if self.armor == len(self.inventory.armors) - 1:
@@ -192,7 +199,7 @@ class character(cocos.layer.ScrollableLayer):
             
             count = self.inventory.take(item, index=ind)
 
-        PickableObject(item, self.skin.position, count).place(self.skin.scroller)
+        PickableObject(item, self.skin.position, count, adds).place(self.skin.scroller)
 
     # Выложить предмет в ящик
     def store_item(self):

@@ -186,7 +186,7 @@ class hero(character):
                 for i in self.skin.near_objects:
                     obj = PickableObject.pickables[i]
                     if obj.spr.get_rect().contains(X, Y):
-                        self.take_item(obj.name, obj.count)
+                        self.take_item(obj.name, obj.count, obj.additional)
                         obj.destruct()
                         self.skin.near_objects.remove(i)
 
@@ -218,7 +218,7 @@ class hero(character):
                 self.reload('l')
             elif symbol == key.E and self.skin.near_objects:
                 obj = PickableObject.pickables[self.skin.near_objects[0]]
-                self.take_item(obj.name, obj.count)
+                self.take_item(obj.name, obj.count, obj.additional)
                 obj.destruct()
                 self.skin.near_objects.pop(0)
             

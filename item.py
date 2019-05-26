@@ -6,6 +6,7 @@ from pyglet.image import load, ImageGrid, Animation
 from pyglet.window import key, mouse
 from physics import *
 from utils import add_label, add_text
+from random import randint
 
 # Параметры мыши
 mouse_x = 10
@@ -78,12 +79,17 @@ class Armor(Item):
 
 
 class ArmorHandler(Sprite):
-    def __init__(self, armor_name):
+    def __init__(self, armor_name, AC=-1):
         self.armor_name = armor_name
         self.item_sprite = Armor.armors[armor_name].item_sprite
         self.item_inv_sprite = Armor.armors[armor_name].item_inv_sprite
         self.walk_sprite = Armor.armors[armor_name].walk_sprite
-        self.ac = Armor.armors[armor_name].max_ac
+        
+        if AC == -1:
+            self.ac = Armor.armors[armor_name].max_ac
+        else:
+            self.ac = AC
+            
         self.def_firearm = Armor.armors[armor_name].def_firearm
 
         super().__init__(self.item_sprite.image)
@@ -140,10 +146,14 @@ class Weapon(Item):
 
 
 class WeaponHandler(cocos.sprite.Sprite):
-    def __init__(self, weapon_name):
-        self.cartridge = 0
+    def __init__(self, weapon_name, ammo=-1):
         self.flag_shoot = False
         self.weapon_name = weapon_name
+        if ammo == -1:
+            self.cartridge = randint(0, self.get_max_cartridge()[0])
+        else:
+            self.cartridge = ammo
+        
         self.weapon_anim = Weapon.weapons[weapon_name].weapon_anim
         self.item_sprite = Weapon.weapons[weapon_name].item_sprite
         self.item_inv_sprite = Sprite(Weapon.weapons[weapon_name].item_inv_sprite.image)
@@ -181,7 +191,7 @@ class inventory():
         self.armors = []
 
     # Добавить count предметов типа item в инвентарь
-    def add(self, item, count):
+    def add(self, item, count, adds=[]):
         self.weight += get_weight(item) * count
         tp = get_type(item)
         if tp == 'item':
@@ -191,11 +201,16 @@ class inventory():
                 self.items[item] = count
         elif tp == 'weapon':
             for i in range(count):
-                self.weapons.append(WeaponHandler(item))
-                #self.weapons[str(len(self.weapons))] = WeaponHandler(item)
+                if len(adds) > i:
+                    self.weapons.append(WeaponHandler(item, adds[i]))
+                else:
+                    self.weapons.append(WeaponHandler(item))
         elif tp == 'armor':
             for i in range(count):
-                self.armors.append(ArmorHandler(item))
+                if len(adds) > i:
+                    self.armors.append(ArmorHandler(item, adds[i]))
+                else:
+                    self.armors.append(ArmorHandler(item))
         elif tp == 'usable':
             if item in self.usables:
                 self.usables[item] += count
@@ -210,7 +225,6 @@ class inventory():
 
     # Забрать count предметов из инвентаря
     def take(self, item, count=-1, index=0):
-        print(index)
         n = self.count(item)
         if count == 'all' or n < count:
             count = n
@@ -283,7 +297,7 @@ class inventory():
 class PickableObject(cocos.layer.ScrollableLayer):
     pickables = {}
     
-    def __init__(self, name, pos, count):
+    def __init__(self, name, pos, count, adds=[]):
         super().__init__()
         
         self.spr = Sprite(get_global(name).item_sprite.image)
@@ -300,6 +314,7 @@ class PickableObject(cocos.layer.ScrollableLayer):
         
         self.name = name
         self.count = count
+        self.additional = adds
 
         index = len(PickableObject.pickables)
         self.sprite_name = self.name + str(hash(self))
