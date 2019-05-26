@@ -45,6 +45,7 @@ class Port(cocos.sprite.Sprite):
         self.next_map = name
         self.number = number
         self.new_position = new_x*32, new_y*32
+        self.vector = new_x - cur_x, new_y - cur_y
         
         super().__init__("res/img/port.png")
         self.position = cur_x*32, cur_y*32
@@ -62,6 +63,12 @@ class map_manager(cocos.scene.Scene):
         self.layer = MapLayer(cur_map)
         self.ports = []
         self.main_hero = hero
+        
+        self.map_collider = circle_map_collider(self.layer)
+        hero.set_collision(self.map_collider)
+        scroller = cocos.layer.ScrollingManager()
+        scroller.scale = 2
+        self.main_hero.set_scroller(scroller)
 
         port_handler = cocos.layer.ScrollableLayer()
         cur_ports = open("maps/" + cur_map + "/ports.txt")
@@ -76,15 +83,9 @@ class map_manager(cocos.scene.Scene):
             p = cur_ports.readline()
 
             if i == port_n:
-                hero.set_position(port.new_position)
+                hero.set_position(port.new_position, port.vector)
             
             i += 1
-            
-        
-        self.map_collider = circle_map_collider(self.layer)
-        hero.set_collision(self.map_collider)
-        scroller = cocos.layer.ScrollingManager()
-        scroller.scale = 2
         
         scroller.add(hero, 2)
         scroller.add(self.layer.layer_floor, -1)
@@ -99,7 +100,6 @@ class map_manager(cocos.scene.Scene):
         n = cur_npc.readline()
         while n:
             pass
-        self.main_hero.set_scroller(scroller)
         super().__init__(scroller)
 
         self.add(hero.interface, 100)

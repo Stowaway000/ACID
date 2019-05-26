@@ -220,6 +220,17 @@ class hero(character):
     def set_collision(self, manager):
         self.skin.collider = manager
 
+    def set_position(self, pos, vect):
+        super().set_position(pos)
+
+        global mouse_x, mouse_y, vector
+        vector = [vect[0]*100, vect[1]*100]
+        mouse_x, mouse_y = self.skin.scroller.world_to_screen\
+                           (self.skin.scroller.fx, self.skin.scroller.fy)
+        mouse_x += vector[0]
+        mouse_y += vector[1]
+        director.window.set_mouse_position(mouse_x, mouse_y)
+
 
 class hero_mover(cocos.actions.Move):
     def step(self, dt):
