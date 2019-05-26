@@ -76,8 +76,8 @@ class hero(character):
         dct = {'armor': self.inventory.get_armor(self.armor).ac}
         self.interface.update(dct)
 
-    def unequip_armor(self):
-        super().unequip_armor()
+    def unequip_armor(self, index):
+        super().unequip_armor(index)
         
         dct = {'armor': 0}
         self.interface.update(dct)
@@ -174,13 +174,36 @@ class hero(character):
             elif buttons & mouse.RIGHT and not self.skin.hidden:
                 self.attack('l')
             elif buttons & mouse.LEFT and buttons & mouse.RIGHT and not self.skin.hidden:
-                print(12)
                 self.attack('r')
                 self.attack('l')
-
+    
     def on_mouse_press(self, x, y, button, modifiers):
         if button == mouse.LEFT:
-            self.lpressed = True
+            clicked = False
+
+            if not self.lurking:
+                X, Y = self.parent.screen_to_world(x, y)
+                for i in self.skin.near_objects:
+                    obj = PickableObject.pickables[i]
+                    if obj.spr.get_rect().contains(X, Y):
+                        self.take_item(obj.name, obj.count, obj.additional)
+                        obj.destruct()
+                        self.skin.near_objects.remove(i)
+
+                        clicked = True
+                        break
+                
+                for i in self.skin.near_stashes:
+                    obj = Stash.stashes[i]
+                    if obj.sprite.get_rect().contains(X, Y):
+                        self.interface.exchange_with(obj)
+                        self.partner = obj
+                        clicked = True
+                        break
+            
+            if not clicked:
+                self.lpressed = True
+            
         if button == mouse.RIGHT:
             self.rpressed = True
 
@@ -201,6 +224,11 @@ class hero(character):
             elif symbol == key.R and not self.skin.hidden:
                 self.reload('r')
                 self.reload('l')
+            elif symbol == key.E and self.skin.near_objects:
+                obj = PickableObject.pickables[self.skin.near_objects[0]]
+                self.take_item(obj.name, obj.count, obj.additional)
+                obj.destruct()
+                self.skin.near_objects.pop(0)
             
             if symbol == key.LCTRL or symbol == key.RCTRL:
                 self.skin.seat()
@@ -215,6 +243,12 @@ class hero(character):
 
     def set_collision(self, manager):
         self.skin.collider = manager
+
+    def get_partner(self):
+        if self.skin.near_stashes and not self.skin.near_objects:
+            self.partner = Stash.stashes[self.skin.near_stashes[0]]
+            return self.partner
+        return None
 
 
 class hero_mover(cocos.actions.Move):
@@ -248,6 +282,26 @@ class hero_mover(cocos.actions.Move):
             self.target.scroller.set_focus(*new.cshape.center)
 
             self.target.scroller.set_focus(self.target.x, self.target.y)
+
+            for name, i in PickableObject.pickables.items():
+                if self.target.collider.collision_manager.they_collide(i.cshape, self.target.cshape):
+                    if name not in self.target.near_objects:
+                        self.target.near_objects.append(name)
+                        i.select()
+                else:
+                    if name in self.target.near_objects:
+                        self.target.near_objects.remove(name)
+                        i.deselect()
+
+            for name, i in Stash.stashes.items():
+                if self.target.collider.collision_manager.they_collide(i.cshape, self.target.cshape):
+                    if name not in self.target.near_stashes:
+                        self.target.near_stashes.append(name)
+                        i.select()
+                else:
+                    if name in self.target.near_stashes:
+                        self.target.near_stashes.remove(name)
+                        i.deselect()
 
             global mouse_x, mouse_y
             if self.target.velocity[0] or self.target.velocity[1]:

@@ -153,13 +153,14 @@ class character(cocos.layer.ScrollableLayer):
         self.armor = index
         self.skin.add_armor(self.inventory.get_armor(index))
 
-    def unequip_armor(self):
-        self.armor = -1
-        self.skin.remove_armor()
+    def unequip_armor(self, index):
+        if index == self.armor:
+            self.armor = -1
+            self.skin.remove_armor()
     
     # Положить вещь в инвентарь
-    def take_item(self, item, count):
-        self.inventory.add(item, count)
+    def take_item(self, item, count, adds=[]):
+        self.inventory.add(item, count, adds)
         if self.inventory.weight > 4 * self.SEACIL[0]:
             self.overweight = True
         
@@ -172,15 +173,67 @@ class character(cocos.layer.ScrollableLayer):
     # Выбросить педмет из инвентаря
     def drop_item(self, item, ind=0, count='all'):
         tp = get_type(item)
+        adds = []
+        
         if tp == 'item':
-            self.inventory.take(item, count)
+            count = self.inventory.take(item, count)
         elif tp == 'weapon':
-            self.inventory.take(item, index=ind)
+            adds.append(self.inventory.weapons[ind].cartridge)
+            
             self.unequip_weapon(ind)
+            
+            if self.weapon_left == len(self.inventory.weapons) - 1:
+                self.weapon_left = ind
+            
+            if self.weapon_right == len(self.inventory.weapons) - 1:
+                self.weapon_right = ind
+            
+            count = self.inventory.take(item, index=ind)
+        elif tp == 'armor':
+            adds.append(self.inventory.armors[ind].ac)
+            
+            self.unequip_armor(ind)
+            
+            if self.armor == len(self.inventory.armors) - 1:
+                self.weapon_left = ind
+            
+            count = self.inventory.take(item, index=ind)
+
+        PickableObject(item, self.skin.position, count, adds).place(self.skin.scroller)
 
     # Выложить предмет в ящик
-    def store_item(self):
-        pass
+    def store_item(self, item, ind=0, count='all'):
+        tp = get_type(item)
+        adds = []
+        
+        if tp == 'item':
+            count = self.inventory.take(item, count)
+            self.partner.take_item(item, count)
+        elif tp == 'weapon':
+            adds.append(self.inventory.weapons[ind].cartridge)
+            
+            self.unequip_weapon(ind)
+            
+            if self.weapon_left == len(self.inventory.weapons) - 1:
+                self.weapon_left = ind
+            
+            if self.weapon_right == len(self.inventory.weapons) - 1:
+                self.weapon_right = ind
+            
+            count = self.inventory.take(item, index=ind)
+            self.partner.take_item(item, count, adds)
+        elif tp == 'armor':
+            adds.append(self.inventory.armors[ind].ac)
+            
+            self.unequip_armor(ind)
+            
+            if self.armor == len(self.inventory.armors) - 1:
+                self.weapon_left = ind
+            
+            count = self.inventory.take(item, index=ind)
+            self.partner.take_item(item, count, adds)
+        
+        self.interface.update_both()
 
 
 class skin(cocos.sprite.Sprite):
@@ -227,6 +280,9 @@ class skin(cocos.sprite.Sprite):
 
         self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle")
         self.do(mover)
+
+        self.near_objects = []
+        self.near_stashes = []
 
     def walker(self, new_state):
         if self.walking != new_state:

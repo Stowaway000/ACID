@@ -3,6 +3,10 @@ from cocos.director import director
 from cocos.sprite import Sprite
 import pyglet
 from pyglet.image import load, ImageGrid, Animation
+from pyglet.window import key, mouse
+from physics import *
+from utils import add_label, add_text
+from random import randint
 
 # Параметры мыши
 mouse_x = 10
@@ -75,12 +79,17 @@ class Armor(Item):
 
 
 class ArmorHandler(Sprite):
-    def __init__(self, armor_name):
+    def __init__(self, armor_name, AC=-1):
         self.armor_name = armor_name
         self.item_sprite = Armor.armors[armor_name].item_sprite
-        self.item_inv_sprite = Armor.armors[armor_name].item_inv_sprite
+        self.item_inv_sprite = Sprite(Armor.armors[armor_name].item_inv_sprite.image)
         self.walk_sprite = Armor.armors[armor_name].walk_sprite
-        self.ac = Armor.armors[armor_name].max_ac
+        
+        if AC == -1:
+            self.ac = Armor.armors[armor_name].max_ac
+        else:
+            self.ac = AC
+            
         self.def_firearm = Armor.armors[armor_name].def_firearm
 
         super().__init__(self.item_sprite.image)
@@ -137,13 +146,17 @@ class Weapon(Item):
 
 
 class WeaponHandler(cocos.sprite.Sprite):
-    def __init__(self, weapon_name):
-        self.cartridge = 0
+    def __init__(self, weapon_name, ammo=-1):
         self.flag_shoot = False
         self.weapon_name = weapon_name
+        if ammo == -1:
+            self.cartridge = randint(0, self.get_max_cartridge()[0])
+        else:
+            self.cartridge = ammo
+        
         self.weapon_anim = Weapon.weapons[weapon_name].weapon_anim
         self.item_sprite = Weapon.weapons[weapon_name].item_sprite
-        self.item_inv_sprite = Weapon.weapons[weapon_name].item_inv_sprite
+        self.item_inv_sprite = Sprite(Weapon.weapons[weapon_name].item_inv_sprite.image)
 
         super().__init__(self.item_sprite.image)
 
@@ -178,7 +191,7 @@ class inventory():
         self.armors = []
 
     # Добавить count предметов типа item в инвентарь
-    def add(self, item, count):
+    def add(self, item, count, adds=[]):
         self.weight += get_weight(item) * count
         tp = get_type(item)
         if tp == 'item':
@@ -188,10 +201,16 @@ class inventory():
                 self.items[item] = count
         elif tp == 'weapon':
             for i in range(count):
-                self.weapons.append(WeaponHandler(item))
+                if len(adds) > i:
+                    self.weapons.append(WeaponHandler(item, adds[i]))
+                else:
+                    self.weapons.append(WeaponHandler(item))
         elif tp == 'armor':
             for i in range(count):
-                self.armors.append(ArmorHandler(item))
+                if len(adds) > i:
+                    self.armors.append(ArmorHandler(item, adds[i]))
+                else:
+                    self.armors.append(ArmorHandler(item))
         elif tp == 'usable':
             if item in self.usables:
                 self.usables[item] += count
@@ -223,28 +242,17 @@ class inventory():
                 self.usables.pop(item)
         
         elif tp == 'weapon':
-            if count != -1:
-                get = 0
-                i = 0
-                while get < count:
-                    if self.weapons[i].weapon_name == item:
-                        self.weapons.pop(i)
-                        i -= 1
-                        get += 1
-                    i += 1
-            elif self.weapons[index].weapon_name == item:
-                self.weapons.pop(index)
+            if self.weapons[index].weapon_name == item:
+                self.weapons[index], self.weapons[-1] = self.weapons[-1], self.weapons[index]
+                self.weapons.pop(-1)
+                count = 1
                 
         
         elif tp == 'armor':
-            get = 0
-            i = 0
-            while get < count:
-                if self.armors[i].name == item:
-                    self.armors.pop(i)
-                    i -= 1
-                    get += 1
-                i += 1
+            if self.armors[index].armor_name == item:
+                self.armors[index], self.armors[-1] = self.armors[-1], self.armors[index]
+                self.armors.pop(-1)
+                count = 1
         
         return count
 
@@ -264,7 +272,7 @@ class inventory():
         elif tp == 'armor':
             n = 0
             for i in self.armors:
-                if i.name == item:
+                if i.armor_name == item:
                     n += 1
             return n
 
@@ -284,6 +292,118 @@ class inventory():
         if item in self.usables:
             return usable_object.objects[item]
         return None
+
+
+class PickableObject(cocos.layer.ScrollableLayer):
+    pickables = {}
+    
+    def __init__(self, name, pos, count, adds=[]):
+        super().__init__()
+        
+        self.spr = Sprite(get_global(name).item_sprite.image)
+        self.spr.position = pos
+
+        self.selector = Sprite('res/img/outline.png')
+        self.selector.position = pos
+        self.selector.scale_x = (self.spr.width+10) / self.selector.width
+        self.selector.scale_y = (self.spr.height+10) / self.selector.height
+        
+        self.e = add_label('E', (pos[0]-5, pos[1]+self.spr.height-15), size=8)
+
+        self.add(self.spr)
+        
+        self.name = name
+        self.count = count
+        self.additional = adds
+
+        index = len(PickableObject.pickables)
+        self.sprite_name = self.name + str(hash(self))
+        PickableObject.pickables[self.sprite_name] = self
+
+        radius = max(self.spr.width, self.spr.height) / 2
+        self.cshape = collision_unit([eu.Vector2(*self.spr.position),\
+                                      radius], "circle")
+
+    def destruct(self):
+        PickableObject.pickables.pop(self.sprite_name)
+        self.parent.remove(self.sprite_name)
+
+    def place(self, scr):
+        scr.add(self, name=self.sprite_name)
+
+    def select(self):
+        self.add(self.selector, name='selector')
+        self.add(self.e, name='E')
+
+    def deselect(self):
+        self.remove('selector')
+        self.remove('E')
+
+
+class Stash(cocos.layer.ScrollableLayer):
+    stashes = {}
+    
+    def __init__(self, inv, name, pos):
+        super().__init__()
+        self.inventory = inv
+        self.sprite = Sprite('res/img/items/' + name + '.png')
+        self.sprite.position = pos
+
+        self.add(self.sprite)
+
+        self.selector = Sprite('res/img/outline_stash.png')
+        self.selector.position = pos
+        self.selector.scale_x = (self.sprite.width+10) / self.selector.width
+        self.selector.scale_y = (self.sprite.height+10) / self.selector.height
+        
+        self.e = add_label('E', (pos[0]-5, pos[1]+self.sprite.height-15), size=8)
+
+        index = len(Stash.stashes)
+        self.sprite_name = name + str(hash(self))
+        Stash.stashes[self.sprite_name] = self
+
+        radius = max(self.sprite.width, self.sprite.height) / 2
+        self.cshape = collision_unit([eu.Vector2(*self.sprite.position),\
+                                      radius], "circle")
+
+    def place(self, scr):
+        scr.add(self, name=self.sprite_name)
+    
+    def select(self):
+        self.add(self.selector, name='selector')
+        self.add(self.e, name='E')
+
+    def deselect(self):
+        self.remove('selector')
+        self.remove('E')
+    
+    def take_item(self, item, count, adds=[]):
+        self.inventory.add(item, count, adds)
+
+    def store_item(self, item, ind=0, count='all'):
+        tp = get_type(item)
+        adds = []
+        
+        if tp == 'item':
+            count = self.inventory.take(item, count)
+            self.partner.take_item(item, count)
+        elif tp == 'weapon':
+            adds.append(self.inventory.weapons[ind].cartridge)
+            
+            count = self.inventory.take(item, index=ind)
+            
+            self.partner.take_item(item, count, adds)
+        elif tp == 'armor':
+            adds.append(self.inventory.armors[ind].ac)
+            
+            count = self.inventory.take(item, index=ind)
+            
+            self.partner.take_item(item, count, adds)
+        
+        self.partner.interface.update_both()
+
+    def set_partner(self, prt):
+        self.partner = prt
 
 
 # Получить тип какого-то предмета

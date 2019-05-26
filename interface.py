@@ -1,7 +1,6 @@
 import cocos
 from cocos.director import director
 from cocos.sprite import Sprite
-from cocos.text import Label, HTMLLabel
 from cocos.layer import Layer, ColorLayer, MultiplexLayer, ScrollingManager, ScrollableLayer
 from cocos.scenes import pause
 from cocos.scene import Scene
@@ -11,20 +10,7 @@ import pyglet
 from pyglet.window import key, mouse
 from menu import set_menu_style, go_back, quit_game
 from item import get_global, get_type
-from utils import safe_remove
-
-
-def add_label(txt, point, anchor='center', size=14):
-    return Label(txt, point, font_name='Calibri', font_size=size,\
-                 anchor_x=anchor, anchor_y='center')
-
-
-def add_text(txt, point, anchor='center', size=14, padding=10, width=200):
-    point = (point[0]+padding, point[1]-padding)
-    txt = '<font face="Calibri" size="' + str(size) + '" color="white">'\
-          + txt + '</font>'
-    return HTMLLabel(txt, point, anchor_x=anchor, anchor_y='top',\
-                     multiline=True, width=width-padding*2)
+from utils import safe_remove, add_label, add_text
 
 
 class Button(ColorLayer):
@@ -79,11 +65,13 @@ class game_menu(Layer):
 class BasicVisualInventory(ColorLayer):
     is_event_handler = True
 
-    def __init__(self, hero, pos):
+    def __init__(self, hero, pos, tp='hero', role='normal'):
         w = director.window.width
         h = director.window.height
+
+        self.type = tp
         
-        super().__init__(31, 38, 0, 200, 450, int(2*h/3))
+        super().__init__(31, 38, 0, 200, 520, int(2*h/3))
 
         self.position = pos
 
@@ -118,17 +106,54 @@ class BasicVisualInventory(ColorLayer):
         description_bg.position = (230, self.height-256)
         self.add(description_bg)
 
+        self.role = role
+        self.buttons = []
+        self.active_btn = []
+        if role == 'exchanger':
+            self.buttons.append(Button('Shift', 230, self.height-296, 100, 30))
+
+    def handle_btns(self, x, y):
+        if self.role == 'exchanger':
+            if self.buttons[0].click(x, y):
+                self.hero_ref.store_item(*self.selected)
+    
+    def btn_set(self, key, index=''):
+        st = []
+        if key and self.role == 'exchanger':
+            st.append(0)
+
+        return st
+    
+    def btn_refresh(self, key, index=''):
+        need = self.btn_set(key, index)
+        
+        for i in self.active_btn:
+            self.remove('btn'+str(i))
+            self.buttons[i].visible = False
+
+        for i in need:
+            self.add(self.buttons[i], name='btn'+str(i))
+            self.buttons[i].visible = True
+
+        self.active_btn = need
+    
     def refresh(self, pos):
+        if self.selected:
+            self.btn_refresh('')
+        
         self.mouse_pos = pos
         invent = self.hero_ref.inventory
 
         total = len(invent.items) + len(invent.weapons) + len(invent.armors)
-        if self.hero_ref.weapon_left != -1:
-            total -= 1
-        if self.hero_ref.weapon_right != -1:
-            total -= 1
-        if self.hero_ref.armor != -1:
-            total -= 1
+        if self.type == 'hero':
+            if self.hero_ref.weapon_left != -1:
+                total -= 1
+            if self.hero_ref.weapon_right != -1:
+                total -= 1
+            if self.hero_ref.armor != -1:
+                total -= 1
+        if not total:
+            total = self.on_one
         
         self.remove('sb')
         self.scrollbar.height = int(self.height*min(self.on_one/total, 1))
@@ -150,10 +175,12 @@ class BasicVisualInventory(ColorLayer):
 
         if self.selected:
             self.selected = ''
-            self.item_stack.remove('select')
+            safe_remove(self.item_stack, 'select')
             self.remove('naming')
 
-    def update(self, pos):
+    def update(self, pos=-1):
+        if pos == -1:
+            pos = self.mouse_pos
         self.refresh(pos)
 
         invent = self.hero_ref.inventory
@@ -175,19 +202,36 @@ class BasicVisualInventory(ColorLayer):
         wps = invent.weapons
         for i in range(len(wps)):
             spr = wps[i].item_inv_sprite
-            if i != self.hero_ref.weapon_left and i != self.hero_ref.\
-               weapon_right:
+            if self.type == 'hero':
+                if i != self.hero_ref.weapon_left and i != self.hero_ref.\
+                   weapon_right:
+                    spr.position = (50, self.height/2-h*32)
+
+                    self.item_stack.add(spr, 1, wps[i].weapon_name+' '+str(i))
+                    self.items.append(wps[i].weapon_name+' '+str(i))
+                    
+                    h += 1
+            else:
                 spr.position = (50, self.height/2-h*32)
 
                 self.item_stack.add(spr, 1, wps[i].weapon_name+' '+str(i))
                 self.items.append(wps[i].weapon_name+' '+str(i))
-                
+                    
                 h += 1
 
         ars = invent.armors
         for i in range(len(ars)):
             spr = ars[i].item_inv_sprite
-            if i != self.hero_ref.armor:
+            if self.type == 'hero':
+                if i != self.hero_ref.armor:
+                    
+                    spr.position = (50, self.height/2-h*32)
+
+                    self.item_stack.add(spr, 1, ars[i].armor_name+' '+str(i))
+                    self.items.append(ars[i].armor_name+' '+str(i))
+                
+                    h += 1
+            else:
                 spr.position = (50, self.height/2-h*32)
 
                 self.item_stack.add(spr, 1, ars[i].armor_name+' '+str(i))
@@ -235,9 +279,13 @@ class BasicVisualInventory(ColorLayer):
         if index != 'i':
             self.selected.append(int(index))
 
+        self.btn_refresh(key, index)
+
     def on_mouse_press(self, x, y, button, modifiers):
         x -= self.position[0]
         y -= self.position[1]
+
+        self.handle_btns(x, y)
         
         if button == mouse.LEFT:
             if 195 < x < 220 and (self.scrollbar.position[1] +\
@@ -256,6 +304,10 @@ class BasicVisualInventory(ColorLayer):
                         self.on_item_click(key.split()[0], val, key.split()[1])
                         break
 
+    def on_exit(self):
+        director.window.set_mouse_position(*self.mouse_pos)
+        super().on_exit()
+
 
 class visual_inventory(BasicVisualInventory):
     is_event_handler = True
@@ -268,15 +320,12 @@ class visual_inventory(BasicVisualInventory):
         
         self.width = 730
 
-        self.buttons = []
         self.buttons.append(Button('Drop', 230, self.height-296, 100, 30))
         self.buttons.append(Button('Equip Right', 340, self.height-296, 100, 30))
         self.buttons.append(Button('Equip Left', 450, self.height-296, 100, 30))
         self.buttons.append(Button('Unequip', 340, self.height-296, 100, 30))
         self.buttons.append(Button('Wear', 340, self.height-296, 100, 30))
         self.buttons.append(Button('Unwear', 340, self.height-296, 100, 30))
-
-        self.active_btn = []
 
         self.weapon_place = ColorLayer(31, 38, 0, 200, 100, 79)
         self.weapon_place.scale = 2
@@ -302,9 +351,6 @@ class visual_inventory(BasicVisualInventory):
                            'left'), 1)
 
     def refresh(self, pos):
-        if self.selected:
-            self.btn_refresh('')
-
         safe_remove(self.weapon_place, 'w_right')
         safe_remove(self.weapon_place, 'w_left')
         safe_remove(self.armor_place, 'armor')
@@ -348,10 +394,6 @@ class visual_inventory(BasicVisualInventory):
             spr = invent.armors[self.hero_ref.armor].item_inv_sprite
             spr.position = (50, 16)
             self.armor_place.add(spr, 1, 'armor')
-    
-    def on_exit(self):
-        director.window.set_mouse_position(*self.mouse_pos)
-        super().on_exit()
 
     def btn_set(self, key, index=''):
         st = []
@@ -376,19 +418,6 @@ class visual_inventory(BasicVisualInventory):
 
         return st
 
-    def btn_refresh(self, key, index=''):
-        need = self.btn_set(key, index)
-        
-        for i in self.active_btn:
-            self.remove('btn'+str(i))
-            self.buttons[i].visible = False
-
-        for i in need:
-            self.add(self.buttons[i], name='btn'+str(i))
-            self.buttons[i].visible = True
-
-        self.active_btn = need
-
     def handle_btns(self, x, y):
         if self.buttons[0].click(x, y):
             self.hero_ref.drop_item(*self.selected)
@@ -411,15 +440,13 @@ class visual_inventory(BasicVisualInventory):
             self.update(self.mouse_pos)
 
         if self.buttons[5].click(x, y):
-            self.hero_ref.unequip_armor()
+            self.hero_ref.unequip_armor(self.selected[1])
             self.update(self.mouse_pos)
     
     def on_mouse_press(self, x, y, button, modifiers):
         super().on_mouse_press(x, y, button, modifiers)
         x -= self.position[0]
         y -= self.position[1]
-        
-        self.handle_btns(x, y)
 
         cld = self.weapon_place.children_names
         cld_ar = self.armor_place.children_names
@@ -453,11 +480,6 @@ class visual_inventory(BasicVisualInventory):
                 self.on_item_click(wp.armor_name, cld_ar['armor'],\
                                            self.hero_ref.armor,\
                                    no_selection=True)
-
-    def on_item_click(self, key, val, index='', no_selection=False):
-        super().on_item_click(key, val, index, no_selection)
-        
-        self.btn_refresh(key, index)
 
 
 class stat_interface(Layer):
@@ -539,10 +561,8 @@ class interface(MultiplexLayer):
         w = director.window.width
         h = director.window.height
         self.exchange = Layer()
-        self.mine = BasicVisualInventory(host, (w/6, h/6))
-        self.his = BasicVisualInventory(host, (w/6+480, h/6))
+        self.mine = BasicVisualInventory(host, (w/6-60, h/6), role='exchanger')
         self.exchange.add(self.mine)
-        self.exchange.add(self.his)
         super().__init__(self.stats, self.invent, self.exchange)
 
         self.mouse_pos = (0, 0)
@@ -565,13 +585,12 @@ class interface(MultiplexLayer):
             else:
                 self.host.lurking = False
                 self.switch_to(0)
-
+        
         if symbol == key.E:
             if self.enabled_layer != 2:
-                self.host.lurking = True
-                self.mine.update(self.mouse_pos)
-                self.his.update(self.mouse_pos)
-                self.switch_to(2)
+                his = self.host.get_partner()
+                if his:
+                    self.exchange_with(his)
             else:
                 self.host.lurking = False
                 self.switch_to(0)
@@ -584,6 +603,23 @@ class interface(MultiplexLayer):
             pause_sc.add(game_menu(self.mouse_pos))
             
             director.push(pause_sc)
+
+    def exchange_with(self, his):
+        w = director.window.width
+        h = director.window.height
+        safe_remove(self.exchange, 'his')
+        self.his = BasicVisualInventory(his, (w/6+480, h/6), 'stash', 'exchanger')
+        his.set_partner(self.host)
+        self.exchange.add(self.his, name='his')
+
+        self.host.lurking = True
+        self.mine.update(self.mouse_pos)
+        self.his.update(self.mouse_pos)
+        self.switch_to(2)
+
+    def update_both(self):
+        self.his.update()
+        self.mine.update()
     
     def change(self, stat, new):
         self.stats.change(stat, new)
