@@ -41,7 +41,7 @@ class MapLayer(cocos.layer.ScrollableLayer):
             
             s = anims.readline()
 
-            
+
 class Port(cocos.sprite.Sprite):
     def __init__(name, number, cur_x, cur_y, new_x, new_y):
         self.next_map = MapLayer(name)
@@ -54,8 +54,7 @@ class Port(cocos.sprite.Sprite):
     def change_map(self):
         pass
 
-    
-        
+
 class map_manager(cocos.scene.Scene):
     def __init__(cur_map, hero):
         self.layer = MapLayer(cur_map)
@@ -94,4 +93,4 @@ class map_manager(cocos.scene.Scene):
     def update(self):
         for port in self.ports:
             if self.coll_manager.they_collide(self.port, self.main_hero):
-                port.change_map        
+                port.change_map
