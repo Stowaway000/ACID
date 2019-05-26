@@ -192,6 +192,14 @@ class hero(character):
 
                         clicked = True
                         break
+                
+                for i in self.skin.near_stashes:
+                    obj = Stash.stashes[i]
+                    if obj.sprite.get_rect().contains(X, Y):
+                        self.interface.exchange_with(obj)
+
+                        clicked = True
+                        break
             
             if not clicked:
                 self.lpressed = True
@@ -221,6 +229,9 @@ class hero(character):
                 self.take_item(obj.name, obj.count, obj.additional)
                 obj.destruct()
                 self.skin.near_objects.pop(0)
+            elif symbol == key.E and self.skin.near_stashes:
+                obj = Stash.stashes[self.skin.near_stashes[0]]
+                pass
             
             if symbol == key.LCTRL or symbol == key.RCTRL:
                 self.skin.seat()
@@ -277,6 +288,16 @@ class hero_mover(cocos.actions.Move):
                 else:
                     if name in self.target.near_objects:
                         self.target.near_objects.remove(name)
+                        i.deselect()
+
+            for name, i in Stash.stashes.items():
+                if self.target.collider.collision_manager.they_collide(i.cshape, self.target.cshape):
+                    if name not in self.target.near_stashes:
+                        self.target.near_stashes.append(name)
+                        i.select()
+                else:
+                    if name in self.target.near_stashes:
+                        self.target.near_stashes.remove(name)
                         i.deselect()
 
             global mouse_x, mouse_y

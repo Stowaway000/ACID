@@ -65,11 +65,13 @@ class game_menu(Layer):
 class BasicVisualInventory(ColorLayer):
     is_event_handler = True
 
-    def __init__(self, hero, pos):
+    def __init__(self, hero, pos, tp='hero'):
         w = director.window.width
         h = director.window.height
+
+        self.type = tp
         
-        super().__init__(31, 38, 0, 200, 450, int(2*h/3))
+        super().__init__(31, 38, 0, 200, 520, int(2*h/3))
 
         self.position = pos
 
@@ -109,12 +111,13 @@ class BasicVisualInventory(ColorLayer):
         invent = self.hero_ref.inventory
 
         total = len(invent.items) + len(invent.weapons) + len(invent.armors)
-        if self.hero_ref.weapon_left != -1:
-            total -= 1
-        if self.hero_ref.weapon_right != -1:
-            total -= 1
-        if self.hero_ref.armor != -1:
-            total -= 1
+        if self.type == 'hero':
+            if self.hero_ref.weapon_left != -1:
+                total -= 1
+            if self.hero_ref.weapon_right != -1:
+                total -= 1
+            if self.hero_ref.armor != -1:
+                total -= 1
         
         self.remove('sb')
         self.scrollbar.height = int(self.height*min(self.on_one/total, 1))
@@ -161,19 +164,36 @@ class BasicVisualInventory(ColorLayer):
         wps = invent.weapons
         for i in range(len(wps)):
             spr = wps[i].item_inv_sprite
-            if i != self.hero_ref.weapon_left and i != self.hero_ref.\
-               weapon_right:
+            if self.type == 'hero':
+                if i != self.hero_ref.weapon_left and i != self.hero_ref.\
+                   weapon_right:
+                    spr.position = (50, self.height/2-h*32)
+
+                    self.item_stack.add(spr, 1, wps[i].weapon_name+' '+str(i))
+                    self.items.append(wps[i].weapon_name+' '+str(i))
+                    
+                    h += 1
+            else:
                 spr.position = (50, self.height/2-h*32)
 
                 self.item_stack.add(spr, 1, wps[i].weapon_name+' '+str(i))
                 self.items.append(wps[i].weapon_name+' '+str(i))
-                
+                    
                 h += 1
 
         ars = invent.armors
         for i in range(len(ars)):
             spr = ars[i].item_inv_sprite
-            if i != self.hero_ref.armor:
+            if self.type == 'hero':
+                if i != self.hero_ref.armor:
+                    
+                    spr.position = (50, self.height/2-h*32)
+
+                    self.item_stack.add(spr, 1, ars[i].armor_name+' '+str(i))
+                    self.items.append(ars[i].armor_name+' '+str(i))
+                
+                    h += 1
+            else:
                 spr.position = (50, self.height/2-h*32)
 
                 self.item_stack.add(spr, 1, ars[i].armor_name+' '+str(i))
@@ -525,10 +545,8 @@ class interface(MultiplexLayer):
         w = director.window.width
         h = director.window.height
         self.exchange = Layer()
-        self.mine = BasicVisualInventory(host, (w/6, h/6))
-        self.his = BasicVisualInventory(host, (w/6+480, h/6))
+        self.mine = BasicVisualInventory(host, (w/6-60, h/6))
         self.exchange.add(self.mine)
-        self.exchange.add(self.his)
         super().__init__(self.stats, self.invent, self.exchange)
 
         self.mouse_pos = (0, 0)
@@ -551,17 +569,19 @@ class interface(MultiplexLayer):
             else:
                 self.host.lurking = False
                 self.switch_to(0)
-        '''
+        
         if symbol == key.E:
             if self.enabled_layer != 2:
+                pass
+                '''
                 self.host.lurking = True
                 self.mine.update(self.mouse_pos)
                 self.his.update(self.mouse_pos)
-                self.switch_to(2)
+                self.switch_to(2)'''
             else:
                 self.host.lurking = False
                 self.switch_to(0)
-        '''
+        
         if symbol == key.ESCAPE:
             pause_sc = pause.get_pause_scene()
             
@@ -570,6 +590,18 @@ class interface(MultiplexLayer):
             pause_sc.add(game_menu(self.mouse_pos))
             
             director.push(pause_sc)
+
+    def exchange_with(self, his):
+        w = director.window.width
+        h = director.window.height
+        safe_remove(self.exchange, 'his')
+        self.his = BasicVisualInventory(his, (w/6+480, h/6), 'stash')
+        self.exchange.add(self.his, name='his')
+
+        self.host.lurking = True
+        self.mine.update(self.mouse_pos)
+        self.his.update(self.mouse_pos)
+        self.switch_to(2)
     
     def change(self, stat, new):
         self.stats.change(stat, new)

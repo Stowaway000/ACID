@@ -82,7 +82,7 @@ class ArmorHandler(Sprite):
     def __init__(self, armor_name, AC=-1):
         self.armor_name = armor_name
         self.item_sprite = Armor.armors[armor_name].item_sprite
-        self.item_inv_sprite = Armor.armors[armor_name].item_inv_sprite
+        self.item_inv_sprite = Sprite(Armor.armors[armor_name].item_inv_sprite.image)
         self.walk_sprite = Armor.armors[armor_name].walk_sprite
         
         if AC == -1:
@@ -340,10 +340,42 @@ class PickableObject(cocos.layer.ScrollableLayer):
         self.remove('E')
 
 
-class Stash(inventory):
-    def __init__(self, name):
+class Stash(cocos.layer.ScrollableLayer):
+    stashes = {}
+    
+    def __init__(self, inv, name, pos):
         super().__init__()
+        self.inventory = inv
         self.sprite = Sprite('res/img/items/' + name + '.png')
+        self.sprite.position = pos
+
+        self.add(self.sprite)
+
+        self.selector = Sprite('res/img/outline_stash.png')
+        self.selector.position = pos
+        self.selector.scale_x = (self.sprite.width+10) / self.selector.width
+        self.selector.scale_y = (self.sprite.height+10) / self.selector.height
+        
+        self.e = add_label('E', (pos[0]-5, pos[1]+self.sprite.height-15), size=8)
+
+        index = len(Stash.stashes)
+        self.sprite_name = name + str(hash(self))
+        Stash.stashes[self.sprite_name] = self
+
+        radius = max(self.sprite.width, self.sprite.height) / 2
+        self.cshape = collision_unit([eu.Vector2(*self.sprite.position),\
+                                      radius], "circle")
+
+    def place(self, scr):
+        scr.add(self, name=self.sprite_name)
+    
+    def select(self):
+        self.add(self.selector, name='selector')
+        self.add(self.e, name='E')
+
+    def deselect(self):
+        self.remove('selector')
+        self.remove('E')
 
 
 # Получить тип какого-то предмета

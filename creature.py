@@ -252,6 +252,7 @@ class skin(cocos.sprite.Sprite):
         self.do(mover)
 
         self.near_objects = []
+        self.near_stashes = []
 
     def walker(self, new_state):
         if self.walking != new_state:

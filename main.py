@@ -8,7 +8,7 @@ from map import *
 from menu import set_menu_style, previous, quit_game
 
 
-version = '0.006'  # Версия игры
+version = '0.01'  # Версия игры
 
 
 # Ширина и высота окна
@@ -65,10 +65,17 @@ def enter():
 
     Weapon('rifle')
     Weapon('shotgun')
+    Armor('armor')
 
     PickableObject('shotgun', (180, 100), 1).place(scroller)
     PickableObject('rifle', (150, 100), 1).place(scroller)
     PickableObject('rifle', (150, 70), 1).place(scroller)
+
+    test = inventory()
+    test.add('rifle', 1)
+    test.add('armor', 1)
+    Stash(test, 'stash', (200, 70)).place(scroller)
+    
     scene = cocos.scene.Scene(scroller)
 
     create_interface(scene, main_hero)
@@ -88,7 +95,6 @@ def enter():
     Item('salad', 1, 1)
     Item('metal', 1, 1)
     
-    Armor('armor')
     Armor('armor_heavy')
 
     main_hero.take_item('armor_heavy', 1)
