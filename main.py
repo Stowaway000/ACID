@@ -23,21 +23,7 @@ def on_key_press(symbol, modifiers):
         return True
 
 
-def load_map(name, hero):
-    map_layer = MapLayer(name)
-    map_collider = circle_map_collider(map_layer)
-    hero.set_collision(map_collider)
-
-    scroller = cocos.layer.ScrollingManager()
-    scroller.scale = 2
-    
-    scroller.add(hero, 2)
-    map_layer.draw_on(scroller)
-
-    return scroller
-
-
-def create_interface(scene, hero):
+def create_interface(hero):
     stats = hero.get_stats()
 
     stats['hp'].append((100, 100))
@@ -49,8 +35,6 @@ def create_interface(scene, hero):
     inter = interface(stats, hero)
     hero.interface = inter
 
-    scene.add(inter, 100)
-
 
 def enter():
     cur_i = pyglet.image.load("res/img/cursor.png")
@@ -58,10 +42,9 @@ def enter():
     director.window.set_mouse_cursor(cursor)
     
     main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
-
-    scene = map_manager("map_outdoors", main_hero)
+    create_interface(main_hero)
     
-    create_interface(scene, main_hero)
+    scene = map_manager("map_outdoors", main_hero, 0)
     
     director.push(scene)
 
@@ -173,8 +156,8 @@ def create_menu():
 
 
 if __name__ == '__main__':
-    #director.init(width=width, height=height, caption='Game', fullscreen=True)
-    director.init(width=width, height=height, caption='Game')
+    director.init(width=width, height=height, caption='Game', fullscreen=True)
+    #director.init(width=width, height=height, caption='Game')
     director.window.pop_handlers()
     director.window.push_handlers(on_key_press)
     

@@ -5,6 +5,7 @@ from cocos import mapcolliders
 import cocos.euclid as eu
 import cocos.collision_model as cm
 from physics import *
+from cocos.sprite import Sprite
 
 
 class MapLayer(cocos.layer.ScrollableLayer):
@@ -40,32 +41,46 @@ class MapLayer(cocos.layer.ScrollableLayer):
 
 
 class Port(cocos.sprite.Sprite):
-    def __init__(name, number, cur_x, cur_y, new_x, new_y):
-        self.next_map = MapLayer(name)
+    def __init__(self, name, number, cur_x, cur_y, new_x, new_y):
+        self.next_map = name
         self.number = number
-        self.position = cur_x,cur_y
-        self.new_position = new_x, nex_y
-        img = pyglet.image.load("res/img/port.png")
-        super().__init__(img, cur_x,cur_y)
+        self.new_position = new_x*32, new_y*32
+        
+        super().__init__("res/img/port.png")
+        self.position = cur_x*32, cur_y*32
+        
         self.cshape = cm.AARectShape(eu.Vector2(*self.position), self.width/2, self.height/2)
-    def change_map(self):
-        pass
+    
+    def change_map(self, main_hero):
+        scene = map_manager(self.next_map, main_hero, self.number)
+
+        director.push(scene)
 
 
 class map_manager(cocos.scene.Scene):
-    def __init__(self, cur_map, hero):
+    def __init__(self, cur_map, hero, port_n):
         self.layer = MapLayer(cur_map)
         self.ports = []
         self.main_hero = hero
+
+        port_handler = cocos.layer.ScrollableLayer()
         cur_ports = open("maps/" + cur_map + "/ports.txt")
         p = cur_ports.readline()
+        i = 0
         while p:
             p = p.split()
-            port = Port(p[0],p[1],p[2],p[3],p[4])
+            port = Port(p[0], *map(int, p[1:]))
             self.ports.append(port)
-            self.add(port)
+            port_handler.add(port)
+            
             p = cur_ports.readline()
 
+            if i == port_n:
+                hero.set_position(port.new_position)
+            
+            i += 1
+            
+        
         self.map_collider = circle_map_collider(self.layer)
         hero.set_collision(self.map_collider)
         scroller = cocos.layer.ScrollingManager()
@@ -73,10 +88,11 @@ class map_manager(cocos.scene.Scene):
         
         scroller.add(hero, 2)
         scroller.add(self.layer.layer_floor, -1)
+        scroller.add(self.layer.layer_decoration, 1)
+        scroller.add(port_handler, 1)
         scroller.add(self.layer.layer_vertical, 2)
         scroller.add(self.layer.layer_objects, 2)
         scroller.add(self.layer.layer_above, 3)
-        scroller.add(self.layer.layer_decoration, 1)
         scroller.add(self.layer.layer_collision, 1)
         
         cur_npc = open("maps/" + cur_map + "/npc.txt")
@@ -86,11 +102,12 @@ class map_manager(cocos.scene.Scene):
         self.main_hero.set_scroller(scroller)
         super().__init__(scroller)
 
-            
-    def update(self):
-        pass
-    '''
+        self.add(hero.interface, 100)
+
+        self.schedule_interval(self.update, 1/20)
+
+    def update(self, dt):
         for port in self.ports:
-            if self.coll_manager.they_collide(self.port, self.main_hero):
-                port.change_map
-        '''
+            if self.map_collider.collision_manager\
+               .they_collide(port, self.main_hero.skin.cshape):
+                port.change_map(self.main_hero)
