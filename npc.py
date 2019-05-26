@@ -78,6 +78,23 @@ class patroling(AI):
         pass
 
 
+class fight(AI):
+    def choose_enemy(self):
+        pass
+
+    def choose_cover(self):
+        pass
+
+    def danger(self):
+        pass
+
+    def attack(self):
+        pass
+
+    def think(self):
+        pass
+
+
 class npc_mover(cocos.actions.Move):
     def __init__(self):
         super().__init__()
