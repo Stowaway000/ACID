@@ -310,7 +310,7 @@ class PickableObject(cocos.layer.ScrollableLayer):
         self.count = count
 
         index = len(PickableObject.pickables)
-        self.sprite_name = self.name + str(index)
+        self.sprite_name = self.name + str(hash(self))
         PickableObject.pickables[self.sprite_name] = self
 
         radius = max(self.spr.width, self.spr.height) / 2
@@ -333,9 +333,10 @@ class PickableObject(cocos.layer.ScrollableLayer):
         self.remove('E')
 
 
-class Stash:
-    def __init__(self):
-        pass
+class Stash(inventory):
+    def __init__(self, name):
+        super().__init__()
+        self.sprite = Sprite('res/img/items/' + name + '.png')
 
 
 # Получить тип какого-то предмета
