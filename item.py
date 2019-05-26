@@ -10,6 +10,7 @@ from math import sqrt, sin, cos, radians, atan, degrees
 from physics import collision_unit
 import cocos.euclid as eu
 import cocos.collision_model as cm
+from cocos.actions import FadeOut
 
 # Параметры мыши
 mouse_x = 10
@@ -179,6 +180,10 @@ class weapon_handler(cocos.sprite.Sprite):
             bul = bullet("res/img/bullet.png", self.parent.position, self.parent.rotation,
                          self.parent.collider)
             self.parent.parent.parent.add(bul, name=bul.name, z=3)
+            tr_l = cocos.layer.ScrollableLayer()
+            tr_l.add(bul.tracer)
+            bul.parent.add(tr_l)
+
             bul.do(bullet_mover())
     
     def shoot_anim(self):
@@ -374,10 +379,18 @@ class bullet(cocos.layer.ScrollableLayer):
         self.add(self.bul, z=3)
         self.position = (10, 10)
         self.bul.rotation = rot
-        self.speed = 500
+        self.speed = 9000
         self.manager = man
         self.cshape = collision_unit((pos, 2), "circle")
         self.name = str(hash(self))
+
+        self.tracer = Sprite('res/img/tracer.png', anchor=(0, 0))
+        self.tracer.rotation = rot - 90
+        self.tracer.position = pos
+        self.tracer.opacity = 150
+        self.dot = pos
+        self.tracer.do(FadeOut(1))
+        self.tracer.scale_x = 0.01
 
     def stop_move(self):
         self.stop()
@@ -385,11 +398,16 @@ class bullet(cocos.layer.ScrollableLayer):
 
 class bullet_mover(Move):
     def step(self, dt):
-        for i in range(10):
-            if self.elem_step(dt/10):
+        for i in range(20):
+            if self.elem_step(dt/20):
                 break
-
     def elem_step(self, dt):
+        dist = sqrt((self.target.bul.position[0] - self.target.dot[0])**2 + (self.target.bul.position[1] - self.target.dot[1])**2)
+        if dist:
+            self.target.tracer.scale_x = dist*self.target.tracer.scale_x / self.target.tracer.width
+            if self.target.tracer.scale_x <= 0.001:
+                self.target.tracer.scale_x = 0.01
+        
         old_pos = self.target.bul.position
         angle = self.target.bul.rotation
         dx = sin(radians(angle)) * self.target.speed * dt
