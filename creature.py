@@ -110,6 +110,13 @@ class character(cocos.layer.ScrollableLayer):
         elif self.weapon_left != -1:
             self.inventory.get_weapon(self.weapon_left).shoot()
 
+    def calm(self, hand):
+        if hand == 'r' and self.weapon_right != -1:
+
+            self.inventory.get_weapon(self.weapon_right).refresh()
+        elif self.weapon_left != -1:
+            self.inventory.get_weapon(self.weapon_left).refresh()
+    
     # Перезарядить оружие
     def reload(self, hand):
         if hand == 'r' and self.weapon_right != -1:

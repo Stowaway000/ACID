@@ -101,8 +101,10 @@ class hero(character):
     def on_mouse_release(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = False
+            self.calm('r')
         if button == mouse.RIGHT:
             self.rpressed = False
+            self.calm('l')
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.R and self.lpressed:

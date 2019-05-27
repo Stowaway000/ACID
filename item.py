@@ -101,21 +101,30 @@ class weapon(Item):
         super().__init__(weapon_name, float(stats[6]), float(stats[7]))
         self.weapon_name = weapon_name  # weapon_name - имя оружия
         anim_name = "res/img/items/" + weapon_name + "_anim.png"
-        anim_in_name = "res/img/items/" + weapon_name + "_anim_in.png"
+        self.shoot_type = stats[4]  # shoot_type - тип стрельбы - auto/half auto
+        anim_length = 0.05
+        if self.shoot_type == "auto":
+            self.firerate = int(stats[11])  # firerate - скорострельность
+            anim_length = 60/self.firerate
+        if self.shoot_type == "auto":
+            anim_in_name = "res/img/items/" + weapon_name + "_anim_in.png"
+            shoot_in_img = load(anim_in_name)
+            shoot_grid = ImageGrid(shoot_in_img, 1,
+                                   int(stats[12]),
+                                   item_height=int(stats[14]),
+                                   item_width=int(stats[13]))
+            self.weapon_in_anim = Animation.from_image_sequence(shoot_grid[:], anim_length, loop=True)
+            
         anim_end_name = "res/img/items/" + weapon_name + "_anim_end.png"
         self.damage = float(stats[0])  # damage - урон
         self.breachness = float(stats[1])  # breachness - пробивная способность
         self.max_cartridge = int(stats[2])  # max_cartridge - размер обоймы
         self.ammo_type = stats[3]  # ammo_type - тип патронов
-        self.shoot_type = stats[4]  # shoot_type - тип стрельбы - auto/half auto
         self.two_handed = bool(int(stats[5]))  # two_handed - флаг двуручного оружия
         self.by_shot = int(stats[18])
         self.angle = int(stats[19])
         self.bspeed = int(stats[20])
         # (1 - двуручное, 0 - одноручное)
-
-        if self.shoot_type == "auto":
-            self.firerate = int(stats[11])  # firerate - скорострельность
 
         self.count_anim = int(stats[10])  # count_anim - кол-во спрайтов в анимации
         self.width_anim = int(stats[9])  # width_anim - ширина спрайта в анимации"
@@ -126,21 +135,14 @@ class weapon(Item):
                                self.count_anim,
                                item_height=self.height_anim,
                                item_width=self.width_anim)
-        self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], 60/self.firerate, loop=False)
-
-        shoot_in_img = load(anim_in_name)
-        shoot_grid = ImageGrid(shoot_in_img, 1,
-                               int(stats[12]),
-                               item_height=int(stats[14]),
-                               item_width=int(stats[13]))
-        self.weapon_in_anim = Animation.from_image_sequence(shoot_grid[:], 60/self.firerate, loop=True)
+        self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], anim_length, loop=False)
 
         shoot_end_img = load(anim_end_name)
         shoot_grid = ImageGrid(shoot_end_img, 1,
                                int(stats[15]),
                                item_height=int(stats[17]),
                                item_width=int(stats[16]))
-        self.weapon_end_anim = Animation.from_image_sequence(shoot_grid[:], 60/self.firerate, loop=False)
+        self.weapon_end_anim = Animation.from_image_sequence(shoot_grid[:], anim_length, loop=False)
 
     def shoot(self, x, y):
         pass
@@ -168,11 +170,12 @@ class weapon_handler(cocos.sprite.Sprite):
         self.weapon_ref = get_global(weapon_name)
         self.weapon_name = weapon_name
         self.weapon_anim = self.weapon_ref.weapon_anim
-        self.weapon_in_anim = self.weapon_ref.weapon_in_anim
+        if self.weapon_ref.shoot_type == 'auto':
+            self.weapon_in_anim = self.weapon_ref.weapon_in_anim
+            self.shot_len = 60/self.weapon_ref.firerate
+        
         self.weapon_end_anim = self.weapon_ref.weapon_end_anim
         self.item_sprite = self.weapon_ref.item_sprite
-
-        self.shot_len = 60/self.weapon_ref.firerate
 
         super().__init__(self.item_sprite.image)
 
@@ -197,15 +200,18 @@ class weapon_handler(cocos.sprite.Sprite):
 
                 bul.do(bullet_mover())
     
-    def shoot_anim(self):
+    def shoot_anim(self, how=''):
         self.image = self.weapon_anim
+
+        if how:
+            self.do(MoveBy((0, 0.05)) + CallFunc(self.shoot_check))
 
     def shoot_in(self):
         self.flag_shooting = True
         self.image = self.weapon_in_anim
 
     def shoot_check(self):
-        if not self.parent.parent.lpressed or not self.flag_shoot:
+        if not self.flag_shoot:
             if self.flag_shooting:
                 self.image = self.weapon_end_anim
             self.flag_shoot = False
@@ -231,9 +237,18 @@ class weapon_handler(cocos.sprite.Sprite):
 
     def shoot(self):
         if not self.flag_shoot and self.cartridge:
-            self.do(shooter())
-            self.flag_shoot = True
-            self.shoot_anim()
+            if self.weapon_ref.shoot_type == 'auto':
+                self.do(shooter())
+                self.flag_shoot = True
+                self.shoot_anim()
+            else:
+                self.shoot_anim('one')
+                self.flag_shoot = True
+                self.flag_shooting = True
+            self.shot()
+
+    def refresh(self):
+        self.flag_shoot = False
 
 
 # Класс инвентаря
