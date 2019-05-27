@@ -6,6 +6,7 @@ import cocos.euclid as eu
 import cocos.collision_model as cm
 from physics import *
 from cocos.sprite import Sprite
+from item import PickableObject
 
 
 class MapLayer(cocos.layer.ScrollableLayer):
@@ -100,6 +101,15 @@ class map_manager(cocos.scene.Scene):
         scroller.add(self.layer.layer_objects, 2)
         scroller.add(self.layer.layer_above, 3)
         scroller.add(self.layer.layer_collision, 1)
+
+        picks = open("maps/" + cur_map + "/pick.txt")
+        p = picks.readline()
+        while p:
+            p = p.split()
+            digits = tuple(map(int, p[1:]))
+            PickableObject(p[0], (digits[0], digits[1]), digits[2]).place(scroller)
+            
+            p = picks.readline()
         
         cur_npc = open("maps/" + cur_map + "/npc.txt")
         n = cur_npc.readline()
