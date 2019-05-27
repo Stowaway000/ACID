@@ -188,8 +188,15 @@ class weapon_handler(cocos.sprite.Sprite):
             elem_ang = self.weapon_ref.angle / total
             for i in range(total):
                 angle = self.parent.rotation+elem_ang*int(i-total/2)+randint(-1, 2)
-                bul = bullet(self.weapon_ref.ammo_type, self.parent.position,\
-                             angle,
+
+                x = 9 + self.item_sprite.width // 2
+                y = 15 + self.item_sprite.height // 2
+                dx = x * cos(radians(angle)) + y * sin(radians(angle))
+                dy = -x * sin(radians(angle)) + y * cos(radians(angle))
+                pos = self.parent.position
+                pos = (pos[0]+dx, pos[1]+dy)
+
+                bul = bullet(self.weapon_ref.ammo_type, pos, angle,
                              self.parent.collider, self.weapon_ref.bspeed)
             
                 self.parent.parent.parent.add(bul, name=bul.name, z=1)
@@ -403,7 +410,10 @@ class bullet(cocos.layer.ScrollableLayer):
     def __init__(self, name, pos, rot, man, speed):
         super().__init__()
         self.bul = cocos.sprite.Sprite("res/img/items/" + name + ".png")
-        self.bul.position = pos#(pos[0] + 10 + 10*cos(radians(rot)), pos[1] + 15 - 15*sin(radians(rot)))
+       #x = 11
+       #y = 18
+       #pos = (pos[0]+dx, pos[1]+dy)
+        self.bul.position = pos
         self.add(self.bul, z=3)
         self.position = (10, 10)
         self.bul.rotation = rot
@@ -413,7 +423,7 @@ class bullet(cocos.layer.ScrollableLayer):
         self.name = str(hash(self))
 
         self.tracer = Sprite('res/img/items/tracer_' + name + '.png', anchor=(0, 0))
-        self.tracer.rotation = rot -90
+        self.tracer.rotation = rot - 90
         self.tracer.position = pos
         self.tracer.opacity = 75
         self.dot = pos
@@ -441,6 +451,7 @@ class bullet_mover(Move):
         for i in range(20):
             if self.elem_step(dt/30):
                 break
+
     def elem_step(self, dt):
         dist = sqrt((self.target.bul.position[0] - self.target.dot[0])**2 + (self.target.bul.position[1] - self.target.dot[1])**2)
         if dist:
