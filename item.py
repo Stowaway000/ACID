@@ -12,6 +12,7 @@ import cocos.euclid as eu
 import cocos.collision_model as cm
 from cocos.actions import FadeOut
 from random import randint
+import cocos.audio.pygame.mixer as mixer
 
 # Параметры мыши
 mouse_x = 10
@@ -124,6 +125,7 @@ class weapon(Item):
         self.by_shot = int(stats[18])
         self.angle = int(stats[19])
         self.bspeed = int(stats[20])
+        self.sound = mixer.Sound("res/sound/" + weapon_name + ".wav")
         # (1 - двуручное, 0 - одноручное)
 
         self.count_anim = int(stats[10])  # count_anim - кол-во спрайтов в анимации
@@ -204,7 +206,7 @@ class weapon_handler(cocos.sprite.Sprite):
                 tr_l = cocos.layer.ScrollableLayer()
                 tr_l.add(bul.tracer)
                 bul.parent.add(tr_l)
-
+                mixer._channels[2].play(self.weapon_ref.sound)
                 bul.do(bullet_mover())
     
     def shoot_anim(self):

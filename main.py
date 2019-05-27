@@ -60,12 +60,12 @@ def enter():
     
     scene = cocos.scene.Scene(scroller)
 
-    weapon('colt')
-    weapon('rifle')
+    #weapon('colt')
+    #weapon('rifle')
     weapon('pgun')
 
-    main_hero.take_item('colt', 1)
-    main_hero.take_item('rifle', 1)
+    #main_hero.take_item('colt', 1)
+    #main_hero.take_item('rifle', 1)
     main_hero.take_item('pgun', 1)
     
     director.push(scene)
@@ -103,8 +103,8 @@ def about_game():
 
 
 def volume_sounds(arg):
-    sound_ch.set_volume(arg/10)
-
+    step_ch.set_volume(arg/10)
+    shoot_ch.set_volume(arg/10)
 
 def volume_music(arg):
     music_ch.set_volume(arg/10)
@@ -128,9 +128,9 @@ def settings():
     items = []
     volumes = ['Mute','10','20','30','40','50','60','70','80','90','100']
     items.append(MultipleMenuItem('Sounds volume: ', volume_sounds,\
-                                   volumes, 1))
+                                   volumes, 10))
     items.append(MultipleMenuItem('Music volume: ', volume_music,\
-                                   volumes, 1))
+                                   volumes, 10))
     sound.create_menu(items)
 
     bg.add(sound)
@@ -194,10 +194,12 @@ if __name__ == '__main__':
     director.window.pop_handlers()
 
     my_mixer = mixer.init()
-    sound_ch = mixer.Channel(0)
-    music_ch = mixer.Channel(1)
+    music_ch = mixer.Channel(0)
+    step_ch = mixer.Channel(1)
+    shoot_ch = mixer.Channel(2)
     main_theme = mixer.Sound("res/sound/main.wav")
     music_ch.play(main_theme, -1)
+
     mainMenu = create_menu()
 
     director.run(mainMenu)

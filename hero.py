@@ -164,7 +164,7 @@ class hero_mover(cocos.actions.Move):
 
         if self.target.pause_counter == 0:
             if self.target.velocity[0] or self.target.velocity[1] and not self.target.seating:
-                mixer._channels[0].play(self.target.step_sound)         #поискать исправление
+                mixer._channels[1].play(self.target.step_sound)         #поискать исправление
         self.target.pause_counter = (self.target.pause_counter + 1) % 20
 
         global mouse_x, mouse_y
