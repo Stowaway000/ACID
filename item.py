@@ -187,7 +187,7 @@ class weapon_handler(cocos.sprite.Sprite):
             self.cartridge -= 1
             elem_ang = self.weapon_ref.angle / total
             for i in range(total):
-                angle = self.parent.rotation+elem_ang*(i-total/2)+randint(-1, 2)
+                angle = self.parent.rotation+elem_ang*int(i-total/2)+randint(-1, 2)
                 bul = bullet("res/img/" + self.weapon_ref.ammo_type + ".png", self.parent.position,\
                              angle,
                              self.parent.collider, self.weapon_ref.bspeed)
