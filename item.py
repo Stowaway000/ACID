@@ -11,6 +11,7 @@ from physics import collision_unit
 import cocos.euclid as eu
 import cocos.collision_model as cm
 from cocos.actions import FadeOut
+from random import randint
 
 # Параметры мыши
 mouse_x = 10
@@ -108,6 +109,8 @@ class weapon(Item):
         self.ammo_type = stats[3]  # ammo_type - тип патронов
         self.shoot_type = stats[4]  # shoot_type - тип стрельбы - auto/half auto
         self.two_handed = bool(int(stats[5]))  # two_handed - флаг двуручного оружия
+        self.by_shot = int(stats[18])
+        self.angle = int(stats[19])
         # (1 - двуручное, 0 - одноручное)
 
         if self.shoot_type == "auto":
@@ -156,7 +159,7 @@ class shooter(cocos.actions.Move):
 
 class weapon_handler(cocos.sprite.Sprite):
     def __init__(self, weapon_name):
-        self.cartridge = 999
+        self.cartridge = 4
         self.flag_shoot = False
         self.flag_shooting = False
         self.shoot_time = 0
@@ -176,15 +179,22 @@ class weapon_handler(cocos.sprite.Sprite):
         if self.cartridge == 0:
             self.flag_shoot = False
         else:
+            total = self.weapon_ref.by_shot
             self.cartridge -= 1
-            bul = bullet("res/img/bullet.png", self.parent.position, self.parent.rotation,
-                         self.parent.collider)
-            self.parent.parent.parent.add(bul, name=bul.name, z=3)
-            tr_l = cocos.layer.ScrollableLayer()
-            tr_l.add(bul.tracer)
-            bul.parent.add(tr_l)
+            elem_ang = self.weapon_ref.angle / total
+            for i in range(total):
+                angle = self.parent.rotation+elem_ang*(i-total/2)+randint(-1, 2)
+                bul = bullet("res/img/bullet.png", self.parent.position,\
+                             angle,
+                             self.parent.collider)
+            
+                self.parent.parent.parent.add(bul, name=bul.name, z=1)
+            
+                tr_l = cocos.layer.ScrollableLayer()
+                tr_l.add(bul.tracer)
+                bul.parent.add(tr_l)
 
-            bul.do(bullet_mover())
+                bul.do(bullet_mover())
     
     def shoot_anim(self):
         self.image = self.weapon_anim
@@ -371,6 +381,11 @@ def get_cost(item):
 
     return get_global(item).cost
 
+
+def del_tracer(tracer):
+    tracer.parent.remove(tracer)
+
+
 class bullet(cocos.layer.ScrollableLayer):
     def __init__(self, path, pos, rot, man):
         super().__init__()
@@ -385,28 +400,37 @@ class bullet(cocos.layer.ScrollableLayer):
         self.name = str(hash(self))
 
         self.tracer = Sprite('res/img/tracer.png', anchor=(0, 0))
-        self.tracer.rotation = rot - 90
+        self.tracer.rotation = rot -90
         self.tracer.position = pos
-        self.tracer.opacity = 150
+        self.tracer.opacity = 75
         self.dot = pos
-        self.tracer.do(FadeOut(1))
+        self.tracer.do(FadeOut(0.05)+CallFunc(lambda:del_tracer(self.tracer)))
         self.tracer.scale_x = 0.01
 
     def stop_move(self):
         self.stop()
+        hole_l = tr_l = cocos.layer.ScrollableLayer()
+        spr = Sprite('res/img/hole.png')
+        spr.position = self.bul.position
+        hole_l.add(spr)
+        self.parent.add(hole_l)
+            
         self.parent.remove(self.name)
+
 
 class bullet_mover(Move):
     def step(self, dt):
         for i in range(20):
-            if self.elem_step(dt/20):
+            if self.elem_step(dt/30):
                 break
     def elem_step(self, dt):
         dist = sqrt((self.target.bul.position[0] - self.target.dot[0])**2 + (self.target.bul.position[1] - self.target.dot[1])**2)
         if dist:
-            self.target.tracer.scale_x = dist*self.target.tracer.scale_x / self.target.tracer.width
-            if self.target.tracer.scale_x <= 0.001:
+            if self.target.tracer.scale_x <= 0.005:
                 self.target.tracer.scale_x = 0.01
+            
+            self.target.tracer.scale_x = dist*self.target.tracer.scale_x / self.target.tracer.width
+            
         
         old_pos = self.target.bul.position
         angle = self.target.bul.rotation
