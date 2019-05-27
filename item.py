@@ -367,7 +367,7 @@ class Stash(cocos.layer.ScrollableLayer):
                                       radius], "circle")
 
     def place(self, scr):
-        scr.add(self, name=self.sprite_name)
+        scr.add(self, 2, name=self.sprite_name)
     
     def select(self):
         self.add(self.selector, name='selector')
