@@ -100,22 +100,22 @@ class weapon(Item):
 
         super().__init__(weapon_name, float(stats[6]), float(stats[7]))
         self.weapon_name = weapon_name  # weapon_name - имя оружия
-        anim_name = "res/img/items/" + weapon_name + "_anim.png"
+        anim_name = "res/img/items/weapon/" + weapon_name + "_anim.png"
         self.shoot_type = stats[4]  # shoot_type - тип стрельбы - auto/half auto
         anim_length = 0.05
         if self.shoot_type == "auto":
             self.firerate = int(stats[11])  # firerate - скорострельность
             anim_length = 60/self.firerate
         if self.shoot_type == "auto":
-            anim_in_name = "res/img/items/" + weapon_name + "_anim_in.png"
+            anim_in_name = "res/img/items/weapon/" + weapon_name + "_anim_in.png"
             shoot_in_img = load(anim_in_name)
             shoot_grid = ImageGrid(shoot_in_img, 1,
                                    int(stats[12]),
                                    item_height=int(stats[14]),
                                    item_width=int(stats[13]))
-            self.weapon_in_anim = Animation.from_image_sequence(shoot_grid[:], anim_length, loop=True)
+            self.weapon_in_anim = Animation.from_image_sequence(shoot_grid[:], anim_length/3, loop=True)
             
-        anim_end_name = "res/img/items/" + weapon_name + "_anim_end.png"
+        anim_end_name = "res/img/items/weapon/" + weapon_name + "_anim_end.png"
         self.damage = float(stats[0])  # damage - урон
         self.breachness = float(stats[1])  # breachness - пробивная способность
         self.max_cartridge = int(stats[2])  # max_cartridge - размер обоймы
@@ -135,14 +135,14 @@ class weapon(Item):
                                self.count_anim,
                                item_height=self.height_anim,
                                item_width=self.width_anim)
-        self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], anim_length, loop=False)
+        self.weapon_anim = Animation.from_image_sequence(shoot_grid[:], anim_length/3, loop=False)
 
         shoot_end_img = load(anim_end_name)
         shoot_grid = ImageGrid(shoot_end_img, 1,
                                int(stats[15]),
                                item_height=int(stats[17]),
                                item_width=int(stats[16]))
-        self.weapon_end_anim = Animation.from_image_sequence(shoot_grid[:], anim_length, loop=False)
+        self.weapon_end_anim = Animation.from_image_sequence(shoot_grid[:], anim_length/3, loop=False)
 
     def shoot(self, x, y):
         pass
@@ -188,7 +188,7 @@ class weapon_handler(cocos.sprite.Sprite):
             elem_ang = self.weapon_ref.angle / total
             for i in range(total):
                 angle = self.parent.rotation+elem_ang*int(i-total/2)+randint(-1, 2)
-                bul = bullet("res/img/" + self.weapon_ref.ammo_type + ".png", self.parent.position,\
+                bul = bullet(self.weapon_ref.ammo_type, self.parent.position,\
                              angle,
                              self.parent.collider, self.weapon_ref.bspeed)
             
@@ -200,11 +200,8 @@ class weapon_handler(cocos.sprite.Sprite):
 
                 bul.do(bullet_mover())
     
-    def shoot_anim(self, how=''):
+    def shoot_anim(self):
         self.image = self.weapon_anim
-
-        if how:
-            self.do(MoveBy((0, 0.05)) + CallFunc(self.shoot_check))
 
     def shoot_in(self):
         self.flag_shooting = True
@@ -240,11 +237,11 @@ class weapon_handler(cocos.sprite.Sprite):
             if self.weapon_ref.shoot_type == 'auto':
                 self.do(shooter())
                 self.flag_shoot = True
-                self.shoot_anim()
             else:
-                self.shoot_anim('one')
-                self.flag_shoot = True
                 self.flag_shooting = True
+            
+            self.flag_shoot = True
+            self.shoot_anim()
             self.shot()
 
     def refresh(self):
@@ -403,9 +400,9 @@ def del_tracer(tracer):
 
 
 class bullet(cocos.layer.ScrollableLayer):
-    def __init__(self, path, pos, rot, man, speed):
+    def __init__(self, name, pos, rot, man, speed):
         super().__init__()
-        self.bul = cocos.sprite.Sprite(path)
+        self.bul = cocos.sprite.Sprite("res/img/items/" + name + ".png")
         self.bul.position = pos#(pos[0] + 10 + 10*cos(radians(rot)), pos[1] + 15 - 15*sin(radians(rot)))
         self.add(self.bul, z=3)
         self.position = (10, 10)
@@ -415,7 +412,7 @@ class bullet(cocos.layer.ScrollableLayer):
         self.cshape = collision_unit((pos, 2), "circle")
         self.name = str(hash(self))
 
-        self.tracer = Sprite('res/img/tracer.png', anchor=(0, 0))
+        self.tracer = Sprite('res/img/items/tracer_' + name + '.png', anchor=(0, 0))
         self.tracer.rotation = rot -90
         self.tracer.position = pos
         self.tracer.opacity = 75
@@ -425,11 +422,16 @@ class bullet(cocos.layer.ScrollableLayer):
 
     def stop_move(self):
         self.stop()
+        
         hole_l = tr_l = cocos.layer.ScrollableLayer()
-        spr = Sprite('res/img/hole.png')
-        spr.position = self.bul.position
-        hole_l.add(spr)
+        hole_img = load('res/img/hole.png')
+        hole_grid = ImageGrid(hole_img, 1, 6, item_height=15, item_width=10)
+        hole_anim = Sprite(Animation.from_image_sequence(hole_grid[:], 0.05, loop=False))
+        hole_anim.rotation = self.bul.rotation + 180
+        hole_anim.position = self.bul.position
+        hole_l.add(hole_anim)
         self.parent.add(hole_l)
+        hole_l.do(MoveBy((0, 0.1))+CallFunc(lambda:del_tracer(hole_l)))
             
         self.parent.remove(self.name)
 
