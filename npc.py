@@ -125,7 +125,11 @@ class npc_mover(cocos.actions.Move):
             vel_y = 0
             new.cshape.center.y -= dy
 
-        self.target.parent.info = self.target.parent.get_in_sector()
+        self.target.parent.info = self.target.parent.get_in_sector(self.target.position,
+                                                                   self.target.rotation,
+                                                                   20,
+                                                                   [cos(self.target.rotation),
+                                                                    sin(self.target.rotation)])
         self.target.velocity = (vel_x, vel_y)
         self.target.position = new.cshape.center
         self.target.scroller.set_focus(*new.cshape.center)
