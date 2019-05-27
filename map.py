@@ -59,13 +59,24 @@ class Port(cocos.sprite.Sprite):
                                      self.width/2*width, self.height/2)
     
     def change_map(self, main_hero):
-        scene = map_manager(self.next_map, main_hero, self.number)
+        scene = None
+        if self.next_map not in map_manager.maps:
+            scene = map_manager(self.next_map, main_hero, self.number)
+        else:
+            scene = map_manager.maps[self.next_map]
+            main_hero.set_collision(scene.map_collider)
+            main_hero.set_scroller(scene.scroller)
+            main_hero.set_position(scene.ports[self.number].new_position)
 
-        director.push(scene)
+        director.replace(scene)
 
 
 class map_manager(cocos.scene.Scene):
+    maps = {}
+    
     def __init__(self, cur_map, hero, port_n):
+        map_manager.maps[cur_map] = self
+        
         self.layer = MapLayer(cur_map)
         self.ports = []
         self.main_hero = hero
@@ -89,7 +100,7 @@ class map_manager(cocos.scene.Scene):
             p = cur_ports.readline()
 
             if i == port_n:
-                self.main_hero.set_position(port.new_position, port.vector)
+                self.main_hero.set_position(port.new_position)
             
             i += 1
         
@@ -100,6 +111,7 @@ class map_manager(cocos.scene.Scene):
         scroller.add(self.layer.layer_vertical, 2)
         scroller.add(self.layer.layer_objects, 2)
         scroller.add(self.layer.layer_above, 3)
+        scroller.add(self.layer.layer_anim_up, 3)
         scroller.add(self.layer.layer_collision, 1)
 
         picks = open("maps/" + cur_map + "/pick.txt")
@@ -115,6 +127,7 @@ class map_manager(cocos.scene.Scene):
         n = cur_npc.readline()
         while n:
             pass
+        self.scroller = scroller
         super().__init__(scroller)
         
         self.add(hero.interface, 100)

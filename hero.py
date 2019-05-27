@@ -248,7 +248,7 @@ class hero(character):
     def set_collision(self, manager):
         self.skin.collider = manager
 
-    def set_position(self, pos, vect):
+    def set_position(self, pos):
         super().set_position(pos)
 
         director.window.set_mouse_position(int(director.window.width/2),\
