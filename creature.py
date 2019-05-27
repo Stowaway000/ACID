@@ -16,6 +16,7 @@ mouse_x = 10
 mouse_y = 10
 vector = [0, 0]
 
+
 # Класс персонажа
 class character(cocos.layer.ScrollableLayer):
     characters = []
@@ -51,7 +52,7 @@ class character(cocos.layer.ScrollableLayer):
         chars = []
 
         angle = radians(angle) / 2
-        vector = (look[0] * srqt(r), look[1] * srqt(r))
+        vector = (look[0] * sqrt(r), look[1] * sqrt(r))
         r_vector = (vector[0] * cos(angle) - vector[1] * sin(angle), \
                     vector[0] * sin(angle) + vector[1] * cos(angle))
         s = abs(vector[0] * r_vector[1] - vector[1] * r_vector[0]) / 2
@@ -70,7 +71,7 @@ class character(cocos.layer.ScrollableLayer):
     # Получить информацию о персонаже
     def get_info(self):
         # TODO
-        return (fraction, self.skin.position)
+        return (self.fraction, self.skin.position)
 
     # Увеличить характеристику
     def set(self, attr, add):
