@@ -61,6 +61,8 @@ def enter():
     scene = cocos.scene.Scene(scroller)
 
     weapon('rifle')
+    weapon('pgun')
+    main_hero.take_item('pgun', 1)
     main_hero.take_item('rifle', 1)
     director.push(scene)
     main_theme.stop()

@@ -111,6 +111,7 @@ class weapon(Item):
         self.two_handed = bool(int(stats[5]))  # two_handed - флаг двуручного оружия
         self.by_shot = int(stats[18])
         self.angle = int(stats[19])
+        self.bspeed = int(stats[20])
         # (1 - двуручное, 0 - одноручное)
 
         if self.shoot_type == "auto":
@@ -159,7 +160,7 @@ class shooter(cocos.actions.Move):
 
 class weapon_handler(cocos.sprite.Sprite):
     def __init__(self, weapon_name):
-        self.cartridge = 4
+        self.cartridge = 999
         self.flag_shoot = False
         self.flag_shooting = False
         self.shoot_time = 0
@@ -184,9 +185,9 @@ class weapon_handler(cocos.sprite.Sprite):
             elem_ang = self.weapon_ref.angle / total
             for i in range(total):
                 angle = self.parent.rotation+elem_ang*(i-total/2)+randint(-1, 2)
-                bul = bullet("res/img/bullet.png", self.parent.position,\
+                bul = bullet("res/img/" + self.weapon_ref.ammo_type + ".png", self.parent.position,\
                              angle,
-                             self.parent.collider)
+                             self.parent.collider, self.weapon_ref.bspeed)
             
                 self.parent.parent.parent.add(bul, name=bul.name, z=1)
             
@@ -387,14 +388,14 @@ def del_tracer(tracer):
 
 
 class bullet(cocos.layer.ScrollableLayer):
-    def __init__(self, path, pos, rot, man):
+    def __init__(self, path, pos, rot, man, speed):
         super().__init__()
         self.bul = cocos.sprite.Sprite(path)
         self.bul.position = pos#(pos[0] + 10 + 10*cos(radians(rot)), pos[1] + 15 - 15*sin(radians(rot)))
         self.add(self.bul, z=3)
         self.position = (10, 10)
         self.bul.rotation = rot
-        self.speed = 9000
+        self.speed = speed
         self.manager = man
         self.cshape = collision_unit((pos, 2), "circle")
         self.name = str(hash(self))
