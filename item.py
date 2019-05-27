@@ -157,6 +157,7 @@ class Weapon(Item):
         self.angle = int(stats[19])
         self.bspeed = int(stats[20])
         self.sound = mixer.Sound("res/sound/" + weapon_name + ".wav")
+        self.sound_reload = mixer.Sound("res/sound/" + weapon_name + "_reload.wav")
         # (1 - двуручное, 0 - одноручное)
 
         self.count_anim = int(stats[10])  # count_anim - кол-во спрайтов в анимации
@@ -428,7 +429,7 @@ class PickableObject(cocos.layer.ScrollableLayer):
         self.additional = adds
 
         index = len(PickableObject.pickables)
-        self.sprite_name = self.name + str(hash(self))
+        self.sprite_name = str(hash(self))
         PickableObject.pickables[self.sprite_name] = self
 
         radius = max(self.spr.width, self.spr.height) / 2

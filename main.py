@@ -232,7 +232,7 @@ def create_menu():
 
 
 if __name__ == '__main__':
-    director.init(width=width, height=height, caption='Game', fullscreen=True)
+    director.init(width=width, height=height, caption='Game')#, fullscreen=True)
     director.window.pop_handlers()
 
     my_mixer = mixer.init()

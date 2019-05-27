@@ -35,7 +35,7 @@ class hero(character):
         self.rpressed = False
 
         self.interface = None
-
+        self.reloading = False
         self.lurking = False
 
     def take_damage(self, dmg, k):
@@ -62,17 +62,25 @@ class hero(character):
         self.interface.update(dct)
 
     def attack(self, hand):
-        super().attack(hand)
-        
-        dct = {}
-        if hand == 'r':
-            self.get_wp_stats('r', dct)
-        else:
-            self.get_wp_stats('l', dct)
-        
-        self.interface.update(dct)
+        if not self.reloading:
+            super().attack(hand)
+
+            dct = {}
+            if hand == 'r':
+                self.get_wp_stats('r', dct)
+            else:
+                self.get_wp_stats('l', dct)
+
+            self.interface.update(dct)
 
     def reload(self, hand):
+        self.reloading = True
+        self.do(MoveBy((0, 0.5)) + CallFunc(self.reloaded))
+        if hand == "l" and self.skin.lweapon:
+            mixer._channels[2].play(self.skin.lweapon.weapon_ref.sound_reload)
+        elif hand == "r" and self.skin.rweapon:
+            mixer._channels[2].play(self.skin.rweapon.weapon_ref.sound_reload)
+
         super().reload(hand)
 
         dct = {}
@@ -82,7 +90,10 @@ class hero(character):
             self.get_wp_stats('l', dct)
         
         self.interface.update(dct)
-    
+
+    def reloaded(self):
+        self.reloading = False
+
     def unequip_weapon(self, index):
         super().unequip_weapon(index)
 
