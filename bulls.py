@@ -80,6 +80,8 @@ class bullet_mover(Move):
         for i in self.target.npc_ref:
             if self.target.manager.collision_manager.they_collide(i.skin.cshape, new):
                 i.take_damage(20, 0.5)
+                self.target.stop_move()
+                return 1
         
         new.cshape.center = eu.Vector2(new.cshape.center[0] + dx, new.cshape.center[1])
         if self.target.manager.collision_manager.any_near(new, 0):

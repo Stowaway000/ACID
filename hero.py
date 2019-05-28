@@ -40,6 +40,8 @@ class hero(character):
         self.reloading = False
         self.lurking = False
 
+        self.mouse_moving = False
+
     def take_damage(self, dmg, k):
         super().take_damage(dmg, k)
 
@@ -98,7 +100,6 @@ class hero(character):
         self.interface.update(dct)
 
     def reloaded(self):
-        print(11)
         self.reloading = False
 
     def unequip_weapon(self, index):
@@ -204,6 +205,8 @@ class hero(character):
                     
                 vector[1] = int(mouse_y - h_y)
 
+                self.mouse_moving = True
+
             self.skin.rotation = angle
     
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
@@ -283,6 +286,15 @@ class hero(character):
     def set_scroller(self, scr):
         self.skin.scroller = scr
 
+    def set_collision(self, manager):
+        self.skin.collider = manager
+
+    def set_position(self, pos):
+        super().set_position(pos)
+
+        director.window.set_mouse_position(int(director.window.width/2),\
+                                           int(director.window.height/2))
+
     def get_partner(self):
         if self.skin.near_stashes and not self.skin.near_objects:
             self.partner = Stash.stashes[self.skin.near_stashes[0]]
@@ -343,11 +355,13 @@ class hero_mover(cocos.actions.Move):
                         i.deselect()
 
             global mouse_x, mouse_y
-            if self.target.velocity[0] or self.target.velocity[1]:
+            if self.target.velocity[0] or self.target.velocity[1] and not self.target.parent.mouse_moving:
                 mouse_x, mouse_y = self.target.scroller.world_to_screen(self.target.scroller.fx, self.target.scroller.fy)
                 mouse_x += vector[0]
                 mouse_y += vector[1]
                 director.window.set_mouse_position(mouse_x, mouse_y)
+            
+            self.target.parent.mouse_moving = False
 
             if self.target.pause_counter == 0:
                 if (self.target.velocity[0] or self.target.velocity[1]) and not self.target.seating:
