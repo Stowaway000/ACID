@@ -22,8 +22,8 @@ class Item(cocos.sprite.Sprite):
                 or name in Item.items or name in UsableObj.usable_objs):
             Item.items[name] = self
         self.name = name
-        self.item_sprite = Sprite("res/img/items/" + name + ".png")
-        self.item_inv_sprite = Sprite("res/img/items/" + name + "_inv.png")
+        self.item_sprite = Sprite("res/img/items/" + name + ".tif")
+        self.item_inv_sprite = Sprite("res/img/items/" + name + "_inv.tif")
         self.weight = weight
         self.cost = cost
         self.description = "Well... I don't know"
@@ -116,7 +116,7 @@ class Weapon(Item):
 
         super().__init__(weapon_name, float(stats[6]), float(stats[7]))
         self.weapon_name = weapon_name  # weapon_name - имя оружия
-        anim_name = "res/img/items/" + weapon_name + "_anim.png"
+        anim_name = "res/img/items/" + weapon_name + "_anim.tif"
         self.damage = float(stats[0])  # damage - урон
         self.breachness = float(stats[1])  # breachness - пробивная способность
         self.max_cartridge = int(stats[2])  # max_cartridge - размер обоймы
@@ -346,7 +346,7 @@ class Stash(cocos.layer.ScrollableLayer):
     def __init__(self, inv, name, pos):
         super().__init__()
         self.inventory = inv
-        self.sprite = Sprite('res/img/items/' + name + '.png')
+        self.sprite = Sprite('res/img/items/' + name + '.tif')
         self.sprite.position = pos
 
         self.add(self.sprite)
