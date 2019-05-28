@@ -8,7 +8,6 @@ import cocos.audio.pygame.mixer as mixer
 from cocos.actions import *
 from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
-
 from item import *
 from physics import *
 
@@ -85,7 +84,11 @@ class character(cocos.layer.ScrollableLayer):
             dmg -= self.inventory.get_armor(armor).statusAC(dmg, k)
 
         if dmg > 0:
+            print(self.hp)
             self.hp -= dmg
+
+        if self.hp < 0:
+            self.die()
 
     # Специальная способность
     def use_ability(self):

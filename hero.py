@@ -7,7 +7,7 @@ from pyglet.window import key, mouse
 from cocos.actions import *
 from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
-
+from item import *
 from creature import *
 
 # Параметры мыши
@@ -20,9 +20,11 @@ vector = [0, 0]
 class hero(character):
     is_event_handler = True
     
-    def __init__(self, name, fraction, seacil, stats, pos):
+    def __init__(self, name, fraction, seacil, stats, pos, ref):
         super().__init__(name, fraction, seacil, hero_mover(), pos)
 
+        self.npc_ref = ref
+        
         self.hp = stats[0]
         self.stamina = stats[1]
         self.sp_stamina = stats[2]

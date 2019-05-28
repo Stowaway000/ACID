@@ -61,7 +61,7 @@ def enter():
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
     director.window.set_mouse_cursor(cursor)
     
-    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
+    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30), NPC.npcs)
     soldier = NPC('soldier', 'soldier')
     
     scroller = load_map("map_outdoors", main_hero, soldier)

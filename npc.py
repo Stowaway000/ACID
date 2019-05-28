@@ -15,6 +15,8 @@ EPS = 1e-3
 
 # Класс NPC
 class NPC(character):
+    npcs = []
+    
     def __init__(self, name, fraction):
         info = open('res/stats/chars/' + name + '.txt', 'r')
         stats = list(map(int, info.readline().split()))
@@ -40,6 +42,8 @@ class NPC(character):
         self.fight = fight()
         self.info = []
 
+        NPC.npcs.append(self)
+
     def change_state(self):
         if self.state == "patrol":
             self.state = "fight"
@@ -57,7 +61,14 @@ class NPC(character):
 
     # Создать труп и прочее
     def die(self):
-        pass
+        lr = cocos.layer.ScrollableLayer()
+        spr = Sprite('res/img/corpse.png')
+        spr.position = self.skin.position
+        spr.rotation = self.skin.rotation
+        lr.add(spr)
+        NPC.npcs.remove(self)
+        self.parent.add(lr)
+        self.parent.remove(self)
 
 
 class patroling:
@@ -113,25 +124,12 @@ class npc_mover(cocos.actions.Move):
         dy = vel_y * dt
         new = self.target.cshape
 
-        new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y)
-        obj = self.target.collider.collision_manager.any_near(new, 0)
-        if obj:
-            if obj.cshape.type == "bullet":
-                print("DAMAGE")
-            else:
-                vel_x = 0
-                new.cshape.center.x -= dx
+        #new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y + dy)
 
-        new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
-        obj = self.target.collider.collision_manager.any_near(new, 0)
-        if obj:
-            if obj.cshape.type == "bullet":
-                obj.stop_move()
-                print("DAMAGE")
-            else:
-                obj.stop_move()
-                vel_y = 0
-                new.cshape.center.y -= dy
+        '''new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
+        for i in bullet.bulls:
+            if self.target.collider.collision_manager.they_collide(i.cshape, new):
+                print("DAMAGE")'''
 
         self.target.parent.info = self.target.parent.get_in_sector(self.target.position,
                                                                    self.target.rotation,
