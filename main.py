@@ -1,29 +1,27 @@
-import cocos
-import pyglet
-from cocos.director import director
 from cocos.scene import Scene
 from cocos.actions import RotateBy, Repeat
 from pyglet import font
-from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER
+import cocos.audio.pygame.mixer as mixer
+from cocos.menu import LEFT, RIGHT, BOTTOM, TOP, CENTER, MultipleMenuItem
+from hero import hero
+from item import *
 from physics import *
-from creature import *
-from npc import *
-from hero import *
+from interface import interface
 from map import *
+from menu import set_menu_style, previous, quit_game
 
 
-version = '0.03'  # Версия игры
+version = '0.01'  # Версия игры
+
+
 # Ширина и высота окна
 width = 1280
 height = 720
 
-# Убираем настройки по-умолчанию
-def set_menu_style(menu, size=32):
-    menu.font_item_selected['font_size'] = size
-    menu.font_item_selected['font_name'] = 'Calibri'
-    menu.font_item['font_name'] = 'Calibri'
-    menu.font_item_selected['color'] = (229, 43, 80, 240)
-    menu.font_item['color'] = (192, 192, 192, 200)
+
+def on_key_press(symbol, modifiers):
+    if symbol == key.ESCAPE:
+        return True
 
 
 def load_map(name, hero):
@@ -34,17 +32,25 @@ def load_map(name, hero):
     scroller = cocos.layer.ScrollingManager()
     scroller.scale = 2
     
-    scroller.add(hero, 1)
-    scroller.add(map_layer.layer_floor, -1)
-    scroller.add(map_layer.layer_vertical, 1)
-    scroller.add(map_layer.layer_objects, 1)
-    scroller.add(map_layer.layer_above, 2)
-    
+    scroller.add(hero, 2)
+    map_layer.draw_on(scroller)
+
     return scroller
 
 
-def previous():
-    director.pop()
+def create_interface(scene, hero):
+    stats = hero.get_stats()
+
+    stats['hp'].append((100, 100))
+    stats['armor'].append((200, 100))
+    stats['stamina'].append((width-100, 100))
+    stats['weapon_r'].append((width/2+110, 100))
+    stats['weapon_l'].append((width/2-110, 100))
+
+    inter = interface(stats, hero)
+    hero.interface = inter
+
+    scene.add(inter, 100)
 
 
 def enter():
@@ -52,20 +58,64 @@ def enter():
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
     director.window.set_mouse_cursor(cursor)
     
-    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (100, 80))
+    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
     
-    scroller = load_map("map_test", main_hero)
+    scroller = load_map("map_outdoors", main_hero)
     main_hero.set_scroller(scroller)
     
     scene = cocos.scene.Scene(scroller)
+
+    Weapon('colt')
+    Weapon('pgun')
+    Weapon('rifle')
+    Weapon('shotgun')
+    Armor('armor')
+    Item('bul', 1, 1)
+
+    test = inventory()
+    test.add('rifle', 1)
+    test.add('armor', 1)
+    Stash(test, 'stash', (200, 70)).place(scroller)
     
-    weapon('rifle')
-    main_hero.take_item('rifle', 1)
+    PickableObject('shotgun', (180, 100), 1).place(scroller)
+    PickableObject('rifle', (150, 100), 1).place(scroller)
+    PickableObject('rifle', (150, 70), 1).place(scroller)
+    
+    create_interface(scene, main_hero)
     director.push(scene)
+    main_theme.stop()
 
+    main_hero.take_damage(20, 1)
+    main_hero.interface.quest_done('Родиться')
+    main_hero.interface.quest_done('Умереть')
 
-def quit_game():
-    director.window.close()
+    main_hero.take_item('colt', 2)
+    main_hero.take_item('rifle', 1)
+    main_hero.take_item('pgun', 1)
+    main_hero.take_item('bul', 5)
+    Item('apple', 1, 1)
+    Item('bottle', 1, 1)
+    Item('beer', 1, 1)
+    Item('water', 1, 1)
+    Item('devil', 1, 1)
+    Item('pig', 1, 1)
+    Item('whale', 1, 1)
+    Item('salad', 1, 1)
+    Item('metal', 1, 1)
+    
+    Armor('armor_heavy')
+
+    main_hero.take_item('armor_heavy', 1)
+    main_hero.take_item('armor', 1)
+    main_hero.take_item('apple', 2)
+    main_hero.take_item('bottle', 1)
+    main_hero.take_item('beer', 1)
+    main_hero.take_item('water', 1)
+    main_hero.take_item('devil', 1)
+    main_hero.take_item('pig', 1)
+    main_hero.take_item('whale', 1)
+    main_hero.take_item('metal', 1)
+    main_hero.take_item('salad', 1)
 
 
 # Сцена "Об игре"
@@ -91,6 +141,45 @@ def about_game():
                             
                             about.add(bg)
                             
+    director.push(about)
+
+
+def volume_sounds(arg):
+    step_ch.set_volume(arg/10)
+    shoot_ch.set_volume(arg/10)
+
+def volume_music(arg):
+    music_ch.set_volume(arg/10)
+
+
+def settings():
+    about = Scene()
+
+    bg = cocos.layer.ColorLayer(255, 255, 255, 255)
+
+    back = cocos.menu.Menu()
+    set_menu_style(back, 28)
+    item = [cocos.menu.MenuItem('Назад', previous)]
+    back.menu_valign = TOP
+    back.menu_halign = LEFT
+    back.menu_hmargin = 10
+    back.create_menu(item)
+
+    sound = cocos.menu.Menu()
+    set_menu_style(sound)
+    items = []
+    volumes = ['Mute','10','20','30','40','50','60','70','80','90','100']
+    items.append(MultipleMenuItem('Sounds volume: ', volume_sounds,\
+                                   volumes, 10))
+    items.append(MultipleMenuItem('Music volume: ', volume_music,\
+                                   volumes, 10))
+    sound.create_menu(items)
+
+    bg.add(sound)
+    bg.add(back)
+
+    about.add(bg)
+
     director.push(about)
 
 
@@ -132,7 +221,7 @@ def create_menu():
     items = list()
     items.append(cocos.menu.MenuItem("Новая игра", enter))
     items.append(cocos.menu.MenuItem("Загрузить игру", enter))
-    items.append(cocos.menu.MenuItem("Настройки", enter))
+    items.append(cocos.menu.MenuItem("Настройки", settings))
     items.append(cocos.menu.MenuItem("Об игре", about_game))
     items.append(cocos.menu.MenuItem("Выйти", quit_game))
     
@@ -143,8 +232,17 @@ def create_menu():
 
 
 if __name__ == '__main__':
-    director.init(width=width, height=height, caption='Game')
+    director.init(width=width, height=height, caption='Game')#, fullscreen=True)
     director.window.pop_handlers()
+
+    my_mixer = mixer.init()
+    music_ch = mixer.Channel(0)
+    step_ch = mixer.Channel(1)
+    shoot_ch = mixer.Channel(2)
+    main_theme = mixer.Sound("res/sound/main.wav")
+    music_ch.play(main_theme, -1)
+
+    director.window.push_handlers(on_key_press)
     
     mainMenu = create_menu()
     
