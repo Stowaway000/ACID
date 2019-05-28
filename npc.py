@@ -114,14 +114,25 @@ class npc_mover(cocos.actions.Move):
         new = self.target.cshape
 
         new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y)
-        if self.target.collider.collision_manager.any_near(new, 0):
-            vel_x = 0
-            new.cshape.center.x -= dx
+        obj = self.target.collider.collision_manager.any_near(new, 0)
+        if obj:
+            if obj.cshape.type == "bullet":
+                print("DAMAGE")
+            else:
+                vel_x = 0
+                new.cshape.center.x -= dx
 
         new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
-        if self.target.collider.collision_manager.any_near(new, 0):
-            vel_y = 0
-            new.cshape.center.y -= dy
+        obj = self.target.collider.collision_manager.any_near(new, 0)
+        if obj:
+            if obj.cshape.type == "bullet":
+                obj.stop_move()
+                print("DAMAGE")
+            else:
+                obj.stop_move()
+                vel_y = 0
+                new.cshape.center.y -= dy
+
         self.target.parent.info = self.target.parent.get_in_sector(self.target.position,
                                                                    self.target.rotation,
                                                                    20,

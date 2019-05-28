@@ -581,7 +581,7 @@ class bullet(cocos.layer.ScrollableLayer):
         self.bul.rotation = rot
         self.speed = speed
         self.manager = man
-        self.cshape = collision_unit((pos, 2), "circle")
+        self.cshape = collision_unit((pos, 2), "bullet")
         self.name = str(hash(self))
 
         self.tracer = Sprite('res/img/items/tracer_' + name + '.png', anchor=(0, 0))
