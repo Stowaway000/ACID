@@ -4,6 +4,7 @@ from cocos.sprite import Sprite
 import pyglet
 from pyglet.image import load, ImageGrid, Animation
 from pyglet.window import key, mouse
+import cocos.audio.pygame.mixer as mixer
 from cocos.actions import *
 from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
@@ -103,6 +104,13 @@ class character(cocos.layer.ScrollableLayer):
         elif self.weapon_left != -1:
             self.inventory.get_weapon(self.weapon_left).shoot()
 
+    def calm(self, hand):
+        if hand == 'r' and self.weapon_right != -1:
+
+            self.inventory.get_weapon(self.weapon_right).refresh()
+        elif self.weapon_left != -1:
+            self.inventory.get_weapon(self.weapon_left).refresh()
+    
     # Перезарядить оружие
     def reload(self, hand):
         if hand == 'r' and self.weapon_right != -1:
@@ -280,6 +288,9 @@ class skin(cocos.sprite.Sprite):
 
         self.position = pos
         self.velocity = (0, 0)
+
+        self.step_sound = mixer.Sound("res/sound/step.wav")
+        self.pause_counter = 0
 
         self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle")
         self.do(mover)
