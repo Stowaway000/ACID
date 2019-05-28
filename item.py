@@ -128,24 +128,24 @@ class Weapon(Item):
         self.shoot_type = stats[4]  # shoot_type - тип стрельбы - auto/half auto
         anim_length = 0.05
         if self.shoot_type == "auto":
-            self.firerate = int(stats[11])  # firerate - скорострельность
+            self.firerate = int(stats[14])  # firerate - скорострельность
             anim_length = 60/self.firerate
-        if self.shoot_type == "auto":
+            
             anim_in_name = "res/img/items/weapon/" + weapon_name + "_anim_in.png"
             anim_end_name = "res/img/items/weapon/" + weapon_name + "_anim_end.png"
             
             shoot_in_img = load(anim_in_name)
             shoot_grid = ImageGrid(shoot_in_img, 1,
-                                   int(stats[12]),
-                                   item_height=int(stats[14]),
-                                   item_width=int(stats[13]))
+                                   int(stats[15]),
+                                   item_height=int(stats[17]),
+                                   item_width=int(stats[16]))
             self.weapon_in_anim = Animation.from_image_sequence(shoot_grid[:], anim_length/3, loop=True)
 
             shoot_end_img = load(anim_end_name)
             shoot_grid = ImageGrid(shoot_end_img, 1,
-                                   int(stats[15]),
-                                   item_height=int(stats[17]),
-                                   item_width=int(stats[16]))
+                                   int(stats[18]),
+                                   item_height=int(stats[20]),
+                                   item_width=int(stats[19]))
             self.weapon_end_anim = Animation.from_image_sequence(shoot_grid[:], anim_length/3, loop=False)
             
         self.damage = float(stats[0])  # damage - урон
@@ -153,9 +153,9 @@ class Weapon(Item):
         self.max_cartridge = int(stats[2])  # max_cartridge - размер обоймы
         self.ammo_type = stats[3]  # ammo_type - тип патронов
         self.two_handed = bool(int(stats[5]))  # two_handed - флаг двуручного оружия
-        self.by_shot = int(stats[18])
-        self.angle = int(stats[19])
-        self.bspeed = int(stats[20])
+        self.by_shot = int(stats[11])
+        self.angle = int(stats[12])
+        self.bspeed = int(stats[13])
         self.sound = mixer.Sound("res/sound/" + weapon_name + ".wav")
         self.sound_reload = mixer.Sound("res/sound/" + weapon_name + "_reload.wav")
         # (1 - двуручное, 0 - одноручное)
@@ -201,6 +201,9 @@ class WeaponHandler(cocos.sprite.Sprite):
             self.shot_len = 60/self.weapon_ref.firerate
         
             self.weapon_end_anim = self.weapon_ref.weapon_end_anim
+        else:
+            self.shot_len = self.weapon_ref.sound.get_length()
+            self.waiting = False
         self.item_sprite = self.weapon_ref.item_sprite
         self.item_inv_sprite = Sprite(self.weapon_ref.item_inv_sprite.image)
         if ammo == -1:
@@ -270,17 +273,24 @@ class WeaponHandler(cocos.sprite.Sprite):
             self.cartridge += count_bullet
             return 0
 
+    def stop_waiting(self):
+        self.waiting = False
+    
     def shoot(self):
         if not self.flag_shoot and self.cartridge:
             if self.weapon_ref.shoot_type == 'auto':
                 self.do(shooter())
                 self.flag_shoot = True
-            else:
+                self.shoot_anim()
+                self.shot()
+            elif not self.waiting:
+                self.waiting = True
                 self.flag_shooting = True
+                self.flag_shoot = True
+                self.shoot_anim()
+                self.shot()
+                self.do(MoveBy((0, 0), self.shot_len) + CallFunc(self.stop_waiting))
             
-            self.flag_shoot = True
-            self.shoot_anim()
-            self.shot()
 
     def refresh(self):
         self.flag_shoot = False
@@ -593,7 +603,7 @@ class bullet(cocos.layer.ScrollableLayer):
         hole_anim.position = self.bul.position
         hole_l.add(hole_anim)
         self.parent.add(hole_l)
-        hole_l.do(MoveBy((0, 0.1))+CallFunc(lambda:del_tracer(hole_l)))
+        hole_l.do(MoveBy((0, 0), 0.1)+CallFunc(lambda:del_tracer(hole_l)))
             
         self.parent.remove(self.name)
 
