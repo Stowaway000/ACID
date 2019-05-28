@@ -243,6 +243,9 @@ class character(cocos.layer.ScrollableLayer):
         
         self.interface.update_both()
 
+    def set_position(self, pos):
+        self.skin.set_position(pos)
+
 
 class skin(cocos.sprite.Sprite):
     def __init__(self, name, mover, pos):
@@ -291,10 +294,15 @@ class skin(cocos.sprite.Sprite):
 
         self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle")
         self.do(mover)
-
+        
         self.near_objects = []
         self.near_stashes = []
 
+    def set_position(self, pos):
+        self.position = pos
+        self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle")
+        self.scroller.set_focus(*self.position)
+    
     def walker(self, new_state):
         if self.walking != new_state:
             self.walking = new_state

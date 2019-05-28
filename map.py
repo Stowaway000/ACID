@@ -1,12 +1,12 @@
 import cocos
 from cocos.director import director
-from cocos.sprite import Sprite
 import pyglet
-from pyglet.image import load, ImageGrid, Animation
-from pyglet.window import key, mouse
-from cocos.actions import *
 from cocos import mapcolliders
-from math import sqrt, sin, cos, radians, atan, degrees
+import cocos.euclid as eu
+import cocos.collision_model as cm
+from physics import *
+from cocos.sprite import Sprite
+from item import PickableObject, Stash, inventory
 
 
 class MapLayer(cocos.layer.ScrollableLayer):
@@ -40,10 +40,114 @@ class MapLayer(cocos.layer.ScrollableLayer):
             
             s = anims.readline()
 
-    def draw_on(self, scroller):
-        scroller.add(self.layer_floor, -1)
-        scroller.add(self.layer_vertical, 1)
-        scroller.add(self.layer_objects, 1)
-        scroller.add(self.layer_decoration, 0)
-        scroller.add(self.layer_above, 3)
-        scroller.add(self.layer_anim_up, 3)
+
+class Port(cocos.sprite.Sprite):
+    def __init__(self, name, number, cur_x, cur_y, new_x, new_y, width):
+        self.next_map = name
+        self.number = number
+        self.new_position = new_x*32, new_y*32
+        self.vector = new_x - cur_x, new_y - cur_y
+        
+        super().__init__("res/img/port.png", anchor=(0, 16))
+        self.position = cur_x*32, cur_y*32
+        for i in range(width-1):
+            spr = Sprite("res/img/port.png", anchor=(0, 16))
+            spr.position = (32+i*32, 0)
+            self.add(spr)
+        
+        self.cshape = cm.AARectShape(eu.Vector2(self.position[0]+self.width/2*width, self.position[1]),\
+                                     self.width/2*width, self.height/2)
+    
+    def change_map(self, main_hero):
+        scene = None
+        if self.next_map not in map_manager.maps:
+            scene = map_manager(self.next_map, main_hero, self.number)
+        else:
+            scene = map_manager.maps[self.next_map]
+            main_hero.set_collision(scene.map_collider)
+            main_hero.set_scroller(scene.scroller)
+            main_hero.set_position(scene.ports[self.number].new_position)
+
+        director.replace(scene)
+
+
+class map_manager(cocos.scene.Scene):
+    maps = {}
+    
+    def __init__(self, cur_map, hero, port_n):
+        map_manager.maps[cur_map] = self
+        
+        self.layer = MapLayer(cur_map)
+        self.ports = []
+        self.main_hero = hero
+        
+        self.map_collider = circle_map_collider(self.layer)
+        hero.set_collision(self.map_collider)
+        scroller = cocos.layer.ScrollingManager()
+        scroller.scale = 2
+        self.main_hero.set_scroller(scroller)
+
+        port_handler = cocos.layer.ScrollableLayer()
+        cur_ports = open("maps/" + cur_map + "/ports.txt")
+        p = cur_ports.readline()
+        i = 0
+        while p:
+            p = p.split()
+            port = Port(p[0], *map(int, p[1:]))
+            self.ports.append(port)
+            port_handler.add(port)
+            
+            p = cur_ports.readline()
+
+            if i == port_n:
+                self.main_hero.set_position(port.new_position)
+            
+            i += 1
+        
+        scroller.add(hero, 2)
+        scroller.add(self.layer.layer_floor, -1)
+        scroller.add(self.layer.layer_decoration, 1)
+        scroller.add(port_handler, 1)
+        scroller.add(self.layer.layer_vertical, 2)
+        scroller.add(self.layer.layer_objects, 2)
+        scroller.add(self.layer.layer_above, 3)
+        scroller.add(self.layer.layer_anim_up, 3)
+        scroller.add(self.layer.layer_collision, 1)
+
+        stashes = open("maps/" + cur_map + "/stashes.txt")
+        p = stashes.readline()
+        while p:
+            p = p.split()
+            inv = inventory()
+            Stash(inv, p[0], (int(p[1]), int(p[2]))).place(scroller)
+            
+            p = stashes.readline()
+            while p.strip():
+                arg = p.split()
+                inv.add(arg[0], int(arg[1]))
+                p = stashes.readline()
+            p = stashes.readline()
+
+        picks = open("maps/" + cur_map + "/pick.txt")
+        p = picks.readline()
+        while p:
+            p = p.split()
+            digits = tuple(map(int, p[1:]))
+            PickableObject(p[0], (digits[0], digits[1]), digits[2]).place(scroller)
+        
+        cur_npc = open("maps/" + cur_map + "/npc.txt")
+        n = cur_npc.readline()
+        while n:
+            pass
+        self.scroller = scroller
+        super().__init__(scroller)
+        
+        self.add(hero.interface, 100)
+
+        self.schedule_interval(self.update, 1/20)
+
+    def update(self, dt):
+        for port in self.ports:
+            if self.map_collider.collision_manager\
+               .they_collide(port, self.main_hero.skin.cshape):
+                port.change_map(self.main_hero)

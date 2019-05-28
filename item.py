@@ -30,8 +30,8 @@ class Item(cocos.sprite.Sprite):
                 or name in Item.items or name in UsableObj.usable_objs):
             Item.items[name] = self
         self.name = name
-        self.item_sprite = Sprite("res/img/items/" + name + ".png")
-        self.item_inv_sprite = Sprite("res/img/items/" + name + "_inv.png")
+        self.item_sprite = Sprite("res/img/items/" + name + ".tif")
+        self.item_inv_sprite = Sprite("res/img/items/" + name + "_inv.tif")
         self.weight = weight
         self.cost = cost
         self.description = "Well... I don't know"
@@ -124,7 +124,8 @@ class Weapon(Item):
 
         super().__init__(weapon_name, float(stats[6]), float(stats[7]))
         self.weapon_name = weapon_name  # weapon_name - имя оружия
-        anim_name = "res/img/items/weapon/" + weapon_name + "_anim.png"
+
+        anim_name = "res/img/items/weapon/" + weapon_name + "_anim.tif"
         self.shoot_type = stats[4]  # shoot_type - тип стрельбы - auto/half auto
         anim_length = 0.05
         if self.shoot_type == "auto":
@@ -265,9 +266,10 @@ class WeaponHandler(cocos.sprite.Sprite):
     
     def recharge(self, count_bullet):
         # count_bullet - кол-во патронов для перезарядки
-        if self.cartridge + count_bullet > Weapon.weapons[self.weapon_name].max_cartridge:
-            remainder = self.cartridge + count_bullet - Weapon.weapons[self.weapon_name].max_cartridge
-            self.cartridge = Weapon.weapons[self.weapon_name].max_cartridge
+        lack = self.weapon_ref.max_cartridge - self.cartridge
+        if  lack < count_bullet:
+            remainder = count_bullet - lack
+            self.cartridge = self.weapon_ref.max_cartridge
             return remainder
         else:
             self.cartridge += count_bullet
@@ -348,12 +350,12 @@ class inventory():
         if n:
             tp = get_type(item)
             if tp == 'item':
-                self.items[item] -= n
+                self.items[item] -= count
                 if not self.items[item]:
                     self.items.pop(item)
 
             elif tp == 'usable':
-                self.usables[item] -= n
+                self.usables[item] -= count
                 if not self.usables[item]:
                     self.usables.pop(item)
             
@@ -451,7 +453,7 @@ class PickableObject(cocos.layer.ScrollableLayer):
         self.parent.remove(self.sprite_name)
 
     def place(self, scr):
-        scr.add(self, name=self.sprite_name)
+        scr.add(self, 1, name=self.sprite_name)
 
     def select(self):
         self.add(self.selector, name='selector')
@@ -468,7 +470,7 @@ class Stash(cocos.layer.ScrollableLayer):
     def __init__(self, inv, name, pos):
         super().__init__()
         self.inventory = inv
-        self.sprite = Sprite('res/img/items/' + name + '.png')
+        self.sprite = Sprite('res/img/items/' + name + '.tif')
         self.sprite.position = pos
 
         self.add(self.sprite)
@@ -489,7 +491,7 @@ class Stash(cocos.layer.ScrollableLayer):
                                       radius], "circle")
 
     def place(self, scr):
-        scr.add(self, name=self.sprite_name)
+        scr.add(self, 2, name=self.sprite_name)
     
     def select(self):
         self.add(self.selector, name='selector')

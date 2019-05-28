@@ -188,7 +188,7 @@ class BasicVisualInventory(ColorLayer):
         h = 0
         for key, val in invent.items.items():
             item = invent.get(key)
-            spr = item.item_inv_sprite
+            spr = Sprite(item.item_inv_sprite.image)
             spr.position = (50, self.height/2-h*32)
 
             count = add_label(str(val), (40, 0))
