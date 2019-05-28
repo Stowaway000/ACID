@@ -7,6 +7,7 @@ import cocos.collision_model as cm
 from physics import *
 from cocos.sprite import Sprite
 from item import PickableObject, Stash, inventory
+from npc import NPC
 
 
 class MapLayer(cocos.layer.ScrollableLayer):
@@ -122,10 +123,10 @@ class map_manager(cocos.scene.Scene):
             Stash(inv, p[0], (int(p[1]), int(p[2]))).place(scroller)
             
             p = stashes.readline()
-            while p.strip():
+            while p.strip(): 
                 arg = p.split()
                 inv.add(arg[0], int(arg[1]))
-                p = stashes.readline()
+                p = stashes.readline() 
             p = stashes.readline()
 
         picks = open("maps/" + cur_map + "/pick.txt")
@@ -134,11 +135,17 @@ class map_manager(cocos.scene.Scene):
             p = p.split()
             digits = tuple(map(int, p[1:]))
             PickableObject(p[0], (digits[0], digits[1]), digits[2]).place(scroller)
+            p = picks.readline()
+            
         
         cur_npc = open("maps/" + cur_map + "/npc.txt")
         n = cur_npc.readline()
         while n:
-            pass
+            np = NPC(*n.split())
+            np.set_collision(self.map_collider)
+            n = cur_npc.readline()
+            scroller.add(np, 2)
+            
         self.scroller = scroller
         super().__init__(scroller)
         

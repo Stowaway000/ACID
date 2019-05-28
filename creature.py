@@ -8,7 +8,6 @@ import cocos.audio.pygame.mixer as mixer
 from cocos.actions import *
 from cocos import mapcolliders
 from math import sqrt, sin, cos, radians, atan, degrees
-
 from item import *
 from physics import *
 
@@ -16,6 +15,7 @@ from physics import *
 mouse_x = 10
 mouse_y = 10
 vector = [0, 0]
+
 
 # Класс персонажа
 class character(cocos.layer.ScrollableLayer):
@@ -50,7 +50,7 @@ class character(cocos.layer.ScrollableLayer):
         chars = []
 
         angle = radians(angle) / 2
-        vector = (look[0] * srqt(r), look[1] * srqt(r))
+        vector = (look[0] * sqrt(r), look[1] * sqrt(r))
         r_vector = (vector[0] * cos(angle) - vector[1] * sin(angle), \
                     vector[0] * sin(angle) + vector[1] * cos(angle))
         s = abs(vector[0] * r_vector[1] - vector[1] * r_vector[0]) / 2
@@ -69,7 +69,7 @@ class character(cocos.layer.ScrollableLayer):
     # Получить информацию о персонаже
     def get_info(self):
         # TODO
-        return (fraction, self.skin.position)
+        return (self.fraction, self.skin.position)
 
     # Увеличить характеристику
     def set(self, attr, add):
@@ -84,7 +84,11 @@ class character(cocos.layer.ScrollableLayer):
             dmg -= self.inventory.get_armor(armor).statusAC(dmg, k)
 
         if dmg > 0:
+            print(self.hp)
             self.hp -= dmg
+
+        if self.hp < 0:
+            self.die()
 
     # Специальная способность
     def use_ability(self):
@@ -242,6 +246,9 @@ class character(cocos.layer.ScrollableLayer):
             self.partner.take_item(item, count, adds)
         
         self.interface.update_both()
+    
+    def set_collision(self, manager):
+        self.skin.collider = manager
 
     def set_position(self, pos):
         self.skin.set_position(pos)

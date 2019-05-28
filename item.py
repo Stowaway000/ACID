@@ -15,6 +15,7 @@ import cocos.audio.pygame.mixer as mixer
 from physics import *
 from utils import add_label, add_text
 from random import randint
+from bulls import bullet
 
 # Параметры мыши
 mouse_x = 10
@@ -232,7 +233,7 @@ class WeaponHandler(cocos.sprite.Sprite):
                 pos = (pos[0]+dx, pos[1]+dy)
 
                 bul = bullet(self.weapon_ref.ammo_type, pos, angle,
-                             self.parent.collider, self.weapon_ref.bspeed)
+                             self.parent.collider, self.weapon_ref.bspeed, self.parent.parent.npc_ref)
             
                 self.parent.parent.parent.add(bul, name=bul.name, z=1)
             
@@ -240,7 +241,7 @@ class WeaponHandler(cocos.sprite.Sprite):
                 tr_l.add(bul.tracer)
                 bul.parent.add(tr_l)
                 mixer._channels[2].play(self.weapon_ref.sound)
-                bul.do(bullet_mover())
+                #bul.do(bullet_mover())
     
     def shoot_anim(self):
         self.image = self.weapon_anim
@@ -297,125 +298,6 @@ class WeaponHandler(cocos.sprite.Sprite):
     def refresh(self):
         self.flag_shoot = False
 
-
-# Класс инвентаря
-class inventory():
-    def __init__(self):
-        self.weight = 0
-        self.items = {}
-        self.usables = {}
-        self.weapons = []
-        self.armors = []
-
-    # Добавить count предметов типа item в инвентарь
-    def add(self, item, count, adds=[]):
-        self.weight += get_weight(item) * count
-        tp = get_type(item)
-        if tp == 'item':
-            if item in self.items:
-                self.items[item] += count
-            else:
-                self.items[item] = count
-        elif tp == 'weapon':
-            for i in range(count):
-                if len(adds) > i:
-                    self.weapons.append(WeaponHandler(item, adds[i]))
-                else:
-                    self.weapons.append(WeaponHandler(item))
-        elif tp == 'armor':
-            for i in range(count):
-                if len(adds) > i:
-                    self.armors.append(ArmorHandler(item, adds[i]))
-                else:
-                    self.armors.append(ArmorHandler(item))
-        elif tp == 'usable':
-            if item in self.usables:
-                self.usables[item] += count
-            else:
-                self.usables[item] = count
-
-    # Получить экземпляр предмета по имени
-    def get(self, item):
-        if item in self.items:
-            return Item.items[item]
-        return None
-
-    # Забрать count предметов из инвентаря
-    def take(self, item, count=-1, index=0):
-        n = self.count(item)
-        if count == 'all' or n < count:
-            count = n
-        self.weight -= get_weight(item) * count
-
-        if n:
-            tp = get_type(item)
-            if tp == 'item':
-                self.items[item] -= count
-                if not self.items[item]:
-                    self.items.pop(item)
-
-            elif tp == 'usable':
-                self.usables[item] -= count
-                if not self.usables[item]:
-                    self.usables.pop(item)
-            
-            elif tp == 'weapon':
-                if self.weapons[index].weapon_name == item:
-                    self.weapons[index], self.weapons[-1] = self.weapons[-1], self.weapons[index]
-                    self.weapons.pop(-1)
-                    count = 1
-                    
-            
-            elif tp == 'armor':
-                if self.armors[index].armor_name == item:
-                    self.armors[index], self.armors[-1] = self.armors[-1], self.armors[index]
-                    self.armors.pop(-1)
-                    count = 1
-        
-        return count
-
-    # Посчитать количество предметов типа item в инвентаре
-    def count(self, item):
-        tp = get_type(item)
-        if tp == 'item':
-            if item in self.items:
-                return self.items[item]
-            else:
-                return 0
-        elif tp == 'usable':
-            if item in self.usables:
-                return self.usables[item]
-            else:
-                return 0
-        elif tp == 'weapon':
-            n = 0
-            for i in self.weapons:
-                if i.weapon_name == item:
-                    n += 1
-            return n
-        elif tp == 'armor':
-            n = 0
-            for i in self.armors:
-                if i.armor_name == item:
-                    n += 1
-            return n
-
-    # Получить экземпляр брони из инвентаря по номеру
-    def get_armor(self, i):
-        if len(self.armors):
-            return self.armors[i]
-        else:
-            return None
-
-    # Получить экземпляр оружия из инвентаря по номеру
-    def get_weapon(self, i):
-        return self.weapons[i]
-
-    # Получить экземпляр используемого из инвентаря по номеру
-    def get_usable(self, item):
-        if item in self.usables:
-            return usable_object.objects[item]
-        return None
 
 
 class PickableObject(cocos.layer.ScrollableLayer):
@@ -565,82 +447,159 @@ def get_weight(item):
 def get_cost(item):
     return get_global(item).cost
 
+# Класс инвентаря
+class inventory():
+    def __init__(self):
+        self.weight = 0
+        self.items = {}
+        self.usables = {}
+        self.weapons = []
+        self.armors = []
 
-def del_tracer(tracer):
-    tracer.parent.remove(tracer)
+    # Добавить count предметов типа item в инвентарь
+    def add(self, item, count, adds=[]):
+        self.weight += get_weight(item) * count
+        tp = get_type(item)
+        if tp == 'item':
+            if item in self.items:
+                self.items[item] += count
+            else:
+                self.items[item] = count
+        elif tp == 'weapon':
+            for i in range(count):
+                if len(adds) > i:
+                    self.weapons.append(WeaponHandler(item, adds[i]))
+                else:
+                    self.weapons.append(WeaponHandler(item))
+        elif tp == 'armor':
+            for i in range(count):
+                if len(adds) > i:
+                    self.armors.append(ArmorHandler(item, adds[i]))
+                else:
+                    self.armors.append(ArmorHandler(item))
+        elif tp == 'usable':
+            if item in self.usables:
+                self.usables[item] += count
+            else:
+                self.usables[item] = count
 
+    # Получить экземпляр предмета по имени
+    def get(self, item):
+        if item in self.items:
+            return Item.items[item]
+        return None
 
-class bullet(cocos.layer.ScrollableLayer):
-    def __init__(self, name, pos, rot, man, speed):
-        super().__init__()
-        self.bul = cocos.sprite.Sprite("res/img/items/" + name + ".png")
-       #x = 11
-       #y = 18
-       #pos = (pos[0]+dx, pos[1]+dy)
-        self.bul.position = pos
-        self.add(self.bul, z=3)
-        self.position = (10, 10)
-        self.bul.rotation = rot
-        self.speed = speed
-        self.manager = man
-        self.cshape = collision_unit((pos, 2), "circle")
-        self.name = str(hash(self))
+    # Забрать count предметов из инвентаря
+    def take(self, item, count=-1, index=0):
+        n = self.count(item)
+        if count == 'all' or n < count:
+            count = n
+        self.weight -= get_weight(item) * count
 
-        self.tracer = Sprite('res/img/items/tracer_' + name + '.png', anchor=(0, 0))
-        self.tracer.rotation = rot - 90
-        self.tracer.position = pos
-        self.tracer.opacity = 75
-        self.dot = pos
-        self.tracer.do(FadeOut(0.05)+CallFunc(lambda:del_tracer(self.tracer)))
-        self.tracer.scale_x = 0.01
+        if n:
+            tp = get_type(item)
+            if tp == 'item':
+                self.items[item] -= count
+                if not self.items[item]:
+                    self.items.pop(item)
 
-    def stop_move(self):
-        self.stop()
+            elif tp == 'usable':
+                self.usables[item] -= count
+                if not self.usables[item]:
+                    self.usables.pop(item)
+            
+            elif tp == 'weapon':
+                if self.weapons[index].weapon_name == item:
+                    self.weapons[index], self.weapons[-1] = self.weapons[-1], self.weapons[index]
+                    self.weapons.pop(-1)
+                    count = 1
+                    
+            
+            elif tp == 'armor':
+                if self.armors[index].armor_name == item:
+                    self.armors[index], self.armors[-1] = self.armors[-1], self.armors[index]
+                    self.armors.pop(-1)
+                    count = 1
         
-        hole_l = tr_l = cocos.layer.ScrollableLayer()
-        hole_img = load('res/img/hole.png')
-        hole_grid = ImageGrid(hole_img, 1, 6, item_height=15, item_width=10)
-        hole_anim = Sprite(Animation.from_image_sequence(hole_grid[:], 0.05, loop=False))
-        hole_anim.rotation = self.bul.rotation + 180
-        hole_anim.position = self.bul.position
-        hole_l.add(hole_anim)
-        self.parent.add(hole_l)
-        hole_l.do(MoveBy((0, 0), 0.1)+CallFunc(lambda:del_tracer(hole_l)))
-            
-        self.parent.remove(self.name)
+        return count
+
+    # Посчитать количество предметов типа item в инвентаре
+    def count(self, item):
+        tp = get_type(item)
+        if tp == 'item':
+            if item in self.items:
+                return self.items[item]
+            else:
+                return 0
+        elif tp == 'usable':
+            if item in self.usables:
+                return self.usables[item]
+            else:
+                return 0
+        elif tp == 'weapon':
+            n = 0
+            for i in self.weapons:
+                if i.weapon_name == item:
+                    n += 1
+            return n
+        elif tp == 'armor':
+            n = 0
+            for i in self.armors:
+                if i.armor_name == item:
+                    n += 1
+            return n
+
+    # Получить экземпляр брони из инвентаря по номеру
+    def get_armor(self, i):
+        if len(self.armors):
+            return self.armors[i]
+        else:
+            return None
+
+    # Получить экземпляр оружия из инвентаря по номеру
+    def get_weapon(self, i):
+        return self.weapons[i]
+
+    # Получить экземпляр используемого из инвентаря по номеру
+    def get_usable(self, item):
+        if item in self.usables:
+            return usable_object.objects[item]
+        return None
 
 
-class bullet_mover(Move):
-    def step(self, dt):
-        for i in range(20):
-            if self.elem_step(dt/30):
-                break
+# Получить вес какого-то предмета
+def get_weight(item):
+    return get_global(item).weight
 
-    def elem_step(self, dt):
-        dist = sqrt((self.target.bul.position[0] - self.target.dot[0])**2 + (self.target.bul.position[1] - self.target.dot[1])**2)
-        if dist:
-            if self.target.tracer.scale_x <= 0.005:
-                self.target.tracer.scale_x = 0.01
-            
-            self.target.tracer.scale_x = dist*self.target.tracer.scale_x / self.target.tracer.width
-            
-        
-        old_pos = self.target.bul.position
-        angle = self.target.bul.rotation
-        dx = sin(radians(angle)) * self.target.speed * dt
-        dy = cos(radians(angle)) * self.target.speed * dt
-        new_pos = (old_pos[0] + dx, old_pos[1] + dy)
-        self.target.bul.position = new_pos
-        new = self.target.cshape
 
-        new.cshape.center = eu.Vector2(new.cshape.center[0] + dx, new.cshape.center[1])
-        if self.target.manager.collision_manager.any_near(new, 0):
-            self.target.stop_move()
-            return 1
+# Получить цену какого-то предмета
+def get_cost(item):
+    return get_global(item).cost
 
-        new.cshape.center = eu.Vector2(new.cshape.center[0], new.cshape.center[1] + dy)
-        if self.target.manager.collision_manager.any_near(new, 0):
-            self.target.stop_move()
-            return 1
 
-        return 0
+
+# Получить тип какого-то предмета
+def get_type(item):
+    if item in Item.items:
+        return 'item'
+    elif item in Weapon.weapons:
+        return 'weapon'
+    elif item in Armor.armors:
+        return 'armor'
+    elif item in UsableObj.usable_objs:
+        return 'usable'
+
+
+# Получить образец предмета
+def get_global(item):
+    tp = get_type(item)
+    
+    if tp == 'item':
+        return Item.items[item]
+    elif tp == 'weapon':
+        return Weapon.weapons[item]
+    elif tp == 'armor':
+        return Armor.armors[item]
+    elif tp == 'usable':
+        return UsableObj.usable_objs[item]
+    
