@@ -9,6 +9,7 @@ from physics import *
 from interface import interface
 from map import *
 from menu import set_menu_style, previous, quit_game
+from npc import NPC
 
 
 version = '0.01'  # Версия игры
@@ -24,15 +25,17 @@ def on_key_press(symbol, modifiers):
         return True
 
 
-def load_map(name, hero):
+def load_map(name, hero, npc):
     map_layer = MapLayer(name)
     map_collider = circle_map_collider(map_layer)
     hero.set_collision(map_collider)
+    npc.set_collision(map_collider)
     
     scroller = cocos.layer.ScrollingManager()
     scroller.scale = 2
     
     scroller.add(hero, 2)
+    scroller.add(npc, 2)
     map_layer.draw_on(scroller)
 
     return scroller
@@ -59,8 +62,10 @@ def enter():
     director.window.set_mouse_cursor(cursor)
     
     main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
+    soldier = NPC('soldier', 'soldier')
     
-    scroller = load_map("map_outdoors", main_hero)
+    scroller = load_map("map_outdoors", main_hero, soldier)
+    scroller.add(soldier)
     main_hero.set_scroller(scroller)
     
     scene = cocos.scene.Scene(scroller)
@@ -126,20 +131,20 @@ def about_game():
     
     info = cocos.text.Label("Версия игры: " + version, font_name='Verdana', font_size=32,\
                             anchor_x='center', anchor_y='center', color=(192, 192, 192, 200))
-                            info.position = (width//2, height//2)
+    info.position = (width//2, height//2)
                             
-                            back = cocos.menu.Menu()
-                            set_menu_style(back, 28)
-                            item = [cocos.menu.MenuItem('Назад', previous)]
-                            back.menu_valign = TOP
-                            back.menu_halign = LEFT
-                            back.menu_hmargin = 10
-                            back.create_menu(item)
+    back = cocos.menu.Menu()
+    set_menu_style(back, 28)
+    item = [cocos.menu.MenuItem('Назад', previous)]
+    back.menu_valign = TOP
+    back.menu_halign = LEFT
+    back.menu_hmargin = 10
+    back.create_menu(item)
                             
-                            bg.add(info)
-                            bg.add(back)
+    bg.add(info)
+    bg.add(back)
                             
-                            about.add(bg)
+    about.add(bg)
                             
     director.push(about)
 
@@ -193,12 +198,12 @@ def create_bg():
     ground.position = (-width//2, -height//2)
     
     game_title = cocos.text.Label("GAME", font_name='Verdana Bold', font_size=92,\
-                                  anchor_x='center')
-                                  game_title.y = height // 4
+                                anchor_x='center')
+    game_title.y = height // 4
                                   
-                                  bg.add(space, 0)
-                                  bg.add(ground, 1)
-                                  bg.add(game_title, 2)
+    bg.add(space, 0)
+    bg.add(ground, 1)
+    bg.add(game_title, 2)
                                   
     return bg
 

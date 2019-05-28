@@ -243,6 +243,9 @@ class character(cocos.layer.ScrollableLayer):
             self.partner.take_item(item, count, adds)
         
         self.interface.update_both()
+    
+    def set_collision(self, manager):
+        self.skin.collider = manager
 
 
 class skin(cocos.sprite.Sprite):

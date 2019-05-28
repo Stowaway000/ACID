@@ -281,9 +281,6 @@ class hero(character):
     def set_scroller(self, scr):
         self.skin.scroller = scr
 
-    def set_collision(self, manager):
-        self.skin.collider = manager
-
     def get_partner(self):
         if self.skin.near_stashes and not self.skin.near_objects:
             self.partner = Stash.stashes[self.skin.near_stashes[0]]

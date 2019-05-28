@@ -11,23 +11,20 @@ from random import randint
 
 from creature import *
 
-# Параметры мыши
-mouse_x = 10
-mouse_y = 10
-vector = [0, 0]
-
+EPS = 1e-3
 
 # Класс NPC
 class NPC(character):
     def __init__(self, name, fraction):
-        info = open('stats/chars/' + name + '.txt', 'r')
-        stats = list(map(float, info.readline().split()))
+        info = open('res/stats/chars/' + name + '.txt', 'r')
+        stats = list(map(int, info.readline().split()))
         info.close()
 
         self.hp = stats[0]
         self.stamina = stats[1]
         self.sp_stamina = stats[2]
-        self.rad_patrol = [[0] * 2 for i in range(2)]
+        #self.rad_patrol = [[0] * 2 for i in range(2)]
+        self.rad_patrol = [[0, 0], [0, 0]]
         self.rad_patrol[0][0] = stats[3]
         self.rad_patrol[0][1] = stats[4]
         self.rad_patrol[1][0] = stats[5]
@@ -69,7 +66,8 @@ class patroling:
 
     def choose_point(self):
         x = randint(self.rad_patrol[0][0], self.rad_patrol[1][0])
-        y = randint(self.rad_patrol[1][1], self.rad_patrol[0][1])
+        y = randint(self.rad_patrol[0][1], self.rad_patrol[1][1])
+
         return x, y
 
     def trade(self):
@@ -98,9 +96,10 @@ class fight():
 
 class npc_mover(cocos.actions.Move):
     def step(self, dt):
-        if self.target.position[0] != self.target.parent.next_x and self.target.position[1] != self.target.parent.next_y:
-            vel_x = (self.target.parent.x / hypot(self.target.parent.x, self.target.parent.y)) * 50
-            vel_y = (self.target.parent.y / hypot(self.target.parent.x, self.target.parent.y)) * 50
+        if (abs(self.target.position[0] - self.target.parent.next_x) > EPS) and (abs(self.target.position[1] - self.target.parent.next_y) > EPS):
+            dist = hypot(self.target.parent.next_x-self.target.position[0], self.target.parent.next_y-self.target.position[1])
+            vel_x = ((self.target.parent.next_x-self.target.position[0]) / dist) * 50
+            vel_y = ((self.target.parent.next_y-self.target.position[1]) / dist) * 50
         else:
             vel_x = 0
             vel_y = 0
@@ -123,7 +122,6 @@ class npc_mover(cocos.actions.Move):
         if self.target.collider.collision_manager.any_near(new, 0):
             vel_y = 0
             new.cshape.center.y -= dy
-        print(new.cshape.center)
         self.target.parent.info = self.target.parent.get_in_sector(self.target.position,
                                                                    self.target.rotation,
                                                                    20,
