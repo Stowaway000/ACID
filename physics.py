@@ -1,6 +1,6 @@
 import cocos.euclid as eu
 import cocos.collision_model as cm
-
+import cocos
 
 class collision_unit():
     def __init__(self, obj, type):
@@ -10,6 +10,8 @@ class collision_unit():
         elif type == "circle":
             self.cshape = cm.CircleShape(obj[0], obj[1])
 
+        elif type == "bullet":
+            self.cshape = cm.CircleShape()
 
 class circle_map_collider():
     def __init__(self, maplayer):

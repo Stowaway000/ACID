@@ -35,7 +35,7 @@ class hero(character):
         self.rpressed = False
 
         self.interface = None
-
+        self.reloading = False
         self.lurking = False
 
     def take_damage(self, dmg, k):
@@ -60,6 +60,44 @@ class hero(character):
             self.get_wp_stats('l', dct)
         
         self.interface.update(dct)
+
+    def attack(self, hand):
+        if not self.reloading:
+            super().attack(hand)
+
+            dct = {}
+            if hand == 'r':
+                self.get_wp_stats('r', dct)
+            else:
+                self.get_wp_stats('l', dct)
+
+            self.interface.update(dct)
+
+    def reload(self, hand):
+        self.reloading = True
+        if hand == "l" and self.weapon_left != -1:
+            snd = self.skin.lweapon.weapon_ref.sound_reload
+            mixer._channels[2].play(snd)
+            self.do(MoveBy((0, 0), snd.get_length()) + CallFunc(self.reloaded))
+        
+        elif hand == "r" and self.weapon_right != -1:
+            snd = self.skin.rweapon.weapon_ref.sound_reload
+            mixer._channels[2].play(snd)
+            self.do(MoveBy((0, 0), snd.get_length()) + CallFunc(self.reloaded))
+
+        super().reload(hand)
+
+        dct = {}
+        if hand == 'r':
+            self.get_wp_stats('r', dct)
+        else:
+            self.get_wp_stats('l', dct)
+        
+        self.interface.update(dct)
+
+    def reloaded(self):
+        print(11)
+        self.reloading = False
 
     def unequip_weapon(self, index):
         super().unequip_weapon(index)
@@ -178,9 +216,8 @@ class hero(character):
                 self.attack('l')
     
     def on_mouse_press(self, x, y, button, modifiers):
+        clicked = False
         if button == mouse.LEFT:
-            clicked = False
-
             if not self.lurking:
                 X, Y = self.parent.screen_to_world(x, y)
                 for i in self.skin.near_objects:
@@ -201,18 +238,21 @@ class hero(character):
                         clicked = True
                         break
             
-            if not clicked:
-                self.lpressed = True
+            self.lpressed = True
             
         if button == mouse.RIGHT:
             self.rpressed = True
+        if not clicked:
+            self.on_mouse_drag(x, y, 0, 0, button, modifiers)
 
     def on_mouse_release(self, x, y, button, modifiers):
         if button == mouse.LEFT:
             self.lpressed = False
+            self.calm('r')
         if button == mouse.RIGHT:
             self.rpressed = False
-    
+            self.calm('l')
+
     def on_key_press(self, symbol, modifiers):
         if not self.lurking:
             if symbol == key.R and self.lpressed and not self.skin.hidden:
@@ -309,5 +349,10 @@ class hero_mover(cocos.actions.Move):
                 mouse_x += vector[0]
                 mouse_y += vector[1]
                 director.window.set_mouse_position(mouse_x, mouse_y)
+
+            if self.target.pause_counter == 0:
+                if (self.target.velocity[0] or self.target.velocity[1]) and not self.target.seating:
+                    mixer._channels[1].play(self.target.step_sound)         #поискать исправление
+            self.target.pause_counter = (self.target.pause_counter + 1) % 20
         else:
             self.target.walker(False)
