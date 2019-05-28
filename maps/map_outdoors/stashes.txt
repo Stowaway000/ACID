@@ -1,2 +1,3 @@
 trunk 428 256
 rifle 1
+armor 1
