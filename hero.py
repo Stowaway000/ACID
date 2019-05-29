@@ -52,6 +52,12 @@ class hero(character):
                'armor': ar_ac}
         self.interface.update(dct)
 
+    def use_item(self, item):
+        super().use_item(item)
+
+        dct = {'hp': self.hp}
+        self.interface.update(dct)
+    
     def equip_weapon(self, index, hand):
         super().equip_weapon(index, hand)
 
@@ -327,9 +333,10 @@ class hero_mover(cocos.actions.Move):
             self.target.position = new.cshape.center
 
             self.target.scroller.set_focus(self.target.x, self.target.y)
+            self.target.cshape_big.cshape.center = new.cshape.center
 
             for name, i in PickableObject.pickables.items():
-                if self.target.collider.collision_manager.they_collide(i.cshape, self.target.cshape):
+                if self.target.collider.collision_manager.they_collide(i.cshape, self.target.cshape_big):
                     if name not in self.target.near_objects:
                         self.target.near_objects.append(name)
                         i.select()
@@ -339,7 +346,7 @@ class hero_mover(cocos.actions.Move):
                         i.deselect()
 
             for name, i in Stash.stashes.items():
-                if self.target.collider.collision_manager.they_collide(i.cshape, self.target.cshape):
+                if self.target.collider.collision_manager.they_collide(i.cshape, self.target.cshape_big):
                     if name not in self.target.near_stashes:
                         self.target.near_stashes.append(name)
                         i.select()

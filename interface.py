@@ -144,7 +144,7 @@ class BasicVisualInventory(ColorLayer):
         self.mouse_pos = pos
         invent = self.hero_ref.inventory
 
-        total = len(invent.items) + len(invent.weapons) + len(invent.armors)
+        total = len(invent.items) + len(invent.weapons) + len(invent.armors) + len(invent.usables)
         if self.type == 'hero':
             if self.hero_ref.weapon_left != -1:
                 total -= 1
@@ -188,6 +188,19 @@ class BasicVisualInventory(ColorLayer):
         h = 0
         for key, val in invent.items.items():
             item = invent.get(key)
+            spr = Sprite(item.item_inv_sprite.image)
+            spr.position = (50, self.height/2-h*32)
+
+            count = add_label(str(val), (40, 0))
+            count.scale = 0.5
+            spr.add(count, 1)
+            self.item_stack.add(spr, 1, item.name+' i')
+            self.items.append(item.name+' i')
+            
+            h += 1
+
+        for key, val in invent.usables.items():
+            item = invent.get_usable(key)
             spr = Sprite(item.item_inv_sprite.image)
             spr.position = (50, self.height/2-h*32)
 
@@ -326,6 +339,7 @@ class visual_inventory(BasicVisualInventory):
         self.buttons.append(Button('Unequip', 340, self.height-296, 100, 30))
         self.buttons.append(Button('Wear', 340, self.height-296, 100, 30))
         self.buttons.append(Button('Unwear', 340, self.height-296, 100, 30))
+        self.buttons.append(Button('Use', 340, self.height-296, 100, 30))
 
         self.weapon_place = ColorLayer(31, 38, 0, 200, 100, 79)
         self.weapon_place.scale = 2
@@ -415,6 +429,8 @@ class visual_inventory(BasicVisualInventory):
                     st.append(4)
                 else:
                     st.append(5)
+            elif tp == 'usable':
+                st.append(6)
 
         return st
 
@@ -441,6 +457,10 @@ class visual_inventory(BasicVisualInventory):
 
         if self.buttons[5].click(x, y):
             self.hero_ref.unequip_armor(self.selected[1])
+            self.update(self.mouse_pos)
+
+        if self.buttons[6].click(x, y):
+            self.hero_ref.use_item(self.selected[0])
             self.update(self.mouse_pos)
     
     def on_mouse_press(self, x, y, button, modifiers):

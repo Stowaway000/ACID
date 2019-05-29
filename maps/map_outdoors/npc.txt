@@ -1,1 +1,1 @@
-soldier soldier
+soldier soldier 250 200

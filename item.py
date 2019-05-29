@@ -563,7 +563,7 @@ class inventory():
     # Получить экземпляр используемого из инвентаря по номеру
     def get_usable(self, item):
         if item in self.usables:
-            return usable_object.objects[item]
+            return UsableObj.usable_objs[item]
         return None
 
 

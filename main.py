@@ -45,14 +45,17 @@ def enter():
     
     main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
     create_interface(main_hero)
+    main_hero.take_damage(20, 1)
 
     Item('bul', 1, 1)
+    Item('rubles', 1, 1)
+    UsableObj('beer')
     Weapon('colt')
     Weapon('shotgun')
     Weapon('rifle')
     Armor('armor')
 
-    scene = map_manager("map_outdoors", main_hero, 0)
+    scene = map_manager("map_stall", main_hero, 0)
 
     director.push(scene)
     main_theme.stop()
@@ -180,8 +183,8 @@ def create_menu():
 
 
 if __name__ == '__main__':
-    #director.init(width=width, height=height, caption='Game', fullscreen=True)
-    director.init(width=width, height=height, caption='Game')
+    director.init(width=width, height=height, caption='Game', fullscreen=True)
+    #director.init(width=width, height=height, caption='Game')
     director.window.pop_handlers()
 
     my_mixer = mixer.init()

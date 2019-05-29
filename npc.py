@@ -15,30 +15,37 @@ EPS = 1e-3
 
 # Класс NPC
 class NPC(character):
-    def __init__(self, name, fraction):
+    def __init__(self, name, fraction, *pos):
+        pos = int(pos[0]), int(pos[1])
         info = open('res/stats/chars/' + name + '.txt', 'r')
         stats = list(map(int, info.readline().split()))
-        info.close()
 
         self.hp = stats[0]
         self.stamina = stats[1]
         self.sp_stamina = stats[2]
         self.rad_patrol = [[0] * 2 for i in range(2)]
-        self.rad_patrol[0][0] = stats[3]
-        self.rad_patrol[0][1] = stats[4]
-        self.rad_patrol[1][0] = stats[5]
-        self.rad_patrol[1][1] = stats[6]
-        self.next_x = stats[-2]
-        self.next_y = stats[-1]
+        self.rad_patrol[0][0] = stats[3] + pos[0]
+        self.rad_patrol[0][1] = stats[4] + pos[1]
+        self.rad_patrol[1][0] = stats[5] + pos[0]
+        self.rad_patrol[1][1] = stats[6] + pos[1]
+        self.next_x = pos[0]
+        self.next_y = pos[1]
         self.hash = str(hash(self))
 
-        super().__init__(name, fraction, stats[7:-2], npc_mover(), (stats[-1], stats[-2]))
+        super().__init__(name, fraction, stats[7:], npc_mover(), pos)
 
         self.angle_velocity = 0
         self.state = "patrol"
         self.patrol = patroling(self.rad_patrol)
         self.fight = fight()
         self.info = []
+
+        s = info.readline()
+        while s:
+            s = s.split()
+            self.take_item(s[0], int(s[1]))
+            s = info.readline()
+        info.close()
 
     def change_state(self):
         if self.state == "patrol":

@@ -43,21 +43,28 @@ class MapLayer(cocos.layer.ScrollableLayer):
 
 
 class Port(cocos.sprite.Sprite):
-    def __init__(self, name, number, cur_x, cur_y, new_x, new_y, width):
+    def __init__(self, name, number, cur_x, cur_y, new_x, new_y, width, height):
         self.next_map = name
-        self.number = number
+        self.number = int(number)
         self.new_position = new_x*32, new_y*32
         self.vector = new_x - cur_x, new_y - cur_y
         
         super().__init__("res/img/port.png", anchor=(0, 16))
+        
         self.position = cur_x*32, cur_y*32
-        for i in range(width-1):
+        for i in range(int(width-1)):
             spr = Sprite("res/img/port.png", anchor=(0, 16))
             spr.position = (32+i*32, 0)
             self.add(spr)
+
+        for i in range(int(height-1)):
+            for j in range(int(width)):
+                spr = Sprite("res/img/port.png", anchor=(0, 16))
+                spr.position = (j*32, 32+i*32)
+                self.add(spr)
         
         self.cshape = cm.AARectShape(eu.Vector2(self.position[0]+self.width/2*width, self.position[1]),\
-                                     self.width/2*width, self.height/2)
+                                     self.width/2*width, self.height*height/2)
     
     def change_map(self, main_hero):
         scene = None
@@ -67,7 +74,9 @@ class Port(cocos.sprite.Sprite):
             scene = map_manager.maps[self.next_map]
             main_hero.set_collision(scene.map_collider)
             main_hero.set_scroller(scene.scroller)
+            
             main_hero.set_position(scene.ports[self.number].new_position)
+            
 
         director.replace(scene)
 
@@ -83,18 +92,18 @@ class map_manager(cocos.scene.Scene):
         self.main_hero = hero
         
         self.map_collider = circle_map_collider(self.layer)
-        hero.set_collision(self.map_collider)
         scroller = cocos.layer.ScrollingManager()
         scroller.scale = 2
         self.main_hero.set_scroller(scroller)
-
+        hero.set_collision(self.map_collider)
+        
         port_handler = cocos.layer.ScrollableLayer()
         cur_ports = open("maps/" + cur_map + "/ports.txt")
         p = cur_ports.readline()
         i = 0
         while p:
             p = p.split()
-            port = Port(p[0], *map(int, p[1:]))
+            port = Port(p[0], *map(float, p[1:]))
             self.ports.append(port)
             port_handler.add(port)
             
@@ -104,6 +113,7 @@ class map_manager(cocos.scene.Scene):
                 self.main_hero.set_position(port.new_position)
             
             i += 1
+        cur_ports.close()
         
         scroller.add(hero, 2)
         scroller.add(self.layer.layer_floor, -1)
@@ -127,6 +137,7 @@ class map_manager(cocos.scene.Scene):
                 inv.add(arg[0], int(arg[1]))
                 p = stashes.readline() 
             p = stashes.readline()
+        stashes.close()
 
         picks = open("maps/" + cur_map + "/pick.txt")
         p = picks.readline()
@@ -135,6 +146,7 @@ class map_manager(cocos.scene.Scene):
             digits = tuple(map(int, p[1:]))
             PickableObject(p[0], (digits[0], digits[1]), digits[2]).place(scroller)
             p = picks.readline()
+        picks.close()
             
         
         cur_npc = open("maps/" + cur_map + "/npc.txt")
@@ -144,6 +156,7 @@ class map_manager(cocos.scene.Scene):
             np.set_collision(self.map_collider)
             n = cur_npc.readline()
             scroller.add(np, name=np.hash, z=2)
+        cur_npc.close()
             
         self.scroller = scroller
         super().__init__(scroller)

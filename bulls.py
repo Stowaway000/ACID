@@ -31,11 +31,14 @@ class bullet(cocos.layer.ScrollableLayer):
 
         self.do(bullet_mover())
 
-    def stop_move(self):
+    def stop_move(self, tp):
         self.stop()
         
-        hole_l = tr_l = cocos.layer.ScrollableLayer()
-        hole_img = load('res/img/hole.png')
+        hole_l = cocos.layer.ScrollableLayer()
+        if tp == 1:
+            hole_img = load('res/img/hole.png')
+        elif tp == 2:
+            hole_img = load('res/img/blood.png')
         hole_grid = ImageGrid(hole_img, 1, 6, item_height=15, item_width=10)
         hole_anim = Sprite(Animation.from_image_sequence(hole_grid[:], 0.05, loop=False))
         hole_anim.rotation = self.bul.rotation + 180
@@ -76,7 +79,9 @@ class bullet_mover(Move):
         if obj:
             if obj.host:
                 obj.host.take_damage(self.target.damage, self.target.penetration)
-            self.target.stop_move()
+                self.target.stop_move(2)
+            else:
+                self.target.stop_move(1)
             return 1
 
         new.cshape.center = eu.Vector2(new.cshape.center[0], new.cshape.center[1] + dy)
@@ -84,7 +89,9 @@ class bullet_mover(Move):
         if obj:
             if obj.host:
                 obj.host.take_damage(self.target.damage, self.target.penetration)
-            self.target.stop_move()
+                self.target.stop_move(2)
+            else:
+                self.target.stop_move(1)
             return 1
 
         return 0

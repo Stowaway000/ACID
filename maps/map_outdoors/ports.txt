@@ -1,2 +1,2 @@
-map_block 0 5 17 6 16 3
-map_stall 0 0 4 2 4 1
+map_block 0 5 16.5 6 15.5 3 1
+map_stall 0 0 9 2 9 1 2

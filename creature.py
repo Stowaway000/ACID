@@ -248,6 +248,9 @@ class character(cocos.layer.ScrollableLayer):
         self.skin.collider = manager
         manager.collision_manager.add(self.skin.cshape)
 
+    def reset_collision(self, manager):
+        self.skin.collider = manager
+
     def set_position(self, pos):
         self.skin.set_position(pos)
 
@@ -298,6 +301,7 @@ class skin(cocos.sprite.Sprite):
         self.pause_counter = 0
 
         self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle", host)
+        self.cshape_big = collision_unit([eu.Vector2(*self.position), self.body.width*1.5 / 2], "circle")
         self.do(mover)
         
         self.near_objects = []
@@ -307,7 +311,8 @@ class skin(cocos.sprite.Sprite):
 
     def set_position(self, pos):
         self.position = pos
-        self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle")
+        self.cshape.cshape.center = eu.Vector2(*pos)
+        self.cshape_big.cshape.center = eu.Vector2(*pos)
         self.scroller.set_focus(*self.position)
     
     def walker(self, new_state):
@@ -402,7 +407,7 @@ class skin(cocos.sprite.Sprite):
         self.hidden = False
         
         if self.both:
-            self.add(self.lhand, name="lhand", z=0)
+            #self.add(self.lhand, name="lhand", z=0)
             self.add(self.rhand, name="rhand", z=0)
             self.add(self.rweapon, name="both", z=2)
             self.body.rotation = 20
@@ -423,7 +428,7 @@ class skin(cocos.sprite.Sprite):
         self.body.rotation = 0
         self.rhand.position = 10, 7
         if self.both:
-            self.remove("lhand")
+            #self.remove("lhand")
             self.remove("rhand")
             self.remove("both")
         else:
