@@ -26,7 +26,7 @@ class bullet(cocos.layer.ScrollableLayer):
         self.tracer.position = pos
         self.tracer.opacity = 75
         self.dot = pos
-        self.tracer.do(FadeOut(0.05)+CallFunc(lambda:del_tracer(self.tracer)))
+        self.tracer.do(FadeOut(0.05)+CallFunc(self.tracer.kill))
         self.tracer.scale_x = 0.01
 
         self.do(bullet_mover())
@@ -42,8 +42,8 @@ class bullet(cocos.layer.ScrollableLayer):
         hole_anim.position = self.bul.position
         hole_l.add(hole_anim)
         self.parent.add(hole_l)
-        hole_l.do(MoveBy((0, 0), 0.1)+CallFunc(lambda:del_tracer(hole_l)))
-            
+        hole_l.do(RotateBy(0, 0.1)+CallFunc(hole_l.kill))
+        
         self.kill()
 
 
@@ -88,7 +88,3 @@ class bullet_mover(Move):
             return 1
 
         return 0
-
-    
-def del_tracer(tracer):
-    tracer.parent.remove(tracer)

@@ -235,9 +235,9 @@ class WeaponHandler(cocos.sprite.Sprite):
                 bul = bullet(self.weapon_ref.ammo_type, pos, angle,
                              self.parent.collider, self.weapon_ref.bspeed,\
                              self.weapon_ref.damage, self.weapon_ref.breachness)
-            
-                self.parent.parent.parent.add(bul, name=bul.name, z=1)
-            
+
+                self.parent.scroller.add(bul, name=bul.name, z=1)
+                
                 tr_l = cocos.layer.ScrollableLayer()
                 tr_l.add(bul.tracer)
                 bul.parent.add(tr_l)

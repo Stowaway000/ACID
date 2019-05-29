@@ -284,9 +284,6 @@ class hero(character):
     def set_scroller(self, scr):
         self.skin.scroller = scr
 
-    def set_collision(self, manager):
-        self.skin.collider = manager
-
     def set_position(self, pos):
         super().set_position(pos)
 
@@ -328,7 +325,6 @@ class hero_mover(cocos.actions.Move):
 
             self.target.velocity = (vel_x, vel_y)
             self.target.position = new.cshape.center
-            self.target.scroller.set_focus(*new.cshape.center)
 
             self.target.scroller.set_focus(self.target.x, self.target.y)
 

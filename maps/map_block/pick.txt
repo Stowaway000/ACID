@@ -1,1 +1,1 @@
-rifle 32 224 1
+shotgun 32 224 1
