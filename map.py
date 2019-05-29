@@ -113,7 +113,6 @@ class map_manager(cocos.scene.Scene):
         scroller.add(self.layer.layer_objects, 2)
         scroller.add(self.layer.layer_above, 3)
         scroller.add(self.layer.layer_anim_up, 3)
-        scroller.add(self.layer.layer_collision, 1)
 
         stashes = open("maps/" + cur_map + "/stashes.txt")
         p = stashes.readline()
@@ -144,7 +143,7 @@ class map_manager(cocos.scene.Scene):
             np = NPC(*n.split())
             np.set_collision(self.map_collider)
             n = cur_npc.readline()
-            scroller.add(np, 2)
+            scroller.add(np, name=np.hash, z=2)
             
         self.scroller = scroller
         super().__init__(scroller)

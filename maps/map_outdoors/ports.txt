@@ -1,1 +1,2 @@
 map_block 0 5 17 6 16 3
+map_stall 0 0 4 2 4 1

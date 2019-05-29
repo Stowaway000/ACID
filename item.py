@@ -233,7 +233,8 @@ class WeaponHandler(cocos.sprite.Sprite):
                 pos = (pos[0]+dx, pos[1]+dy)
 
                 bul = bullet(self.weapon_ref.ammo_type, pos, angle,
-                             self.parent.collider, self.weapon_ref.bspeed, self.parent.parent.npc_ref)
+                             self.parent.collider, self.weapon_ref.bspeed,\
+                             self.weapon_ref.damage, self.weapon_ref.breachness)
             
                 self.parent.parent.parent.add(bul, name=bul.name, z=1)
             
@@ -241,7 +242,6 @@ class WeaponHandler(cocos.sprite.Sprite):
                 tr_l.add(bul.tracer)
                 bul.parent.add(tr_l)
                 mixer._channels[2].play(self.weapon_ref.sound)
-                #bul.do(bullet_mover())
     
     def shoot_anim(self):
         self.image = self.weapon_anim
@@ -292,7 +292,7 @@ class WeaponHandler(cocos.sprite.Sprite):
                 self.flag_shoot = True
                 self.shoot_anim()
                 self.shot()
-                self.do(MoveBy((0, 0), self.shot_len) + CallFunc(self.stop_waiting))
+                self.do(FadeTo(255, self.shot_len) + CallFunc(self.stop_waiting))
             
 
     def refresh(self):

@@ -6,16 +6,10 @@ from math import *
 from pyglet.image import load, ImageGrid, Animation
 
 class bullet(cocos.layer.ScrollableLayer):
-    bulls = []
-    
-    def __init__(self, name, pos, rot, man, speed, npc_ref):
+    def __init__(self, name, pos, rot, man, speed, dmg, pen):
         super().__init__()
         self.bul = cocos.sprite.Sprite("res/img/items/" + name + ".png")
 
-        self.npc_ref = npc_ref
-       #x = 11
-       #y = 18
-       #pos = (pos[0]+dx, pos[1]+dy)
         self.bul.position = pos
         self.add(self.bul, z=3)
         self.position = (10, 10)
@@ -24,6 +18,8 @@ class bullet(cocos.layer.ScrollableLayer):
         self.manager = man
         self.cshape = collision_unit((pos, 2), "bullet")
         self.name = str(hash(self))
+        self.damage = dmg
+        self.penetration = pen
 
         self.tracer = Sprite('res/img/items/tracer_' + name + '.png', anchor=(0, 0))
         self.tracer.rotation = rot - 90
@@ -32,8 +28,6 @@ class bullet(cocos.layer.ScrollableLayer):
         self.dot = pos
         self.tracer.do(FadeOut(0.05)+CallFunc(lambda:del_tracer(self.tracer)))
         self.tracer.scale_x = 0.01
-
-        bullet.bulls.append(self)
 
         self.do(bullet_mover())
 
@@ -50,8 +44,7 @@ class bullet(cocos.layer.ScrollableLayer):
         self.parent.add(hole_l)
         hole_l.do(MoveBy((0, 0), 0.1)+CallFunc(lambda:del_tracer(hole_l)))
             
-        self.parent.remove(self.name)
-        bullet.bulls.remove(self)
+        self.kill()
 
 
 class bullet_mover(Move):
@@ -77,19 +70,20 @@ class bullet_mover(Move):
         self.target.bul.position = new_pos
         new = self.target.cshape
 
-        for i in self.target.npc_ref:
-            if self.target.manager.collision_manager.they_collide(i.skin.cshape, new):
-                i.take_damage(20, 0.5)
-                self.target.stop_move()
-                return 1
-        
+        shoot = False
         new.cshape.center = eu.Vector2(new.cshape.center[0] + dx, new.cshape.center[1])
-        if self.target.manager.collision_manager.any_near(new, 0):
+        obj =  self.target.manager.collision_manager.any_near(new, 0)
+        if obj:
+            if obj.host:
+                obj.host.take_damage(self.target.damage, self.target.penetration)
             self.target.stop_move()
             return 1
 
         new.cshape.center = eu.Vector2(new.cshape.center[0], new.cshape.center[1] + dy)
-        if self.target.manager.collision_manager.any_near(new, 0):
+        obj = self.target.manager.collision_manager.any_near(new, 0)
+        if obj:
+            if obj.host:
+                obj.host.take_damage(self.target.damage, self.target.penetration)
             self.target.stop_move()
             return 1
 

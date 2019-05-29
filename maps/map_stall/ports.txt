@@ -1,0 +1,1 @@
+map_outdoors 1 9 4 8 4 1

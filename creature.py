@@ -35,9 +35,7 @@ class character(cocos.layer.ScrollableLayer):
 
         self.armor = -1
 
-        self.skin = skin(name, mover, pos)
-
-        self.add(self.skin)
+        self.skin = skin(name, mover, pos, self)
 
         self.stand = 'normal'
 
@@ -84,7 +82,6 @@ class character(cocos.layer.ScrollableLayer):
             dmg -= self.inventory.get_armor(armor).statusAC(dmg, k)
 
         if dmg > 0:
-            print(self.hp)
             self.hp -= dmg
 
         if self.hp < 0:
@@ -249,13 +246,14 @@ class character(cocos.layer.ScrollableLayer):
     
     def set_collision(self, manager):
         self.skin.collider = manager
+        manager.collision_manager.add(self.skin.cshape)
 
     def set_position(self, pos):
         self.skin.set_position(pos)
 
 
 class skin(cocos.sprite.Sprite):
-    def __init__(self, name, mover, pos):
+    def __init__(self, name, mover, pos, host):
         stat = pyglet.image.load("res/img/skins/init.png")
         w_img = pyglet.image.load("res/img/skins/" + name + "/" + name + "_walk.png")
         w_img_grid = pyglet.image.ImageGrid(w_img, 1, 9, item_width=29, item_height=14)
@@ -299,11 +297,13 @@ class skin(cocos.sprite.Sprite):
         self.step_sound = mixer.Sound("res/sound/step.wav")
         self.pause_counter = 0
 
-        self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle")
+        self.cshape = collision_unit([eu.Vector2(*self.position), self.body.width / 2], "circle", host)
         self.do(mover)
         
         self.near_objects = []
         self.near_stashes = []
+
+        host.add(self)
 
     def set_position(self, pos):
         self.position = pos

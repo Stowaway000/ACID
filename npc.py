@@ -15,8 +15,6 @@ EPS = 1e-3
 
 # Класс NPC
 class NPC(character):
-    npcs = []
-    
     def __init__(self, name, fraction):
         info = open('res/stats/chars/' + name + '.txt', 'r')
         stats = list(map(int, info.readline().split()))
@@ -25,14 +23,14 @@ class NPC(character):
         self.hp = stats[0]
         self.stamina = stats[1]
         self.sp_stamina = stats[2]
-        #self.rad_patrol = [[0] * 2 for i in range(2)]
-        self.rad_patrol = [[0, 0], [0, 0]]
+        self.rad_patrol = [[0] * 2 for i in range(2)]
         self.rad_patrol[0][0] = stats[3]
         self.rad_patrol[0][1] = stats[4]
         self.rad_patrol[1][0] = stats[5]
         self.rad_patrol[1][1] = stats[6]
         self.next_x = stats[-2]
         self.next_y = stats[-1]
+        self.hash = str(hash(self))
 
         super().__init__(name, fraction, stats[7:-2], npc_mover(), (stats[-1], stats[-2]))
 
@@ -41,8 +39,6 @@ class NPC(character):
         self.patrol = patroling(self.rad_patrol)
         self.fight = fight()
         self.info = []
-
-        NPC.npcs.append(self)
 
     def change_state(self):
         if self.state == "patrol":
@@ -66,9 +62,12 @@ class NPC(character):
         spr.position = self.skin.position
         spr.rotation = self.skin.rotation
         lr.add(spr)
-        NPC.npcs.remove(self)
         self.parent.add(lr)
-        self.parent.remove(self)
+
+        self.parent.add(Stash(self.inventory, 'stash', self.skin.position))
+
+        self.skin.collider.collision_manager.remove_tricky(self.skin.cshape)
+        self.parent.remove(self.hash)
 
 
 class patroling:
@@ -123,13 +122,6 @@ class npc_mover(cocos.actions.Move):
         dx = vel_x * dt
         dy = vel_y * dt
         new = self.target.cshape
-
-        #new.cshape.center = eu.Vector2(new.cshape.center.x + dx, new.cshape.center.y + dy)
-
-        '''new.cshape.center = eu.Vector2(new.cshape.center.x, new.cshape.center.y + dy)
-        for i in bullet.bulls:
-            if self.target.collider.collision_manager.they_collide(i.cshape, new):
-                print("DAMAGE")'''
 
         self.target.parent.info = self.target.parent.get_in_sector(self.target.position,
                                                                    self.target.rotation,

@@ -20,10 +20,8 @@ vector = [0, 0]
 class hero(character):
     is_event_handler = True
     
-    def __init__(self, name, fraction, seacil, stats, pos, ref):
+    def __init__(self, name, fraction, seacil, stats, pos):
         super().__init__(name, fraction, seacil, hero_mover(), pos)
-
-        self.npc_ref = ref
         
         self.hp = stats[0]
         self.stamina = stats[1]
@@ -82,12 +80,12 @@ class hero(character):
         if hand == "l" and self.weapon_left != -1:
             snd = self.skin.lweapon.weapon_ref.sound_reload
             mixer._channels[2].play(snd)
-            self.do(MoveBy((0, 0), snd.get_length()) + CallFunc(self.reloaded))
+            self.do(FadeTo(255, snd.get_length()) + CallFunc(self.reloaded))
         
         elif hand == "r" and self.weapon_right != -1:
             snd = self.skin.rweapon.weapon_ref.sound_reload
             mixer._channels[2].play(snd)
-            self.do(MoveBy((0, 0), snd.get_length()) + CallFunc(self.reloaded))
+            self.skin.do(FadeTo(255, snd.get_length()) + CallFunc(self.reloaded))
 
         super().reload(hand)
 

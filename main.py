@@ -44,7 +44,7 @@ def enter():
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
     director.window.set_mouse_cursor(cursor)
     
-    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30), NPC.npcs)
+    main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
     create_interface(main_hero)
 
     Item('bul', 1, 1)
