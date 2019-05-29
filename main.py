@@ -42,6 +42,7 @@ def create_interface(hero):
 def enter():
     cur_i = pyglet.image.load("res/img/cursor.png")
     cursor = pyglet.window.ImageMouseCursor(cur_i, 10, 10)
+    director.window.set_mouse_cursor(cursor)
     
     main_hero = hero('hero', 'rebel', (5, 5, 5, 5, 5, 5), (100, 100, 100), (400, 30))
     create_interface(main_hero)
@@ -58,10 +59,10 @@ def enter():
     scene = map_manager("map_stall", main_hero, 0)
 
     director.push(scene)
-    main_theme.stop()
+    #main_theme.stop()
 
     main_hero.interface.quest_done('Родиться')
-    main_hero.interface.quest_done('Умереть')
+    #main_hero.interface.quest_done('Умереть')
 
     main_hero.take_item('colt', 2)
     #main_hero.take_item('rifle', 1)
@@ -143,7 +144,7 @@ def create_bg():
     ground = cocos.layer.ColorLayer(255, 255, 255, 255, height=height//2)
     ground.position = (-width//2, -height//2)
     
-    game_title = cocos.text.Label("GAME", font_name='Verdana Bold', font_size=92,\
+    game_title = cocos.text.Label("ACID", font_name='Verdana Bold', font_size=92,\
                                 anchor_x='center')
     game_title.y = height // 4
                                   
@@ -171,8 +172,8 @@ def create_menu():
     
     items = list()
     items.append(cocos.menu.MenuItem("Новая игра", enter))
-    items.append(cocos.menu.MenuItem("Загрузить игру", enter))
     items.append(cocos.menu.MenuItem("Настройки", settings))
+    items.append(cocos.menu.MenuItem("Управление", enter))
     items.append(cocos.menu.MenuItem("Об игре", about_game))
     items.append(cocos.menu.MenuItem("Выйти", quit_game))
     

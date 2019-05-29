@@ -194,6 +194,7 @@ class WeaponHandler(cocos.sprite.Sprite):
         self.flag_shoot = False
         self.flag_shooting = False
         self.shoot_time = 0
+        self.hand = 'r'
 
         self.weapon_ref = get_global(weapon_name)
         self.weapon_name = weapon_name
@@ -225,8 +226,13 @@ class WeaponHandler(cocos.sprite.Sprite):
             for i in range(total):
                 angle = self.parent.rotation+elem_ang*int(i-total/2)+randint(-1, 2)
 
-                x = 9 + self.item_sprite.width // 2
-                y = 15 + self.item_sprite.height // 2
+                if self.hand == 'r':
+                    x = 9 + self.item_sprite.width // 2
+                    y = 15 + self.item_sprite.height // 2
+                else:
+                    x = -9 - self.item_sprite.width // 2
+                    y = 15 + self.item_sprite.height // 2
+                
                 dx = x * cos(radians(angle)) + y * sin(radians(angle))
                 dy = -x * sin(radians(angle)) + y * cos(radians(angle))
                 pos = self.parent.position

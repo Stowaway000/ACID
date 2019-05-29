@@ -40,6 +40,8 @@ class hero(character):
 
         self.mouse_moving = False
 
+        self.sound_get = mixer.Sound("res/sound/get.wav")
+
     def take_damage(self, dmg, k):
         super().take_damage(dmg, k)
 
@@ -86,7 +88,7 @@ class hero(character):
         if hand == "l" and self.weapon_left != -1:
             snd = self.skin.lweapon.weapon_ref.sound_reload
             mixer._channels[2].play(snd)
-            self.do(FadeTo(255, snd.get_length()) + CallFunc(self.reloaded))
+            self.skin.do(FadeTo(255, snd.get_length()) + CallFunc(self.reloaded))
         
         elif hand == "r" and self.weapon_right != -1:
             snd = self.skin.rweapon.weapon_ref.sound_reload
@@ -232,6 +234,7 @@ class hero(character):
                 for i in self.skin.near_objects:
                     obj = PickableObject.pickables[i]
                     if obj.spr.get_rect().contains(X, Y):
+                        mixer._channels[2].play(self.sound_get)
                         self.take_item(obj.name, obj.count, obj.additional)
                         obj.destruct()
                         self.skin.near_objects.remove(i)
@@ -274,6 +277,7 @@ class hero(character):
                 self.reload('r')
                 self.reload('l')
             elif symbol == key.E and self.skin.near_objects:
+                mixer._channels[2].play(self.sound_get)
                 obj = PickableObject.pickables[self.skin.near_objects[0]]
                 self.take_item(obj.name, obj.count, obj.additional)
                 obj.destruct()

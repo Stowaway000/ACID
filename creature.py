@@ -142,6 +142,8 @@ class character(cocos.layer.ScrollableLayer):
                 
             self.skin.add_weapon(wp.weapon_name, wp, 'r')
         else:
+            wp.hand = 'l'
+            
             right = self.inventory.get_weapon(self.weapon_right)
             if get_global(right.weapon_name).two_handed:
                 self.unequip_weapon(self.weapon_right)
@@ -258,7 +260,7 @@ class character(cocos.layer.ScrollableLayer):
 class skin(cocos.sprite.Sprite):
     def __init__(self, name, mover, pos, host):
         stat = pyglet.image.load("res/img/skins/init.png")
-        w_img = pyglet.image.load("res/img/skins/" + name + "/" + name + "_walk.png")
+        w_img = pyglet.image.load("res/img/skins/" + name + "/" + name + "_walk.tif")
         w_img_grid = pyglet.image.ImageGrid(w_img, 1, 9, item_width=29, item_height=14)
         anim = pyglet.image.Animation.from_image_sequence(w_img_grid[:], 0.05, loop=True)
 
@@ -268,11 +270,11 @@ class skin(cocos.sprite.Sprite):
         self.keyboard = key.KeyStateHandler()
         director.window.push_handlers(self.keyboard)
 
-        self.body = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_body.png")
-        self.body_seat = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_body_seat.png")
-        self.lhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_lhand.png")
-        self.rhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_rhand.png")
-        self.head = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_head.png")
+        self.body = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_body.tif")
+        self.body_seat = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_body_seat.tif")
+        self.lhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_lhand.tif")
+        self.rhand = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_rhand.tif")
+        self.head = cocos.sprite.Sprite("res/img/skins/" + name + "/" + name + "_head.tif")
         self.animation = cocos.sprite.Sprite(anim)
 
         self.body.position = 0, 0
